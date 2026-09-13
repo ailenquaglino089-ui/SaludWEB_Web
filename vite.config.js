@@ -6,6 +6,9 @@ import react from '@vitejs/plugin-react'
 // export default defineConfig: expone la configuración de Vite (archivo CommonJS/ESM del proyecto, no de build)
 export default defineConfig({
   // defineConfig agrupa toda la configuración del bundler y del dev server
+  base: './',
+  // base: './' hace que el build use rutas RELATIVAS (./assets/...) en index.html,
+  // permitiendo abrir la SPA desde cualquier subdirectorio (ej: dentro de XAMPP/htdocs)
   plugins: [react()],
   // plugins: registra el plugin de React para poder compilar archivos .jsx/.tsx
   server: {
