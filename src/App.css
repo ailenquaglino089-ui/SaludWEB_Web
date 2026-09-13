@@ -1,0 +1,366 @@
+/* ============================================================
+   APP - Estilos globales CSS
+   ============================================================ */
+/* Este archivo contiene las reglas de estilo generales compartidas por toda la SPA (selectores universales, layout, botones, tablas, formularios, alertas y responsive) */
+
+* {
+  /* Selector universal: aplica a TODOS los elementos de la página */
+  margin: 0;
+  /* Elimina los márgenes por defecto que trae el navegador (reset de navegador) */
+  padding: 0;
+  /* Elimina los paddings por defecto del navegador para tener un punto de partida consistente */
+  box-sizing: border-box;
+  /* box-sizing: border-box: padding y border se incluyen dentro del ancho/alto declarado (evita desbordes) */
+}
+
+html, body, #root {
+  /* Se aplica a la etiqueta raíz <html>, al <body> y al contenedor #root donde React monta la app */
+  height: 100%;
+  /* height: 100%: hace que las tres capas ocupen toda la altura del viewport (permite flexbox vertical) */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Define la familia tipográfica de toda la app con alternativas de seguridad (fallbacks) */
+}
+
+body {
+  /* Selector de la etiqueta <body>: fondo general de la aplicación */
+  background-color: #f8f9fa;
+  /* Fondo suave gris-claro que da contraste a las tarjetas blancas de la interfaz */
+}
+
+.app {
+  /* Clase del contenedor principal definido en App.jsx */
+  display: flex;
+  /* Activación de flexbox para organizar los bloques verticalmente */
+  flex-direction: column;
+  /* Dirección columna: el navbar arriba, el contenido debajo */
+  min-height: 100vh;
+  /* min-height: 100vh: el contenedor ocupa al menos toda la pantalla visible */
+}
+
+.main-content {
+  /* Clase del <main> donde se renderizan las rutas (el contenido variable) */
+  flex: 1;
+  /* flex: 1: hace que el main se expanda para ocupar el espacio sobrante y empuje el pie a abajo */
+  background-color: #f8f9fa;
+  /* Mantiene el mismo fondo global en la zona de contenido */
+}
+
+/* Loading */
+/* Sección de estilos para el estado de carga (spinner) que muestra ProtectedRoute mientras verifica la sesión */
+.loading-container {
+  /* Contenedor del mensaje "Cargando..." y el spinner */
+  display: flex;
+  /* Activa flexbox para centrar los elementos */
+  flex-direction: column;
+  /* Los hijos (spinner y texto) se apilan verticalmente */
+  align-items: center;
+  /* Centra los hijos horizontalmente */
+  justify-content: center;
+  /* Centra los hijos verticalmente */
+  min-height: 100vh;
+  /* Ocupa toda la altura de la pantalla para centrar verticalmente el bloque */
+  gap: 20px;
+  /* Separación de 20px entre el spinner y el texto de carga */
+}
+
+.spinner {
+  /* Círculo animado que indica actividad mientras se verifica la sesión */
+  width: 50px;
+  /* Ancho del círculo */
+  height: 50px;
+  /* Alto del círculo (igual al ancho para que sea perfectamente circular) */
+  border: 4px solid #e0e0e0;
+  /* Borde gris claro que forma el anillo base del spinner */
+  border-top-color: #667eea;
+  /* Solo el borde superior usa el color primario: crea el efecto de arco que gira */
+  border-radius: 50%;
+  /* Radio 50%: convierte el elemento en un círculo */
+  animation: spin 1s linear infinite;
+  /* Aplica la animación "spin" (1s, lineal, sin fin): el arco gira constantemente */
+}
+
+@keyframes spin {
+  /* Definición de la animación llamada "spin" usada por el spinner */
+  to {
+    /* Estado final de la animación: desde el estado inicial (0 grados) hasta 360 grados */
+    transform: rotate(360deg);
+    /* Rotación completa de 360 grados: produce el giro continuo del spinner */
+  }
+}
+
+.loading-container p {
+  /* Estilo del texto <p> "Cargando..." que acompaña al spinner */
+  color: #666;
+  /* Color gris medio, más suave que el del texto principal */
+  font-size: 16px;
+  /* Tamaño de letra estándar y legible para el mensaje de espera */
+}
+
+/* Componentes comunes */
+/* Sección de componentes reutilizables: contenedores y botones genéricos */
+.container {
+  /* Clase contenedora de páginas: limita el ancho del contenido */
+  max-width: 1200px;
+  /* Ancho máximo de 1200px para que las líneas de texto no sean demasiado largas */
+  margin: 0 auto;
+  /* Margen automático a los costados: centra el contenedor horizontalmente */
+  padding: 20px;
+  /* Relleno interno de 20px alrededor del contenido */
+}
+
+.btn {
+  /* Clase base de todos los botones del sistema */
+  padding: 10px 20px;
+  /* Relleno interno: 10px vertical y 20px horizontal (botón con buen tamaño táctil) */
+  border: none;
+  /* Elimina el borde por defecto del botón para darle estilo propio */
+  border-radius: 8px;
+  /* Esquinas redondeadas de 8px para un look moderno */
+  cursor: pointer;
+  /* Cambia el cursor a "manito" al pasar sobre el botón (indica que es clicable) */
+  font-weight: 600;
+  /* Texto seminegrita para mejorar la legibilidad del botón */
+  font-size: 14px;
+  /* Tamaño de letra compacto y consistente en todos los botones */
+  transition: all 0.3s;
+  /* Transición suave de 0.3s en todos los estilos (usada por los estados hover) */
+}
+
+.btn-primary {
+  /* Variante de botón primario (acción principal de cada página) */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Fondo con degradado: de azul índigo a violeta (identidad visual de la app) */
+  color: white;
+  /* Texto en blanco para contrastar con el degradado */
+}
+
+.btn-primary:hover {
+  /* Estado hover (al pasar el mouse) del botón primario */
+  transform: translateY(-2px);
+  /* Eleva el botón 2px hacia arriba: da sensación de relieve */
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  /* Sombra azul difuminada bajo el botón que refuerza el efecto de elevación */
+}
+
+.btn-secondary {
+  /* Variante de botón secundario (acciones menos importantes o de cancelación) */
+  background: #e0e0e0;
+  /* Fondo gris claro, discreto y neutro */
+  color: #333;
+  /* Texto gris oscuro para legibilidad sobre el fondo claro */
+}
+
+.btn-secondary:hover {
+  /* Estado hover del botón secundario */
+  background: #d0d0d0;
+  /* Oscurece ligeramente el fondo para indicar interacción */
+}
+
+.btn-danger {
+  /* Variante de botón de peligro (normalmente acciones de eliminar) */
+  background: #ef4444;
+  /* Fondo rojo para advertir que la acción es destructiva */
+  color: white;
+  /* Texto blanco que contrasta con el rojo */
+}
+
+.btn-danger:hover {
+  /* Estado hover del botón de peligro */
+  background: #dc2626;
+  /* Intensifica el rojo al pasar el mouse para reforzar la advertencia */
+}
+
+/* Tablas */
+/* Sección de estilos para las tablas de listados (médicos, pacientes, prescripciones) */
+.table-container {
+  /* Contenedor que envuelve a las tablas del sistema */
+  background: white;
+  /* Fondo blanco para destacar la tabla sobre el fondo gris de la página */
+  border-radius: 12px;
+  /* Esquinas redondeadas de la tarjeta que contiene la tabla */
+  overflow: hidden;
+  /* Recorta el contenido que sobresalga para respetar el radio del borde */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /* Sombra muy suave que separa visualmente la tabla del fondo */
+}
+
+table {
+  /* Selector de la etiqueta <table> */
+  width: 100%;
+  /* La tabla ocupa todo el ancho disponible de su contenedor */
+  border-collapse: collapse;
+  /* Colapsa los bordes de celdas adyacentes en uno solo (evita bordes dobles) */
+}
+
+th {
+  /* Selector de las celdas de encabezado (<th>) */
+  background-color: #f8f9fa;
+  /* Fondo gris claro que distingue la fila de títulos del cuerpo de la tabla */
+  padding: 16px;
+  /* Relleno interno generoso para las celdas de encabezado */
+  text-align: left;
+  /* Alinea los títulos a la izquierda (lo habitual en tablas de datos) */
+  font-weight: 600;
+  /* Aplica seminegrita a los títulos para diferenciarlos del contenido */
+  color: #333;
+  /* Color de texto gris oscuro */
+  border-bottom: 2px solid #e0e0e0;
+  /* Borde inferior doble (2px) que separa el encabezado de las filas de datos */
+}
+
+td {
+  /* Selector de las celdas de datos (<td>) */
+  padding: 16px;
+  /* Relleno interno igual al del encabezado para mantener la alineación vertical */
+  border-bottom: 1px solid #e0e0e0;
+  /* Línea fina de separación entre filas: mejora la lectura horizontal */
+}
+
+tr:hover {
+  /* Estado hover de las filas completas de la tabla */
+  background-color: #f8f9fa;
+  /* Resalta en gris claro la fila sobre la que está el mouse */
+}
+
+/* Formularios */
+/* Sección de estilos para los formularios de login, registro y altas/ediciones */
+.form-container {
+  /* Contenedor principal de los formularios */
+  background: white;
+  /* Fondo blanco que destaca el formulario sobre el fondo de la página */
+  border-radius: 12px;
+  /* Esquinas redondeadas de la tarjeta del formulario */
+  padding: 30px;
+  /* Relleno interno amplio para espaciar el contenido del borde */
+  max-width: 600px;
+  /* Ancho máximo: los formularios no se estiran demasiado en pantallas grandes */
+  margin: 0 auto;
+  /* Margen automático: centra el formulario horizontalmente */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /* Sombra suave que da profundidad a la tarjeta */
+}
+
+.form-group {
+  /* Clase que envuelve a cada campo (label + input) del formulario */
+  margin-bottom: 20px;
+  /* Espacio inferior de 20px para separar visualmente los campos entre sí */
+}
+
+.form-group label {
+  /* Estilo de las etiquetas de texto de cada campo */
+  display: block;
+  /* Las etiquetas ocupan su propia línea (bloque) para quedar sobre el input */
+  margin-bottom: 8px;
+  /* Separación de 8px entre la etiqueta y el cuadro de entrada */
+  color: #333;
+  /* Texto gris oscuro */
+  font-weight: 600;
+  /* Etiquetas en seminegrita para mejorar la lectura del formulario */
+  font-size: 14px;
+  /* Tamaño de letra compacto para las etiquetas */
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  /* Estilos compartidos por los tres tipos de campo: cajas de texto, selectores y áreas de texto */
+  width: 100%;
+  /* Los campos ocupan todo el ancho de su contenedor (.form-group) */
+  padding: 12px;
+  /* Relleno interno que hace el campo cómodo para escribir */
+  border: 2px solid #e0e0e0;
+  /* Borde de 2px gris claro alrededor del campo */
+  border-radius: 8px;
+  /* Esquinas del campo redondeadas */
+  font-size: 14px;
+  /* Tamaño de letra de lo que escribe el usuario */
+  font-family: inherit;
+  /* Hereda la tipografía de la página (no la fuente por defecto del navegador) */
+  transition: border-color 0.3s;
+  /* Transición suave del color del borde al enfocar (hover/focus) */
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  /* Estado :focus: cuando el usuario hace clic o tabula dentro de un campo */
+  outline: none;
+  /* Elimina el contorno azul por defecto del navegador para reemplazarlo por el propio */
+  border-color: #667eea;
+  /* El borde pasa al color primario: indica de forma clara cuál es el campo activo */
+}
+
+/* Alertas */
+/* Sección de estilos para los mensajes de aviso (éxito, error e información) */
+.alert {
+  /* Clase base de todos los mensajes de alerta */
+  padding: 16px;
+  /* Relleno interno para dar aire al contenido del mensaje */
+  border-radius: 8px;
+  /* Esquinas redondeadas de la alerta */
+  margin-bottom: 20px;
+  /* Margen inferior para separar la alerta del siguiente bloque */
+  font-size: 14px;
+  /* Tamaño de letra del mensaje */
+  font-weight: 500;
+  /* Peso medio de la letra para un buen balance de legibilidad */
+}
+
+.alert-success {
+  /* Variante para mensajes de operación exitosa */
+  background-color: #ecfdf5;
+  /* Fondo verde muy claro (lavado) para la alerta de éxito */
+  border: 2px solid #6ee7b7;
+  /* Borde verde menta que identifica el tipo de mensaje */
+  color: #065f46;
+  /* Texto verde oscuro legible sobre el fondo claro */
+}
+
+.alert-error {
+  /* Variante para mensajes de error */
+  background-color: #fef2f2;
+  /* Fondo rojo muy claro para la alerta de error */
+  border: 2px solid #fca5a5;
+  /* Borde rojo suave que marca el tipo de mensaje */
+  color: #991b1b;
+  /* Texto rojo oscuro con buen contraste sobre el fondo claro */
+}
+
+.alert-info {
+  /* Variante para mensajes informativos */
+  background-color: #eff6ff;
+  /* Fondo azul muy claro para la alerta informativa */
+  border: 2px solid #93c5fd;
+  /* Borde azul suave que identifica el mensaje */
+  color: #1e40af;
+  /* Texto azul oscuro legible sobre el fondo claro */
+}
+
+/* Responsive */
+/* Sección de media queries: adapta los estilos para pantallas pequeñas (móviles) */
+@media (max-width: 768px) {
+  /* Reglas que se aplican cuando el viewport tiene 768px o menos de ancho */
+  .container {
+    /* Ajuste del contenedor genérico en pantallas chicas */
+    padding: 15px;
+    /* Reduce el relleno para aprovechar mejor el espacio horizontal disponible */
+  }
+
+  table {
+    /* Ajuste de las tablas en móviles */
+    font-size: 14px;
+    /* Reduce ligeramente la tipografía para que las tablas entren en pantallas angostas */
+  }
+
+  th, td {
+    /* Ajuste conjunto de encabezados y celdas en móviles */
+    padding: 12px;
+    /* Disminuye el relleno para compactar la tabla en pantallas pequeñas */
+  }
+
+  .form-container {
+    /* Ajuste del contenedor de formularios en móviles */
+    padding: 20px;
+    /* Reduce el relleno interno para aprovechar mejor el espacio disponible */
+  }
+}

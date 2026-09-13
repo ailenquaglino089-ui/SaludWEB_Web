@@ -1,0 +1,259 @@
+/* ============================================================
+   AUTENTICACIÓN - Estilos CSS
+   ============================================================ */
+
+/* Contenedor de pantalla completa que centra la tarjeta de autenticación */
+.auth-container {
+  /* Flexbox para centrar la tarjeta */
+  display: flex;
+  /* Centrado vertical dentro del 100% de la altura */
+  align-items: center;
+  /* Centrado horizontal */
+  justify-content: center;
+  /* La tarjeta siempre ocupa al menos toda la altura de la ventana */
+  min-height: 100vh;
+  /* Fondo degradado en los colores de la marca */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Tipografía estándar del sistema con fallbacks */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Tarjeta blanca que contiene encabezado + formulario + pie */
+.auth-card {
+  /* Fondo blanco para contrastar con el degradado de la pantalla */
+  background: white;
+  /* Esquinas redondeadas */
+  border-radius: 16px;
+  /* Sombra profunda que eleva la tarjeta sobre el fondo */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  /* Ancho máximo de la tarjeta */
+  max-width: 420px;
+  /* Ancho flexible: 90% en pantallas donde 420px no quepa */
+  width: 90%;
+  /* El contenido interno no se desborda (esquinas redondeadas se respetan) */
+  overflow: hidden;
+}
+
+/* Encabezado superior de la tarjeta (logo y subtítulo) */
+.auth-header {
+  /* Mismo degradado que el fondo para dar continuidad visual */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Texto del encabezado en blanco */
+  color: white;
+  /* Relleno generoso: 40px vertical, 30px horizontal */
+  padding: 40px 30px;
+  /* El contenido se centra horizontalmente */
+  text-align: center;
+}
+
+/* Título (nombre de la aplicación) dentro del encabezado */
+.auth-header h1 {
+  /* Sin margen para un posicionamiento limpio */
+  margin: 0;
+  /* Tamaño grande del nombre de la app */
+  font-size: 32px;
+  /* Fuente en negrita */
+  font-weight: 700;
+}
+
+/* Subtítulo debajo del nombre de la aplicación */
+.auth-header p {
+  /* Solo un pequeño margen superior */
+  margin: 8px 0 0 0;
+  /* Tamaño de letra del subtítulo */
+  font-size: 14px;
+  /* Opacidad reducida para un efecto secundario */
+  opacity: 0.9;
+}
+
+/* Formulario de autenticación */
+.auth-form {
+  /* Relleno interior del formulario */
+  padding: 40px 30px;
+}
+
+/* Título interno del formulario ("Iniciar Sesión" / "Crear Cuenta") */
+.auth-form h2 {
+  /* Margen inferior para separar el título de los campos */
+  margin: 0 0 30px 0;
+  /* Tamaño del título */
+  font-size: 24px;
+  /* Color gris oscuro */
+  color: #333;
+  /* Grosor seminegrita */
+  font-weight: 600;
+}
+
+/* Bloque que muestra el mensaje de error */
+.error-message {
+  /* Fondo rojo muy claro */
+  background: #fee;
+  /* Borde rojo visible */
+  border: 2px solid #f88;
+  /* Texto en rojo oscuro */
+  color: #c33;
+  /* Relleno del mensaje */
+  padding: 12px 16px;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Separación con el siguiente elemento (los campos) */
+  margin-bottom: 20px;
+  /* Tamaño de letra del mensaje */
+  font-size: 14px;
+  /* Grosor medio */
+  font-weight: 500;
+}
+
+/* Grupo de cada campo del formulario (label + input) */
+.form-group {
+  /* Separación vertical entre grupos de campos */
+  margin-bottom: 20px;
+}
+
+/* Etiqueta de cada campo */
+.form-group label {
+  /* La etiqueta ocupa su propia línea */
+  display: block;
+  /* Separación entre la etiqueta y el input */
+  margin-bottom: 8px;
+  /* Color gris oscuro */
+  color: #333;
+  /* Seminegrita para destacar */
+  font-weight: 600;
+  /* Tamaño de la etiqueta */
+  font-size: 14px;
+}
+
+/* Inputs y selects de los formularios de autenticación */
+.form-group input,
+.form-group select {
+  /* Ocupan todo el ancho disponible */
+  width: 100%;
+  /* Relleno interno cómodo para escribir */
+  padding: 12px 14px;
+  /* Borde gris claro */
+  border: 2px solid #e0e0e0;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Hereda la tipografía del padre */
+  font-family: inherit;
+  /* Transición del color del borde al enfocar */
+  transition: border-color 0.3s;
+  /* El box-sizing respeta el ancho total con padding + borde */
+  box-sizing: border-box;
+}
+
+/* Estado focus: cuando el usuario hace clic en un campo */
+.form-group input:focus,
+.form-group select:focus {
+  /* Quita el outline que el navegador agrega por defecto */
+  outline: none;
+  /* El borde pasa al color primario de la marca */
+  border-color: #667eea;
+}
+
+/* Estado deshabilitado: campos bloqueados durante el envío */
+.form-group input:disabled,
+.form-group select:disabled {
+  /* Fondo gris claro para indicar inactividad */
+  background-color: #f5f5f5;
+  /* El cursor deja de ser editable */
+  cursor: not-allowed;
+}
+
+/* Botón principal de envío (Login / Crear Cuenta) */
+.btn-primary {
+  /* Ocupa todo el ancho */
+  width: 100%;
+  /* Relleno del botón */
+  padding: 12px;
+  /* Fondo degradado con los colores de la marca */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Texto en blanco */
+  color: white;
+  /* Sin borde */
+  border: none;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Tamaño del texto */
+  font-size: 16px;
+  /* Texto en negrita */
+  font-weight: 600;
+  /* Cursor puntero */
+  cursor: pointer;
+  /* Transiciones de transform y sombra en el hover */
+  transition: transform 0.2s, box-shadow 0.2s;
+  /* Separación superior respecto a los campos */
+  margin-top: 10px;
+}
+
+/* Efecto hover del botón, solo cuando NO está deshabilitado */
+.btn-primary:hover:not(:disabled) {
+  /* El botón se eleva 2px */
+  transform: translateY(-2px);
+  /* Sombra de color acorde al degradado */
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Botón deshabilitado (mientras se envía el formulario) */
+.btn-primary:disabled {
+  /* Se ve atenuado */
+  opacity: 0.7;
+  /* Cursor por defecto: no se puede hacer clic */
+  cursor: not-allowed;
+}
+
+/* Pie de la tarjeta con el enlace alternativo */
+.auth-footer {
+  /* Relleno inferior y laterales (sin relleno superior para unir al form) */
+  padding: 0 30px 30px;
+  /* Texto centrado */
+  text-align: center;
+  /* Color gris */
+  color: #666;
+  /* Tamaño del texto */
+  font-size: 14px;
+}
+
+/* Enlace del pie (Regístrate aquí / Inicia sesión) */
+.auth-footer a {
+  /* Color primario de la marca */
+  color: #667eea;
+  /* Sin subrayado */
+  text-decoration: none;
+  /* Seminegrita */
+  font-weight: 600;
+  /* Transición del color en el hover */
+  transition: color 0.3s;
+}
+
+/* Enlace al pasar el mouse */
+.auth-footer a:hover {
+  /* Cambia al segundo color del degradado */
+  color: #764ba2;
+}
+
+/* Responsive: en pantallas muy angostas (móviles) se ajustan los tamaños */
+@media (max-width: 480px) {
+  /* La tarjeta ocupa casi todo el ancho */
+  .auth-card {
+    width: 95%;
+  }
+
+  /* Menos relleno en el encabezado para pantallas chicas */
+  .auth-header {
+    padding: 30px 20px;
+  }
+
+  /* Menos relleno en el formulario para pantallas chicas */
+  .auth-form {
+    padding: 30px 20px;
+  }
+
+  /* El título interno se achica */
+  .auth-form h2 {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,257 @@
+/* ============================================================
+   DASHBOARD - Estilos CSS
+   ============================================================ */
+
+/* Contenedor principal del Dashboard */
+.dashboard {
+  /* Relleno generoso alrededor del contenido */
+  padding: 40px 20px;
+  /* Ancho máximo de la página */
+  max-width: 1200px;
+  /* Centrado horizontal */
+  margin: 0 auto;
+}
+
+/* Cabecera de bienvenida */
+.dashboard-header {
+  /* Texto centrado */
+  text-align: center;
+  /* Separación inferior con las tarjetas */
+  margin-bottom: 50px;
+}
+
+/* Título grande de bienvenida */
+.dashboard-header h1 {
+  /* Sin margen para un posicionamiento limpio */
+  margin: 0;
+  /* Tamaño grande del título */
+  font-size: 36px;
+  /* Color gris oscuro */
+  color: #333;
+  /* Fuente en negrita */
+  font-weight: 700;
+}
+
+/* Subtítulo debajo del título */
+.dashboard-header p {
+  /* Pequeño margen superior */
+  margin: 8px 0 0 0;
+  /* Color gris */
+  color: #666;
+  /* Tamaño del subtítulo */
+  font-size: 16px;
+}
+
+/* Grid de tarjetas */
+.dashboard-grid {
+  /* Usamos CSS Grid para las tarjetas */
+  display: grid;
+  /* Columnas automáticas de mínimo 280px; auto-fit crea filas al hacer wrap */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* Espacio entre tarjetas */
+  gap: 24px;
+  /* Separación inferior con la sección de estadísticas */
+  margin-bottom: 50px;
+}
+
+/* Tarjeta individual de acceso a un módulo */
+.dashboard-card {
+  /* Fondo blanco */
+  background: white;
+  /* Borde gris claro */
+  border: 2px solid #e0e0e0;
+  /* Esquinas muy redondeadas */
+  border-radius: 16px;
+  /* Relleno interior */
+  padding: 30px;
+  /* Contenido centrado */
+  text-align: center;
+  /* Transición de todas las propiedades en el hover */
+  transition: all 0.3s;
+  /* Cursor puntero (la tarjeta es cliqueable) */
+  cursor: pointer;
+}
+
+/* Efecto al pasar el mouse sobre una tarjeta */
+.dashboard-card:hover {
+  /* El borde pasa al color primario */
+  border-color: #667eea;
+  /* Sombra de color azul para realzar */
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+  /* La tarjeta se eleva 5px */
+  transform: translateY(-5px);
+}
+
+/* Ícono de cada tarjeta */
+.card-icon {
+  /* Tamaño grande del emoji/ícono */
+  font-size: 48px;
+  /* Separación del ícono con el título */
+  margin-bottom: 20px;
+}
+
+/* Título de cada tarjeta */
+.dashboard-card h3 {
+  /* Sin margen superior, pequeño margen inferior */
+  margin: 0 0 10px 0;
+  /* Color gris oscuro */
+  color: #333;
+  /* Tamaño del título */
+  font-size: 20px;
+  /* Seminegrita */
+  font-weight: 600;
+}
+
+/* Texto descriptivo de cada tarjeta */
+.dashboard-card p {
+  /* Margen inferior para separar del enlace */
+  margin: 0 0 20px 0;
+  /* Color gris */
+  color: #666;
+  /* Tamaño del texto */
+  font-size: 14px;
+}
+
+/* Enlace "Ver X →" dentro de cada tarjeta */
+.card-link {
+  /* Se comporta como elemento en bloque dentro de la línea */
+  display: inline-block;
+  /* Color primario de la marca */
+  color: #667eea;
+  /* Sin subrayado */
+  text-decoration: none;
+  /* Seminegrita */
+  font-weight: 600;
+  /* Tamaño del enlace */
+  font-size: 14px;
+  /* Transición del color en el hover */
+  transition: color 0.3s;
+}
+
+/* Enlace al pasar el mouse */
+.card-link:hover {
+  /* Cambia al segundo color del degradado */
+  color: #764ba2;
+}
+
+/* Estadísticas */
+.dashboard-stats {
+  /* Grid de 3 columnas de estadísticas */
+  display: grid;
+  /* Columnas automáticas de mínimo 200px con wrap */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* Espacio entre cajas */
+  gap: 20px;
+  /* Separación inferior con la sección de información */
+  margin-bottom: 50px;
+}
+
+/* Caja individual de estadística */
+.stat-box {
+  /* Fondo degradado con los colores de la marca */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Texto en blanco */
+  color: white;
+  /* Relleno interior */
+  padding: 30px;
+  /* Esquinas redondeadas */
+  border-radius: 12px;
+  /* Contenido centrado */
+  text-align: center;
+}
+
+/* Valor numérico de la estadística */
+.stat-value {
+  /* Sin margen */
+  margin: 0;
+  /* Número grande */
+  font-size: 32px;
+  /* En negrita */
+  font-weight: 700;
+}
+
+/* Etiqueta debajo del número */
+.stat-label {
+  /* Pequeño margen superior */
+  margin: 8px 0 0 0;
+  /* Tamaño de la etiqueta */
+  font-size: 14px;
+  /* Opacidad reducida para efecto secundario */
+  opacity: 0.9;
+}
+
+/* Información */
+/* Sección "Sobre SaludWEB" */
+.dashboard-info {
+  /* Fondo gris muy claro */
+  background: #f8f9fa;
+  /* Esquinas redondeadas */
+  border-radius: 12px;
+  /* Relleno interior */
+  padding: 30px;
+}
+
+/* Título de la sección informativa */
+.dashboard-info h2 {
+  /* Margen inferior para separar del texto */
+  margin: 0 0 20px 0;
+  /* Color gris oscuro */
+  color: #333;
+  /* Tamaño del título */
+  font-size: 24px;
+}
+
+/* Párrafos de la sección informativa */
+.dashboard-info p {
+  /* Margen inferior entre párrafos */
+  margin: 0 0 15px 0;
+  /* Color gris */
+  color: #666;
+  /* Interlineado cómodo para lectura */
+  line-height: 1.6;
+}
+
+/* Lista de características */
+.dashboard-info ul {
+  /* Margen superior para separar del párrafo anterior */
+  margin: 15px 0 0 0;
+  /* Sangría izquierda de los viñetas */
+  padding-left: 20px;
+}
+
+/* Cada elemento de la lista */
+.dashboard-info li {
+  /* Separación vertical entre viñetas */
+  margin: 8px 0;
+  /* Color gris */
+  color: #666;
+}
+
+/* Responsive: en pantallas menores a 768px se apilan los elementos */
+@media (max-width: 768px) {
+  /* Menos relleno en el contenedor */
+  .dashboard {
+    padding: 20px 15px;
+  }
+
+  /* Título más pequeño */
+  .dashboard-header h1 {
+    font-size: 28px;
+  }
+
+  /* Las tarjetas pasan a una sola columna */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Las estadísticas pasan a una sola columna */
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  /* Menos relleno en la sección informativa */
+  .dashboard-info {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,147 @@
+/* Estilos para Prescripciones - Reutiliza clases comunes de Medicos.css */
+/* Importamos los estilos de Medicos.css para reutilizar las clases compartidas
+   (lista-container, tabla, botones, formularios, etc.) y evitar duplicar código. */
+@import '../Medicos/Medicos.css';
+
+/* Estilos adicionales específicos para Prescripciones */
+
+/* Contenedor de la barra de filtros (búsqueda + select de estado) */
+.lista-filtros {
+  /* Los filtros se alinean en fila */
+  display: flex;
+  /* Espacio entre el input y el select */
+  gap: 12px;
+  /* Separación inferior con la tabla */
+  margin-bottom: 20px;
+  /* Si no entran en una fila, los elementos saltan a la siguiente */
+  flex-wrap: wrap;
+}
+
+/* Estilos comunes del input de búsqueda y del select de filtro */
+.input-busqueda,
+.select-filtro {
+  /* Cada filtro ocupa el espacio disponible equitativamente */
+  flex: 1;
+  /* Ancho mínimo para que no se encojan demasiado */
+  min-width: 200px;
+  /* Relleno interno */
+  padding: 12px 16px;
+  /* Borde gris claro */
+  border: 1px solid #ddd;
+  /* Esquinas redondeadas */
+  border-radius: 6px;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Hereda la tipografía del padre */
+  font-family: inherit;
+}
+
+/* Ajuste particular del select de filtro */
+.select-filtro {
+  /* Ancho mínimo menor al del input para no dominar la fila */
+  min-width: 180px;
+}
+
+/* Estado focus de los filtros */
+.input-busqueda:focus,
+.select-filtro:focus {
+  /* Quita el outline del navegador */
+  outline: none;
+  /* Borde azul */
+  border-color: #2196F3;
+  /* Halo azul suave */
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* Estilos para el formulario de cambio de estado */
+/* Caja informativa con los datos de la prescripción */
+.form-info {
+  /* Fondo gris muy claro */
+  background: #f8f9fa;
+  /* Relleno interior */
+  padding: 16px;
+  /* Esquinas redondeadas */
+  border-radius: 6px;
+  /* Separación inferior con el selector */
+  margin-bottom: 20px;
+  /* Barra lateral azul como acento visual */
+  border-left: 4px solid #2196F3;
+}
+
+/* Líneas de datos dentro de la caja informativa */
+.form-info p {
+  /* Separación vertical entre líneas */
+  margin: 8px 0;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Color gris oscuro */
+  color: #495057;
+}
+
+/* Etiquetas en negrita de la caja informativa (Medicamentos, Paciente, etc.) */
+.form-info strong {
+  /* Color gris oscuro para diferenciar del dato */
+  color: #333;
+}
+
+/* Badge que muestra el estado actual de la prescripción */
+.estado-actual {
+  /* Elemento en línea con forma de píldora */
+  display: inline-block;
+  /* Relleno pequeño */
+  padding: 4px 12px;
+  /* Fondo azul */
+  background: #2196F3;
+  /* Texto en blanco */
+  color: white;
+  /* Forma de píldora */
+  border-radius: 12px;
+  /* Texto seminegrita */
+  font-weight: 600;
+  /* Tamaño pequeño */
+  font-size: 12px;
+}
+
+/* Botón warning (amarillo) */
+/* Botón de acción "Cambiar Estado" */
+.btn-warning {
+  /* Fondo naranja */
+  background: #FF9800;
+  /* Texto en blanco */
+  color: white;
+  /* Sin borde */
+  border: none;
+  /* Esquinas ligeramente redondeadas */
+  border-radius: 4px;
+  /* Cursor puntero */
+  cursor: pointer;
+  /* Transición del fondo en el hover */
+  transition: background 0.3s;
+  /* Relleno compacto (coincide con btn-sm) */
+  padding: 6px 12px;
+  /* Tamaño pequeño */
+  font-size: 12px;
+}
+
+/* Botón warning al pasar el mouse */
+.btn-warning:hover {
+  /* Naranja más oscuro */
+  background: #F57C00;
+}
+
+/* Responsive para filtros */
+/* En pantallas menores a 768px los filtros se apilan verticalmente */
+@media (max-width: 768px) {
+  .lista-filtros {
+    /* Apilamos input y select en columna */
+    flex-direction: column;
+  }
+
+  /* Ambos filtros ocupan todo el ancho */
+  .input-busqueda,
+  .select-filtro {
+    width: 100%;
+    /* Quitamos el ancho mínimo para que ocupen el 100% */
+    min-width: unset;
+  }
+}

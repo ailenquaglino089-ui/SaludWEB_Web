@@ -1,0 +1,290 @@
+/* ============================================================
+   NAVBAR - Estilos CSS
+   ============================================================ */
+
+/* Contenedor principal de la barra de navegación */
+.navbar {
+  /* Degradado de fondo en tonos violeta/azul característico de la app */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Texto e íconos en color blanco para contrastar con el fondo */
+  color: white;
+  /* Sin relleno interior */
+  padding: 0;
+  /* Sombra suave para dar sensación de elevación sobre el contenido */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Posicionamiento fijo: la barra permanece visible al hacer scroll */
+  position: sticky;
+  /* La barra queda pegada al borde superior de la ventana */
+  top: 0;
+  /* Índice de apilamiento alto para que la navbar quede por encima del resto del contenido */
+  z-index: 100;
+}
+
+/* Contenedor que centra y limita el ancho del contenido de la barra */
+.navbar-container {
+  /* Ancho máximo de 1200px para pantallas grandes */
+  max-width: 1200px;
+  /* Margen automático en los costados para centrar el contenedor */
+  margin: 0 auto;
+  /* Relleno horizontal para separar el contenido de los bordes */
+  padding: 0 20px;
+  /* Flexbox para distribuir los elementos en fila */
+  display: flex;
+  /* La marca queda a la izquierda y el menú a la derecha */
+  justify-content: space-between;
+  /* Los elementos se alinean verticalmente al centro */
+  align-items: center;
+  /* Altura fija de la barra */
+  height: 70px;
+}
+
+/* Marca / logo de la aplicación */
+.navbar-brand {
+  /* Tamaño de la letra del logo */
+  font-size: 24px;
+  /* Grosor de la fuente en negrita */
+  font-weight: 700;
+  /* Sin subrayado (por defecto los enlaces se subrayan) */
+  text-decoration: none;
+  /* Texto en blanco para contrastar con el fondo degradado */
+  color: white;
+  /* Transición suave del efecto hover */
+  transition: opacity 0.3s;
+}
+
+/* Efecto al pasar el mouse sobre el logo */
+.navbar-brand:hover {
+  /* Reduce levemente la opacidad para indicar interactividad */
+  opacity: 0.9;
+}
+
+/* Botón "hamburguesa" para el menú en pantallas pequeñas */
+.navbar-toggle {
+  /* Oculto por defecto en pantallas grandes (se muestra solo en móvil) */
+  display: none;
+  /* Sin fondo para que parezca un ícono plano */
+  background: none;
+  /* Sin borde alrededor del botón */
+  border: none;
+  /* Símbolo ☰ en color blanco */
+  color: white;
+  /* Tamaño del ícono */
+  font-size: 24px;
+  /* Cursor tipo puntero para indicar que es clickeable */
+  cursor: pointer;
+}
+
+/* Contenedor del menú de navegación */
+.navbar-menu {
+  /* Los enlaces y datos del usuario se ordenan en fila */
+  display: flex;
+  /* Alineación vertical centrada */
+  align-items: center;
+  /* Espacio de 40px entre el grupo de enlaces y el bloque del usuario */
+  gap: 40px;
+  /* Ocupa todo el espacio disponible restante */
+  flex: 1;
+  /* Empuja el contenido hacia el extremo derecho */
+  justify-content: flex-end;
+  /* Separación del logo hacia la izquierda */
+  margin-left: 40px;
+}
+
+/* Grupo de enlaces de navegación (Dashboard, Médicos, etc.) */
+.navbar-links {
+  /* Los enlaces se alinean en fila */
+  display: flex;
+  /* Espacio de 30px entre cada enlace */
+  gap: 30px;
+}
+
+/* Estilo base de cada enlace de navegación */
+.navbar-link {
+  /* Texto en blanco */
+  color: white;
+  /* Sin subrayado */
+  text-decoration: none;
+  /* Grosor medio de la fuente */
+  font-weight: 500;
+  /* Tamaño de letra de los enlaces */
+  font-size: 14px;
+  /* Transición suave para el hover */
+  transition: opacity 0.3s;
+  /* Posicionamiento relativo para anclar el pseudo-elemento ::after */
+  position: relative;
+}
+
+/* Efecto al pasar el mouse por un enlace */
+.navbar-link:hover {
+  /* Baja un poco la opacidad para dar feedback visual */
+  opacity: 0.8;
+}
+
+/* Pseudo-elemento: subrayado animado debajo de cada enlace */
+.navbar-link::after {
+  /* Contenido vacío obligatorio para que exista el pseudo-elemento */
+  content: '';
+  /* Se posiciona de forma absoluta respecto al enlace */
+  position: absolute;
+  /* 5px por debajo del texto del enlace */
+  bottom: -5px;
+  /* Alineado al borde izquierdo del enlace */
+  left: 0;
+  /* Ancho inicial 0: invisible hasta que se haga hover */
+  width: 0;
+  /* Grosor de la línea del subrayado */
+  height: 2px;
+  /* La línea se dibuja en blanco */
+  background: white;
+  /* Transición suave del ancho al aparecer */
+  transition: width 0.3s;
+}
+
+/* Al hacer hover sobre el enlace, el subrayado se expande */
+.navbar-link:hover::after {
+  /* Expande la línea al 100% del ancho del enlace */
+  width: 100%;
+}
+
+/* Bloque con los datos del usuario y botón de logout */
+.navbar-user {
+  /* Se ordena en fila */
+  display: flex;
+  /* Alineación vertical centrada */
+  align-items: center;
+  /* Espacio de 20px entre el nombre y el botón */
+  gap: 20px;
+}
+
+/* Nombre y rol del usuario */
+.user-name {
+  /* Tamaño de letra del nombre */
+  font-size: 14px;
+  /* Grosor medio */
+  font-weight: 500;
+  /* Display flexible en línea para alinear nombre y badge en la misma línea */
+  display: inline-flex;
+  /* Alineación vertical centrada (para el badge del rol) */
+  align-items: center;
+  /* Espacio de 8px entre nombre y badge */
+  gap: 8px;
+}
+
+/* Badge que muestra el rol / tipo de usuario */
+.user-role {
+  /* Fondo blanco semitransparente */
+  background: rgba(255, 255, 255, 0.25);
+  /* Borde fino blanco semitransparente */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  /* Relleno interno pequeño (2px vertical, 8px horizontal) */
+  padding: 2px 8px;
+  /* Border-radius alto para dar forma de píldora */
+  border-radius: 999px;
+  /* Letra pequeña */
+  font-size: 11px;
+  /* Texto en negrita */
+  font-weight: 600;
+  /* La primera letra de cada palabra en mayúscula */
+  text-transform: capitalize;
+}
+
+/* Botón de cierre de sesión */
+.btn-logout {
+  /* Fondo blanco semitransparente */
+  background: rgba(255, 255, 255, 0.2);
+  /* Texto en blanco */
+  color: white;
+  /* Borde sólido de 2px en blanco para dar forma de botón outline */
+  border: 2px solid white;
+  /* Relleno interno del botón */
+  padding: 8px 16px;
+  /* Mínimas esquinas redondeadas */
+  border-radius: 6px;
+  /* Cursor puntero para indicar botón clickeable */
+  cursor: pointer;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Texto semi-negrita */
+  font-weight: 600;
+  /* Transición de todas las propiedades en el hover */
+  transition: all 0.3s;
+}
+
+/* Efecto al pasar el mouse sobre el botón de logout */
+.btn-logout:hover {
+  /* El fondo se vuelve blanco */
+  background: white;
+  /* El texto cambia al color primario de la marca */
+  color: #667eea;
+}
+
+/* Responsive: a partir de 768px de ancho se aplica el diseño móvil */
+@media (max-width: 768px) {
+  /* Se muestra el botón hamburguesa */
+  .navbar-toggle {
+    display: block;
+  }
+
+  /* La barra se achica en móvil */
+  .navbar-container {
+    height: 60px;
+    padding: 0 15px;
+  }
+
+  /* El menú se despliega como panel desplegable desde la barra */
+  .navbar-menu {
+    /* Posicionamiento absoluto respecto al contenedor más cercano */
+    position: absolute;
+    /* Justo debajo de la barra (60px = alto de la barra) */
+    top: 60px;
+    /* Se expande de izquierda a derecha ocupando todo el ancho */
+    left: 0;
+    right: 0;
+    /* Mismo fondo degradado que la barra */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Los elementos se apilan verticalmente */
+    flex-direction: column;
+    /* Sin separación entre elementos apilados */
+    gap: 0;
+    /* Quitamos el margen izquierdo que tenía en desktop */
+    margin: 0;
+    /* Relleno interior del panel */
+    padding: 20px;
+    /* Altura inicial 0: el panel está colapsado */
+    max-height: 0;
+    /* El contenido que exceda queda oculto mientras está colapsado */
+    overflow: hidden;
+    /* Transición suave al abrir o cerrar el panel */
+    transition: max-height 0.3s;
+  }
+
+  /* Clase 'open' (agregada por React): expande el panel */
+  .navbar-menu.open {
+    /* Altura máxima al desplegarse */
+    max-height: 300px;
+  }
+
+  /* Los enlaces principales se apilan verticalmente dentro del panel */
+  .navbar-links {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  /* El bloque del usuario se apila y se separa del menú con un borde */
+  .navbar-user {
+    flex-direction: column;
+    width: 100%;
+    gap: 15px;
+    /* Separación superior respecto a los enlaces */
+    margin-top: 15px;
+    /* Línea divisoria superior */
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 15px;
+  }
+
+  /* El botón de logout ocupa todo el ancho en móvil */
+  .btn-logout {
+    width: 100%;
+  }
+}

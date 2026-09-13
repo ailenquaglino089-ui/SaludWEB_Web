@@ -1,0 +1,422 @@
+/* Contenedor principal de listas */
+.lista-container {
+  /* Ancho máximo del contenido */
+  max-width: 1200px;
+  /* Centrado horizontal */
+  margin: 0 auto;
+  /* Relleno general */
+  padding: 20px;
+  /* Altura mínima para que el fondo cubra toda la pantalla */
+  min-height: 100vh;
+  /* Fondo gris claro de la sección */
+  background: #f5f5f5;
+}
+
+/* Cabecera de las listas (título + botón de acción) */
+.lista-header {
+  /* Flexbox para alinear título y botón en fila */
+  display: flex;
+  /* Título a la izquierda, botón a la derecha */
+  justify-content: space-between;
+  /* Centrado vertical */
+  align-items: center;
+  /* Separación inferior con la tabla/búsqueda */
+  margin-bottom: 30px;
+  /* Fondo blanco de la tarjeta */
+  background: white;
+  /* Relleno interior */
+  padding: 20px;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Título de la cabecera */
+.lista-header h1 {
+  /* Sin margen */
+  margin: 0;
+  /* Tamaño del título */
+  font-size: 28px;
+  /* Color gris oscuro */
+  color: #333;
+}
+
+/* Botón primario dentro de la cabecera (ej: "Nuevo Médico") */
+.lista-header .btn-primary {
+  /* Relleno del botón */
+  padding: 10px 20px;
+  /* Tamaño del texto */
+  font-size: 14px;
+}
+
+/* Filtro de búsqueda */
+.lista-filtro {
+  /* Separación inferior con la tabla */
+  margin-bottom: 20px;
+}
+
+/* Input de búsqueda */
+.input-busqueda {
+  /* Ocupa todo el ancho disponible */
+  width: 100%;
+  /* Relleno del input */
+  padding: 12px 16px;
+  /* Borde gris claro */
+  border: 1px solid #ddd;
+  /* Esquinas redondeadas */
+  border-radius: 6px;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Transición del color del borde */
+  transition: border-color 0.3s;
+}
+
+/* Estado focus del input de búsqueda */
+.input-busqueda:focus {
+  /* Quita el outline del navegador */
+  outline: none;
+  /* Borde en azul */
+  border-color: #2196F3;
+  /* Halo azul suave alrededor del input */
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* Tabla */
+/* Contenedor de la tabla con tarjeta blanca */
+.tabla-container {
+  /* Fondo blanco */
+  background: white;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Oculta el contenido que exceda las esquinas redondeadas */
+  overflow: hidden;
+  /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilos base de la tabla */
+.tabla {
+  /* Ocupa todo el ancho */
+  width: 100%;
+  /* Los bordes de las celdas se unifican (sin doble borde) */
+  border-collapse: collapse;
+}
+
+/* Fila de encabezados de la tabla */
+.tabla thead {
+  /* Fondo gris muy claro para diferenciar del cuerpo */
+  background: #f8f9fa;
+  /* Línea gruesa inferior de separación */
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Celda de encabezado */
+.tabla th {
+  /* Relleno de la celda */
+  padding: 16px;
+  /* Texto alineado a la izquierda */
+  text-align: left;
+  /* Texto seminegrita */
+  font-weight: 600;
+  /* Color gris oscuro */
+  color: #495057;
+  /* Tamaño del texto */
+  font-size: 14px;
+}
+
+/* Fila del cuerpo de la tabla */
+.tabla tbody tr {
+  /* Línea inferior que separa las filas */
+  border-bottom: 1px solid #dee2e6;
+  /* Transición del color de fondo en el hover */
+  transition: background-color 0.2s;
+}
+
+/* Fila de la tabla al pasar el mouse */
+.tabla tbody tr:hover {
+  /* Resalta la fila con un fondo gris claro */
+  background-color: #f8f9fa;
+}
+
+/* Celda de datos de la tabla */
+.tabla td {
+  /* Relleno de la celda */
+  padding: 14px 16px;
+  /* Tamaño del dato */
+  font-size: 14px;
+  /* Color gris oscuro */
+  color: #495057;
+}
+
+/* Status badge */
+/* Píldora que indica el estado (activo/inactivo) */
+.status-badge {
+  /* Elemento en línea (pero editable como bloque) */
+  display: inline-block;
+  /* Relleno interno: 4px vertical, 12px horizontal */
+  padding: 4px 12px;
+  /* Forma de píldora con border-radius alto */
+  border-radius: 20px;
+  /* Texto en blanco (el color de fondo lo define JS) */
+  color: white;
+  /* Tamaño del texto */
+  font-size: 12px;
+  /* Texto seminegrita */
+  font-weight: 600;
+}
+
+/* Acciones en tabla */
+/* Contenedor de los botones de acción de cada fila */
+.acciones {
+  /* Los botones se alinean en fila */
+  display: flex;
+  /* Espacio entre botones */
+  gap: 8px;
+}
+
+/* Botón pequeño de tabla */
+.btn-sm {
+  /* Relleno compacto */
+  padding: 6px 12px;
+  /* Tamaño de letra pequeño */
+  font-size: 12px;
+}
+
+/* Botón de información (Editar) - azul */
+.btn-info {
+  /* Fondo azul */
+  background: #2196F3;
+  /* Texto blanco */
+  color: white;
+  /* Sin borde */
+  border: none;
+  /* Esquinas ligeramente redondeadas */
+  border-radius: 4px;
+  /* Cursor puntero */
+  cursor: pointer;
+  /* Transición del fondo en el hover */
+  transition: background 0.3s;
+}
+
+/* Botón de información al pasar el mouse */
+.btn-info:hover {
+  /* Azul más oscuro */
+  background: #1976D2;
+}
+
+/* Botón de peligro (Eliminar) - rojo */
+.btn-danger {
+  /* Fondo rojo */
+  background: #f44336;
+  /* Texto blanco */
+  color: white;
+  /* Sin borde */
+  border: none;
+  /* Esquinas ligeramente redondeadas */
+  border-radius: 4px;
+  /* Cursor puntero */
+  cursor: pointer;
+  /* Transición del fondo en el hover */
+  transition: background 0.3s;
+}
+
+/* Botón de peligro al pasar el mouse */
+.btn-danger:hover {
+  /* Rojo más oscuro */
+  background: #da190b;
+}
+
+/* Lista vacía */
+/* Mensaje que se muestra cuando no hay resultados */
+.lista-vacia {
+  /* Texto centrado */
+  text-align: center;
+  /* Relleno generoso para centrar el mensaje */
+  padding: 60px 20px;
+  /* Color gris */
+  color: #999;
+  /* Tamaño del mensaje */
+  font-size: 16px;
+  /* Fondo blanco de la tarjeta */
+  background: white;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+}
+
+/* Formulario */
+/* Tarjeta que contiene los formularios (nuevo/editar) */
+.formulario {
+  /* Fondo blanco */
+  background: white;
+  /* Esquinas redondeadas */
+  border-radius: 8px;
+  /* Relleno interior */
+  padding: 30px;
+  /* Ancho máximo del formulario */
+  max-width: 600px;
+  /* Centrado horizontal */
+  margin: 0 auto;
+  /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Grupo de cada campo del formulario */
+.form-grupo {
+  /* Separación vertical entre grupos */
+  margin-bottom: 20px;
+  /* Los elementos se apilan verticalmente */
+  display: flex;
+  /* Dirección en columna (label arriba, input abajo) */
+  flex-direction: column;
+}
+
+/* Etiqueta de cada campo */
+.form-grupo label {
+  /* Separación con el input */
+  margin-bottom: 8px;
+  /* Texto seminegrita */
+  font-weight: 500;
+  /* Color gris oscuro */
+  color: #333;
+  /* Tamaño de la etiqueta */
+  font-size: 14px;
+}
+
+/* Inputs, selects y textareas de los formularios */
+.form-grupo input,
+.form-grupo select,
+.form-grupo textarea {
+  /* Relleno interno */
+  padding: 10px 12px;
+  /* Borde gris claro */
+  border: 1px solid #ddd;
+  /* Esquinas redondeadas */
+  border-radius: 6px;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Hereda la tipografía del padre */
+  font-family: inherit;
+  /* Transición del color del borde */
+  transition: border-color 0.3s;
+}
+
+/* Estado focus de los campos del formulario */
+.form-grupo input:focus,
+.form-grupo select:focus,
+.form-grupo textarea:focus {
+  /* Quita el outline del navegador */
+  outline: none;
+  /* Borde azul */
+  border-color: #2196F3;
+  /* Halo azul suave */
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* Checkbox dentro de los formularios */
+.form-grupo input[type="checkbox"] {
+  /* El checkbox no ocupa todo el ancho sino solo su tamaño natural */
+  width: auto;
+  /* Separación del texto que lo acompaña */
+  margin-right: 8px;
+  /* Cursor puntero */
+  cursor: pointer;
+}
+
+/* Dirección en la que se alinea el checkbox con el texto del label */
+.form-grupo label input[type="checkbox"] {
+  /* El label se vuelve flexible para alinear checkbox y texto */
+  display: flex;
+  /* Centrado vertical de checkbox y texto */
+  align-items: center;
+  /* Cursor puntero */
+  cursor: pointer;
+}
+
+/* Campo con error de validación */
+.input-error {
+  /* Borde rojo forzado (importante para ganarle al borde por defecto) */
+  border-color: #f44336 !important;
+  /* Fondo rojizo tenue para indicar el campo problemático */
+  background-color: #ffebee;
+}
+
+/* Mensaje de error debajo del campo */
+.error-text {
+  /* Texto rojo */
+  color: #f44336;
+  /* Tamaño pequeño */
+  font-size: 12px;
+  /* Pequeño margen superior respecto al input */
+  margin-top: 4px;
+}
+
+/* Acciones del formulario */
+/* Fila de botones Guardar / Cancelar */
+.form-acciones {
+  /* Los botones se alinean en fila */
+  display: flex;
+  /* Espacio entre botones */
+  gap: 12px;
+  /* Separación superior con el último campo */
+  margin-top: 30px;
+  /* Botones centrados horizontalmente */
+  justify-content: center;
+}
+
+/* Botones dentro de la fila de acciones */
+.form-acciones .btn {
+  /* Relleno amplio */
+  padding: 12px 24px;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Texto seminegrita */
+  font-weight: 600;
+}
+
+/* Responsive */
+/* A partir de 768px se aplica el diseño móvil */
+@media (max-width: 768px) {
+  /* La cabecera pasa a apilar título y botón */
+  .lista-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  /* La tabla achica su fuente en móvil */
+  .tabla {
+    font-size: 12px;
+  }
+
+  /* Celdas con menos relleno horizontal para ganar espacio */
+  .tabla th,
+  .tabla td {
+    padding: 10px;
+  }
+
+  /* Los botones de acción se apilan verticalmente */
+  .acciones {
+    flex-direction: column;
+  }
+
+  /* Los botones pequeños ocupan todo el ancho de la celda */
+  .btn-sm {
+    width: 100%;
+  }
+
+  /* El formulario reduce su relleno en pantallas chicas */
+  .formulario {
+    padding: 20px;
+  }
+
+  /* Los botones del formulario se apilan verticalmente */
+  .form-acciones {
+    flex-direction: column;
+  }
+
+  /* Los botones del formulario ocupan todo el ancho */
+  .form-acciones .btn {
+    width: 100%;
+  }
+}
