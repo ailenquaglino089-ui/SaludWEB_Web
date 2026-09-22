@@ -10,6 +10,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../utils/crudHelpers';
 // Importamos los estilos CSS de Pacientes.
 import './Pacientes.css';
+// Importamos el componente de paginación reutilizable.
+import Paginacion from '../common/Paginacion';
 
 // Componente principal: lista de pacientes con operaciones CRUD completas.
 export default function ListaPacientes() {
@@ -29,21 +31,45 @@ export default function ListaPacientes() {
   const [pacienteEditando, setPacienteEditando] = useState(null);
   // Estado del texto de búsqueda para filtrar la tabla.
   const [busqueda, setBusqueda] = useState('');
+  // Estado del texto de búsqueda ya "debounceado": se usa recién 400 ms después
+  // de que el usuario deja de escribir (evita un request por cada tecla).
+  const [busquedaAplicada, setBusquedaAplicada] = useState('');
+  // Paginado: número de página actual, cantidad por página y totales del backend.
+  const [pagina, setPagina] = useState(1);         // Empieza en la página 1
+  const [porPagina, setPorPagina] = useState(10);  // 10 pacientes por página
+  const [total, setTotal] = useState(0);           // Total de pacientes (para la paginación)
+  const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
 
-  // useEffect de montaje: carga los pacientes la primera vez que se renderiza el componente.
+  // Debounce de búsqueda: 400 ms después de la última tecla se aplica el filtro.
+  useEffect(() => {
+    // setTimeout programa la ejecución; clearTimeout la cancela si se escribe otra tecla antes.
+    const timer = setTimeout(() => {
+      setPagina(1);                        // Con un filtro nuevo volvemos a la página 1
+      setBusquedaAplicada(busqueda);       // Aplica el texto de búsqueda al backend
+    }, 400);
+    return () => clearTimeout(timer);      // Limpieza: cancela el timer anterior
+  }, [busqueda]); // Dependencia: se re-programa cada vez que cambia el texto
+
+  // Recarga la lista cuando cambia la página, el tamaño de página o la búsqueda aplicada.
   useEffect(() => {
     cargarPacientes();
-  }, []); // Dependencias vacías: se ejecuta una sola vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, porPagina, busquedaAplicada]); // Dependencias que disparan la recarga
 
-  // Función asíncrona que obtiene los pacientes desde el backend.
+  // Función asíncrona que obtiene una página de pacientes desde el backend.
   const cargarPacientes = async () => {
     try {
       // Activamos el estado de carga antes de hacer la petición.
       setCargando(true);
-      // GET a /api/pacientes usando la instancia de axios (client) que agrega el token JWT automáticamente.
-      const response = await client.get('/api/pacientes');
-      // getDatos extrae la lista real de la envoltura de la API ({ ok, mensaje, data }).
-      setPacientes(getDatos(response, []));
+      // GET a /api/pacientes con los parámetros de paginado (pagina, por_pagina) y búsqueda (q).
+      // El backend valida/acota los valores; así nunca se trae toda la tabla.
+      const response = await client.get('/api/pacientes', { params: { pagina, por_pagina: porPagina, q: busquedaAplicada } });
+      // getDatos extrae la estructura paginada ({ ok, mensaje, data: {items, total, ...} }).
+      const datos = getDatos(response, { items: [], total: 0, total_paginas: 1, pagina: 1 });
+      // Solo se guarda la página actual en el estado (no los 100+ pacientes juntos).
+      setPacientes(datos.items);
+      setTotal(datos.total);
+      setTotalPaginas(datos.total_paginas);
       // Al cargar bien, limpiamos cualquier error previo.
       setError(null);
     } catch (err) {
@@ -80,8 +106,9 @@ export default function ListaPacientes() {
     try {
       // DELETE a /api/pacientes/{id} (el interceptor de client adjunta el token).
       await client.delete(`/api/pacientes/${id}`);
-      // Actualizamos el estado local filtrando el paciente eliminado (optimiza sin recargar).
-      setPacientes(pacientes.filter(p => p.id !== id));
+      // Con paginado conviene recargar la página actual: así el total y las
+      // páginas se recalculan con el dato real del backend (no con un filtro local).
+      await cargarPacientes();
       // Limpiamos errores tras operación exitosa.
       setError(null);
     } catch (err) {
@@ -97,15 +124,16 @@ export default function ListaPacientes() {
         // Actualizar
         // PUT a /api/pacientes/{id} con los datos editados.
         await client.put(`/api/pacientes/${pacienteEditando.id}`, datosFormulario);
-        // Reemplazamos en el estado el paciente editado, conservando su id.
-        setPacientes(pacientes.map(p => p.id === pacienteEditando.id ? { ...datosFormulario, id: pacienteEditando.id } : p));
+        // Con paginado recargamos la página actual para reflejar el cambio guardado.
       } else {
         // Crear
         // POST a /api/pacientes con los datos nuevos (create).
-        const response = await client.post('/api/pacientes', datosFormulario);
-        // Agregamos el paciente creado (devuelto por la API) al final de la lista local.
-        setPacientes([...pacientes, getDatos(response)]);
+        await client.post('/api/pacientes', datosFormulario);
+        // Tras crear volvemos a la página 1 (donde suelen verse los primeros registros).
+        setPagina(1);
       }
+      // Recarga la página actual para sincronizar con los datos reales del backend.
+      await cargarPacientes();
       // Tras guardar, ocultamos el formulario.
       setMostrarFormulario(false);
       // Limpiamos el paciente en edición para futuros formularios.
@@ -118,15 +146,8 @@ export default function ListaPacientes() {
     }
   };
 
-  // Filtrado por búsqueda: filtra los pacientes por nombre, DNI u obra social.
-  const pacientesFiltr = pacientes.filter(p =>
-    // Compara nombre (en minúsculas) contra el texto de búsqueda (en minúsculas)
-    p.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    // Compara DNI (numérico, sin cambios de mayúsculas porque son dígitos)
-    p.dni?.includes(busqueda) ||
-    // Compara obra social contra el texto de búsqueda
-    p.obra_social?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  // Nota: con paginado la búsqueda y el filtrado se resuelven en el backend (params pagina/por_pagina/q).
+  // Por eso aquí NO hay filtrado local: el estado 'pacientes' ya es la página actual filtrada.
 
   // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario.
   if (mostrarFormulario) {
@@ -179,14 +200,15 @@ export default function ListaPacientes() {
           <div className="spinner"></div>
           <p>Cargando pacientes...</p>
         </div>
-      ) : pacientesFiltr.length === 0 ? (
+      ) : pacientes.length === 0 ? (
         // Estado 2: el filtro no devolvió resultados
         <div className="lista-vacia">
-          <p>No hay pacientes registrados</p>
+          <p>{busqueda ? 'No hay resultados para tu búsqueda' : 'No hay pacientes registrados'}</p>
         </div>
       ) : (
         // Estado 3: hay pacientes para mostrar en la tabla
-        <div className="tabla-container">
+        <>
+          <div className="tabla-container">
           <table className="tabla">
             <thead>
               <tr>
@@ -198,8 +220,8 @@ export default function ListaPacientes() {
               </tr>
             </thead>
             <tbody>
-              {/* Iteramos sobre la lista filtrada para generar una fila por paciente */}
-              {pacientesFiltr.map(paciente => (
+              {/* Iteramos sobre la página actual para generar una fila por paciente */}
+              {pacientes.map(paciente => (
                 // La key única por fila debe ser el id del paciente
                 <tr key={paciente.id}>
                   <td data-label="Nombre">{paciente.nombre}</td>
@@ -238,6 +260,16 @@ export default function ListaPacientes() {
             </tbody>
           </table>
         </div>
+
+          {/* Controles de paginado: se muestran cuando hay más de una página */}
+          <Paginacion
+            pagina={pagina}
+            porPagina={porPagina}
+            total={total}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={setPagina}
+          />
+        </>
       )}
     </div>
   );

@@ -10,6 +10,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../utils/crudHelpers';
 // Importamos los estilos CSS compartidos.
 import './Medicos.css';
+// Importamos el componente de paginación reutilizable.
+import Paginacion from '../common/Paginacion';
 
 // Componente principal: lista de médicos con operaciones CRUD completas.
 export default function ListaMedicos() {
@@ -29,21 +31,45 @@ export default function ListaMedicos() {
   const [medicoEditando, setMedicoEditando] = useState(null);
   // Estado del texto de búsqueda para filtrar la tabla.
   const [busqueda, setBusqueda] = useState('');
+  // Estado del texto de búsqueda ya "debounceado": se usa recién 400 ms después
+  // de que el usuario deja de escribir (evita un request por cada tecla).
+  const [busquedaAplicada, setBusquedaAplicada] = useState('');
+  // Paginado: número de página actual, cantidad por página y totales del backend.
+  const [pagina, setPagina] = useState(1);         // Empieza en la página 1
+  const [porPagina, setPorPagina] = useState(10);  // 10 médicos por página
+  const [total, setTotal] = useState(0);           // Total de médicos (para la paginación)
+  const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
 
-  // useEffect de montaje: carga los médicos la primera vez que se renderiza el componente.
+  // Debounce de búsqueda: 400 ms después de la última tecla se aplica el filtro.
+  useEffect(() => {
+    // setTimeout programa la ejecución; clearTimeout la cancela si se escribe otra tecla antes.
+    const timer = setTimeout(() => {
+      setPagina(1);                        // Con un filtro nuevo volvemos a la página 1
+      setBusquedaAplicada(busqueda);       // Aplica el texto de búsqueda al backend
+    }, 400);
+    return () => clearTimeout(timer);      // Limpieza: cancela el timer anterior
+  }, [busqueda]); // Dependencia: se re-programa cada vez que cambia el texto
+
+  // Recarga la lista cuando cambia la página, el tamaño de página o la búsqueda aplicada.
   useEffect(() => {
     cargarMedicos();
-  }, []); // Dependencias vacías: se ejecuta una sola vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, porPagina, busquedaAplicada]); // Dependencias que disparan la recarga
 
-  // Función asíncrona que obtiene los médicos desde el backend.
+  // Función asíncrona que obtiene una página de médicos desde el backend.
   const cargarMedicos = async () => {
     try {
       // Activamos el estado de carga antes de hacer la petición.
       setCargando(true);
-      // GET a /api/medicos usando la instancia de axios (client) que agrega el token JWT automáticamente.
-      const response = await client.get('/api/medicos');
-      // getDatos extrae la lista real de la envoltura de la API ({ ok, mensaje, data }).
-      setMedicos(getDatos(response, []));
+      // GET a /api/medicos con los parámetros de paginado (pagina, por_pagina) y búsqueda (q).
+      // El backend valida/acota los valores; así nunca se trae toda la tabla.
+      const response = await client.get('/api/medicos', { params: { pagina, por_pagina: porPagina, q: busquedaAplicada } });
+      // getDatos extrae la estructura paginada ({ ok, mensaje, data: {items, total, ...} }).
+      const datos = getDatos(response, { items: [], total: 0, total_paginas: 1, pagina: 1 });
+      // Solo se guarda la página actual en el estado (no los cientos de médicos juntos).
+      setMedicos(datos.items);
+      setTotal(datos.total);
+      setTotalPaginas(datos.total_paginas);
       // Al cargar bien, limpiamos cualquier error previo.
       setError(null);
     } catch (err) {
@@ -80,8 +106,9 @@ export default function ListaMedicos() {
     try {
       // DELETE a /api/medicos/{id} (el interceptor de client adjunta el token).
       await client.delete(`/api/medicos/${id}`);
-      // Actualizamos el estado local filtrando el médico eliminado (optimiza sin recargar).
-      setMedicos(medicos.filter(m => m.id !== id));
+      // Con paginado conviene recargar la página actual: así el total y las
+      // páginas se recalculan con el dato real del backend (no con un filtro local).
+      await cargarMedicos();
       // Limpiamos errores tras operación exitosa.
       setError(null);
     } catch (err) {
@@ -97,15 +124,16 @@ export default function ListaMedicos() {
         // Actualizar
         // PUT a /api/medicos/{id} con los datos editados.
         await client.put(`/api/medicos/${medicoEditando.id}`, datosFormulario);
-        // Reemplazamos en el estado el médico editado, conservando su id.
-        setMedicos(medicos.map(m => m.id === medicoEditando.id ? { ...datosFormulario, id: medicoEditando.id } : m));
+        // Con paginado recargamos la página actual para reflejar el cambio guardado.
       } else {
         // Crear
         // POST a /api/medicos con los datos nuevos (create).
-        const response = await client.post('/api/medicos', datosFormulario);
-        // Agregamos el médico creado (devuelto por la API) al final de la lista local.
-        setMedicos([...medicos, getDatos(response)]);
+        await client.post('/api/medicos', datosFormulario);
+        // Tras crear volvemos a la página 1 (donde suelen verse los primeros registros).
+        setPagina(1);
       }
+      // Recarga la página actual para sincronizar con los datos reales del backend.
+      await cargarMedicos();
       // Tras guardar, ocultamos el formulario.
       setMostrarFormulario(false);
       // Limpiamos el médico en edición para futuros formularios.
@@ -118,15 +146,8 @@ export default function ListaMedicos() {
     }
   };
 
-  // Filtrado por búsqueda: filtra los médicos por nombre, matrícula o especialidad.
-  const medicosFiltr = medicos.filter(m =>
-    // Compara nombre (en minúsculas) contra el texto de búsqueda (en minúsculas)
-    m.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    // Compara matrícula contra el texto de búsqueda
-    m.matricula?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    // Compara especialidad contra el texto de búsqueda
-    m.especialidad?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  // Nota: con paginado la búsqueda y el filtrado se resuelven en el backend (params pagina/por_pagina/q).
+  // Por eso aquí NO hay filtrado local: el estado 'medicos' ya es la página actual filtrada.
 
   // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario.
   // RBAC: solo los administradores pueden llegar a crear/editar; cualquier otro
@@ -183,14 +204,15 @@ export default function ListaMedicos() {
           <div className="spinner"></div>
           <p>Cargando médicos...</p>
         </div>
-      ) : medicosFiltr.length === 0 ? (
+      ) : medicos.length === 0 ? (
         // Estado 2: el filtro no devolvió resultados
         <div className="lista-vacia">
-          <p>No hay médicos registrados</p>
+          <p>{busqueda ? 'No hay resultados para tu búsqueda' : 'No hay médicos registrados'}</p>
         </div>
       ) : (
         // Estado 3: hay médicos para mostrar en la tabla
-        <div className="tabla-container">
+        <>
+          <div className="tabla-container">
           <table className="tabla">
             <thead>
               <tr>
@@ -202,8 +224,8 @@ export default function ListaMedicos() {
               </tr>
             </thead>
             <tbody>
-              {/* Iteramos sobre la lista filtrada para generar una fila por médico */}
-              {medicosFiltr.map(medico => (
+              {/* Iteramos sobre la página actual para generar una fila por médico */}
+              {medicos.map(medico => (
                 // La key única por fila debe ser el id del médico
                 <tr key={medico.id}>
                   <td data-label="Nombre">{medico.nombre}</td>
@@ -245,6 +267,16 @@ export default function ListaMedicos() {
             </tbody>
           </table>
         </div>
+
+          {/* Controles de paginado: se muestran cuando hay más de una página */}
+          <Paginacion
+            pagina={pagina}
+            porPagina={porPagina}
+            total={total}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={setPagina}
+          />
+        </>
       )}
     </div>
   );
