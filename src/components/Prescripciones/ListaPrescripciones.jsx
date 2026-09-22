@@ -19,6 +19,11 @@ export default function ListaPrescripciones() {
   const { usuario } = useAuth();
   // RBAC en UI: 'esAdmin' es true solo si el tipo_usuario del usuario es 'admin'.
   const esAdmin = usuario?.tipo_usuario === 'admin';
+  // RBAC: 'esMedico' identifica al rol médico.
+  const esMedico = usuario?.tipo_usuario === 'medico';
+  // Regla de negocio: "Las prescripciones sólo pueden ser hechas por Médicos".
+  // Solo médico o admin pueden recetar/editar; un paciente NO debe ver estas opciones.
+  const puedeRecetar = esAdmin || esMedico;
   // Estado con el listado de prescripciones obtenidas de la API.
   const [prescripciones, setPrescripciones] = useState([]);
   // Estado de carga: controla la visualización del spinner mientras llega la respuesta.
@@ -179,8 +184,9 @@ export default function ListaPrescripciones() {
     return matchBusqueda && matchEstado;
   });
 
-  // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario de alta/edición.
-  if (mostrarFormulario) {
+  // Si 'mostrarFormulario' está activo y el rol está habilitado, lo mostramos.
+  // RBAC: un paciente nunca ve el formulario de prescripción (regla de negocio).
+  if (mostrarFormulario && puedeRecetar) {
     return (
       <FormularioPrescripcion
         // La prop 'prescripcion' es el objeto a editar o null para alta nueva
@@ -219,10 +225,12 @@ export default function ListaPrescripciones() {
       {/* Cabecera con título y botón de nueva prescripción */}
       <div className="lista-header">
         <h1>💊 Gestión de Prescripciones</h1>
-        {/* Botón que dispara el modo alta nueva */}
-        <button className="btn btn-primary" onClick={handleNuevaPrescripcion}>
-          ➕ Nueva Prescripción
-        </button>
+        {/* RBAC: la creación de prescripciones es operación médica; el paciente no la ve */}
+        {puedeRecetar && (
+          <button className="btn btn-primary" onClick={handleNuevaPrescripcion}>
+            ➕ Nueva Prescripción
+          </button>
+        )}
       </div>
 
       {/* Renderizado condicional: solo mostramos el alert si hay error */}
@@ -303,13 +311,15 @@ export default function ListaPrescripciones() {
                     </span>
                   </td>
                   <td className="acciones" data-label="Acciones">
-                    {/* Botón de editar: pasa la prescripción completa al handler */}
-                    <button 
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleEditarPrescripcion(prescripcion)}
-                    >
-                      ✏️ Editar
-                    </button>
+                    {/* RBAC: solo médico o admin pueden editar una prescripción */}
+                    {puedeRecetar && (
+                      <button 
+                        className="btn btn-sm btn-info"
+                        onClick={() => handleEditarPrescripcion(prescripcion)}
+                      >
+                        ✏️ Editar
+                      </button>
+                    )}
                     {/* Botón para cambiar el estado (disponible para todos los usuarios) */}
                     <button 
                       className="btn btn-sm btn-warning"
