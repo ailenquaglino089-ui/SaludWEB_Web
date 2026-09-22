@@ -28,8 +28,8 @@ export default function ListaPrescripciones() {
   // RBAC: 'esMedico' identifica al rol médico.
   const esMedico = usuario?.tipo_usuario === 'medico';
   // Regla de negocio: "Las prescripciones sólo pueden ser hechas por Médicos".
-  // Solo médico o admin pueden recetar/editar; un paciente NO debe ver estas opciones.
-  const puedeRecetar = esAdmin || esMedico;
+  // Solo un médico puede recetar/editar; ni admin ni paciente ven estas opciones.
+  const puedeRecetar = esMedico;
   // Estado con el listado de prescripciones obtenidas de la API.
   const [prescripciones, setPrescripciones] = useState([]);
   // Estado de carga: controla la visualización del spinner mientras llega la respuesta.
