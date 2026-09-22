@@ -202,10 +202,10 @@ export default function ListaPacientes() {
               {pacientesFiltr.map(paciente => (
                 // La key única por fila debe ser el id del paciente
                 <tr key={paciente.id}>
-                  <td>{paciente.nombre}</td>
-                  <td>{paciente.dni}</td>
-                  <td>{paciente.obra_social}</td>
-                  <td>
+                  <td data-label="Nombre">{paciente.nombre}</td>
+                  <td data-label="DNI">{paciente.dni}</td>
+                  <td data-label="Obra Social">{paciente.obra_social}</td>
+                  <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
                       className="status-badge"
@@ -215,7 +215,7 @@ export default function ListaPacientes() {
                       {getStatusBadge(paciente.activo ? 'activo' : 'inactivo')}
                     </span>
                   </td>
-                  <td className="acciones">
+                  <td className="acciones" data-label="Acciones">
                     {/* Botón de editar: pasa el paciente completo al handler */}
                     <button 
                       className="btn btn-sm btn-info"

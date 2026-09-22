@@ -14,7 +14,7 @@ export default function Dashboard() {
       {/* Cabecera de bienvenida con el nombre del usuario */}
       <div className="dashboard-header">
         {/* El operador ?. evita errores si 'usuario' es null */}
-        <h1>👋 Bienvenido, {usuario?.nombre}!</h1>
+        <h1>👋 Bienvenidos a SaludWEB</h1>
         <p>Sistema de Gestión de Salud - SaludWEB</p>
       </div>
 

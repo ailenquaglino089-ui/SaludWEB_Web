@@ -129,7 +129,9 @@ export default function ListaMedicos() {
   );
 
   // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario.
-  if (mostrarFormulario) {
+  // RBAC: solo los administradores pueden llegar a crear/editar; cualquier otro
+  // rol (médico o paciente) nunca ve el formulario aunque intente manipular el estado.
+  if (mostrarFormulario && esAdmin) {
     return (
       <FormularioMedico
         // La prop 'medico' es el objeto a editar o null para alta nueva
@@ -151,10 +153,12 @@ export default function ListaMedicos() {
       {/* Cabecera con título y botón de nuevo médico */}
       <div className="lista-header">
         <h1>👨‍⚕️ Gestión de Médicos</h1>
-        {/* Botón que dispara el modo alta nueva */}
-        <button className="btn btn-primary" onClick={handleNuevoMedico}>
-          ➕ Nuevo Médico
-        </button>
+        {/* RBAC: el alta de médicos es operación de administración; solo se muestra a admin */}
+        {esAdmin && (
+          <button className="btn btn-primary" onClick={handleNuevoMedico}>
+            ➕ Nuevo Médico
+          </button>
+        )}
       </div>
 
       {/* Renderizado condicional: solo mostramos el alert si hay error */}
@@ -202,10 +206,10 @@ export default function ListaMedicos() {
               {medicosFiltr.map(medico => (
                 // La key única por fila debe ser el id del médico
                 <tr key={medico.id}>
-                  <td>{medico.nombre}</td>
-                  <td>{medico.matricula}</td>
-                  <td>{medico.especialidad}</td>
-                  <td>
+                  <td data-label="Nombre">{medico.nombre}</td>
+                  <td data-label="Matrícula">{medico.matricula}</td>
+                  <td data-label="Especialidad">{medico.especialidad}</td>
+                  <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
                       className="status-badge"
@@ -215,14 +219,17 @@ export default function ListaMedicos() {
                       {getStatusBadge(medico.activo ? 'activo' : 'inactivo')}
                     </span>
                   </td>
-                  <td className="acciones">
-                    {/* Botón de editar: pasa el médico completo al handler */}
-                    <button 
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleEditarMedico(medico)}
-                    >
-                      ✏️ Editar
-                    </button>
+                  <td className="acciones" data-label="Acciones">
+                    {/* RBAC: la edición de médicos es administrativa; solo admin ve "Editar".
+                        Así un paciente (ni un médico) tiene expuesto el botón en la UI. */}
+                    {esAdmin && (
+                      <button 
+                        className="btn btn-sm btn-info"
+                        onClick={() => handleEditarMedico(medico)}
+                      >
+                        ✏️ Editar
+                      </button>
+                    )}
                     {/* RBAC: el botón Eliminar solo se muestra si el usuario es admin */}
                     {esAdmin && (
                       <button 

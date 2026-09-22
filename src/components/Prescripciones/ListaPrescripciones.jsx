@@ -285,14 +285,14 @@ export default function ListaPrescripciones() {
                 // La key única por fila debe ser el id de la prescripción
                 <tr key={prescripcion.id}>
                   {/* Medicamentos formateados: "Nombre (Dosis)" separados por comas */}
-                  <td>{(prescripcion.medicamentos || [])
+                  <td data-label="Medicamentos">{(prescripcion.medicamentos || [])
                       .map(m => `${m.nombre}${m.dosis ? ` (${m.dosis})` : ''}`)
                       .join(', ')}</td>
-                  <td>{prescripcion.nombre_paciente}</td>
-                  <td>{prescripcion.nombre_medico}</td>
+                  <td data-label="Paciente">{prescripcion.nombre_paciente}</td>
+                  <td data-label="Médico">{prescripcion.nombre_medico}</td>
                   {/* formatDate convierte la fecha ISO del backend al formato local dd/mm/aaaa */}
-                  <td>{formatDate(prescripcion.fecha_emision)}</td>
-                  <td>
+                  <td data-label="Fecha Emisión">{formatDate(prescripcion.fecha_emision)}</td>
+                  <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
                       className="status-badge"
@@ -302,7 +302,7 @@ export default function ListaPrescripciones() {
                       {getStatusBadge(prescripcion.estado)}
                     </span>
                   </td>
-                  <td className="acciones">
+                  <td className="acciones" data-label="Acciones">
                     {/* Botón de editar: pasa la prescripción completa al handler */}
                     <button 
                       className="btn btn-sm btn-info"
