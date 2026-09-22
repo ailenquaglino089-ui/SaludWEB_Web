@@ -152,6 +152,7 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
             className={errores.dni ? 'input-error' : ''}
             placeholder="Ej: 12345678"
           />
+          {/* Renderizado condicional del mensaje de error del DNI */}
           {errores.dni && <span className="error-text">{errores.dni}</span>}
         </div>
 

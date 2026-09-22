@@ -9,7 +9,6 @@ import { useAuth } from '../../hooks/useAuth';
 // Importamos utilidades CRUD: manejo de errores de API, extracción de datos y helpers de badges de estado.
 import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../utils/crudHelpers';
 // Importamos los estilos CSS compartidos.
-// Importamos los estilos CSS compartidos.
 import './Medicos.css';
 // Importamos el componente de paginación reutilizable.
 import Paginacion from '../common/Paginacion';

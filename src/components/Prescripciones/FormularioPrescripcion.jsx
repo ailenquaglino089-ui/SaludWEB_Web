@@ -222,6 +222,7 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
               <option key={m.id} value={m.id}>{m.nombre} ({m.especialidad})</option>
             ))}
           </select>
+          {/* Renderizado condicional del mensaje de error del médico */}
           {errores.id_medico && <span className="error-text">{errores.id_medico}</span>}
         </div>
 
@@ -272,6 +273,7 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
         {/* Grupo del campo de indicaciones */}
         <div className="form-grupo">
           <label>Indicaciones</label>
+          {/* Área de texto controlada por formData.indicaciones: guarda las instrucciones */}
           <textarea
             name="indicaciones"
             value={formData.indicaciones}
@@ -284,6 +286,7 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
         {/* Grupo del campo de fecha de vencimiento */}
         <div className="form-grupo">
           <label>Fecha de Vencimiento</label>
+          {/* Input tipo fecha controlado por formData.fecha_vencimiento */}
           <input
             type="date"
             name="fecha_vencimiento"
