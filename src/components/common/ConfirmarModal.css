@@ -1,0 +1,104 @@
+/* ============================================================
+   ConfirmarModal.css - Modal de confirmación reutilizable
+   ============================================================ */
+
+/* Fondo oscuro que cubre toda la pantalla detrás del modal */
+.modal-fondo {
+  /* Fijo: no se mueve al hacer scroll */
+  position: fixed;
+  /* Ocupa toda la ventana */
+  inset: 0;
+  /* Fondo oscuro semitransparente */
+  background: rgba(15, 23, 42, 0.55);
+  /* Centra la caja del modal vertical y horizontalmente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Capa superior (por encima de tablas y toasts laterales) */
+  z-index: 1000;
+  /* Margen interno para pantallas chicas */
+  padding: 20px;
+}
+
+/* Caja del modal */
+.modal {
+  /* Fondo blanco */
+  background: #fff;
+  /* Esquinas redondeadas */
+  border-radius: 12px;
+  /* Relleno interno generoso */
+  padding: 24px;
+  /* Ancho máximo del modal */
+  max-width: 420px;
+  /* Ocupa el ancho disponible (hasta el máximo) */
+  width: 100%;
+  /* Sombra profunda que separa el modal del fondo */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  /* Animación de entrada sutil */
+  animation: modal-entrada 0.18s ease-out;
+}
+
+/* Animación: el modal entra con un pequeño zoom */
+@keyframes modal-entrada {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Título del modal */
+.modal h3 {
+  /* Sin margen superior (va pegado al borde) */
+  margin: 0 0 10px 0;
+  /* Tamaño del título */
+  font-size: 18px;
+  /* Gris oscuro */
+  color: #333;
+}
+
+/* Texto descriptivo de la acción */
+.modal p {
+  /* Márgenes: espacio bajo el título y sobre los botones */
+  margin: 0 0 22px 0;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Gris medio */
+  color: #555;
+  /* Las acciones largas cortan la línea automáticamente */
+  word-break: break-word;
+}
+
+/* Fila de botones del modal */
+.modal-acciones {
+  /* Los botones van en fila */
+  display: flex;
+  /* Espacio entre botones */
+  gap: 10px;
+  /* Alineados a la derecha */
+  justify-content: flex-end;
+}
+
+/* Botones deshabilitados (mientras se procesa la petición) */
+.modal-acciones .btn:disabled {
+  /* Opacidad reducida: visualmente "apagados" */
+  opacity: 0.6;
+  /* Sin cursor de clic */
+  cursor: not-allowed;
+}
+
+/* Responsive: en pantallas angostas los botones se apilan y ocupan el ancho */
+@media (max-width: 768px) {
+  .modal-acciones {
+    /* Los botones pasan a columna */
+    flex-direction: column-reverse;
+    /* Ocupan todo el ancho disponible */
+  }
+
+  .modal-acciones .btn {
+    width: 100%;
+  }
+}

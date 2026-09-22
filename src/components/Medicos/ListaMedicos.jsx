@@ -9,9 +9,14 @@ import { useAuth } from '../../hooks/useAuth';
 // Importamos utilidades CRUD: manejo de errores de API, extracción de datos y helpers de badges de estado.
 import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../utils/crudHelpers';
 // Importamos los estilos CSS compartidos.
+// Importamos los estilos CSS compartidos.
 import './Medicos.css';
 // Importamos el componente de paginación reutilizable.
 import Paginacion from '../common/Paginacion';
+// Importamos el modal de confirmación (guía CRUD: eliminar con confirmación activa).
+import ConfirmarModal from '../common/ConfirmarModal';
+// Importamos las notificaciones flotantes (guía CRUD: feedback de éxito/error).
+import Toast from '../common/Toast';
 
 // Componente principal: lista de médicos con operaciones CRUD completas.
 export default function ListaMedicos() {
@@ -39,6 +44,13 @@ export default function ListaMedicos() {
   const [porPagina, setPorPagina] = useState(10);  // 10 médicos por página
   const [total, setTotal] = useState(0);           // Total de médicos (para la paginación)
   const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
+  // Estado del médico pendiente de eliminación (null = no hay ninguno): abre el modal.
+  const [paraEliminar, setParaEliminar] = useState(null);
+  // Estado de la notificación flotante: { tipo: 'exito'|'error'|'info', texto }.
+  const [notif, setNotif] = useState({ tipo: 'info', texto: '' });
+
+  // Helper centralizado del sistema de notificaciones (guía: mostrarMensaje(tipo, texto)).
+  const mostrarNotif = (tipo, texto) => setNotif({ tipo, texto });
 
   // Debounce de búsqueda: 400 ms después de la última tecla se aplica el filtro.
   useEffect(() => {
@@ -98,22 +110,31 @@ export default function ListaMedicos() {
     setMostrarFormulario(true);
   };
 
-  // Handler del botón "Eliminar": recibe el id del médico.
-  const handleEliminarMedico = async (id) => {
-    // Confirmación nativa del navegador: si el usuario cancela, salimos sin eliminar.
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este médico?')) return;
+  // Handler del botón "Eliminar": abre el modal de confirmación (no el confirm nativo).
+  const handleEliminarMedico = (medico) => {
+    // Guardamos el médico en el estado para que el modal describa qué se elimina.
+    setParaEliminar(medico);
+  };
 
+  // Confirmación del modal: ejecuta el DELETE con prevención de doble clic.
+  const confirmarEliminar = async () => {
     try {
       // DELETE a /api/medicos/{id} (el interceptor de client adjunta el token).
-      await client.delete(`/api/medicos/${id}`);
+      await client.delete(`/api/medicos/${paraEliminar.id}`);
       // Con paginado conviene recargar la página actual: así el total y las
       // páginas se recalculan con el dato real del backend (no con un filtro local).
       await cargarMedicos();
-      // Limpiamos errores tras operación exitosa.
+      // Cierra el modal de confirmación.
+      setParaEliminar(null);
+      // Limpia el error global y avisa con un toast de éxito.
       setError(null);
+      mostrarNotif('exito', 'Médico eliminado correctamente.');
     } catch (err) {
-      // Mostramos el mensaje de error traducido de la API.
+      // El error queda visible (alert persistente) y el modal se mantiene abierto
+      // para que el usuario pueda reintentar (el botón se re-habilita).
       setError(handleApiError(err));
+      // Se propaga para que el modal re-habilite el botón de confirmación.
+      throw err;
     }
   };
 
@@ -134,11 +155,12 @@ export default function ListaMedicos() {
       }
       // Recarga la página actual para sincronizar con los datos reales del backend.
       await cargarMedicos();
-      // Tras guardar, ocultamos el formulario.
+      // Feedback de éxito con el sistema centralizado de notificaciones.
+      mostrarNotif('exito', medicoEditando ? 'Médico actualizado correctamente.' : 'Médico creado correctamente.');
+      // Tras guardar, ocultamos el formulario y limpiamos el médico en edición.
       setMostrarFormulario(false);
-      // Limpiamos el médico en edición para futuros formularios.
       setMedicoEditando(null);
-      // Limpiamos errores.
+      // Limpiamos errores globales de la lista.
       setError(null);
     } catch (err) {
       // Mostramos el error de la API en la lista.
@@ -256,7 +278,7 @@ export default function ListaMedicos() {
                     {esAdmin && (
                       <button 
                         className="btn btn-sm btn-danger"
-                        onClick={() => handleEliminarMedico(medico.id)}
+                        onClick={() => handleEliminarMedico(medico)}
                       >
                         🗑️ Eliminar
                       </button>
@@ -278,6 +300,20 @@ export default function ListaMedicos() {
           />
         </>
       )}
+
+      {/* Modal de confirmación de eliminación (reemplaza al confirm() nativo).
+          Mensaje descriptivo: qué médico se elimina y que la acción no se puede deshacer. */}
+      <ConfirmarModal
+        abierto={paraEliminar !== null}
+        titulo="Eliminar médico"
+        mensaje={paraEliminar ? `¿Eliminar al médico "${paraEliminar.nombre}"? Esta acción no se puede deshacer.` : ''}
+        textoConfirmar="Eliminar"
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setParaEliminar(null)}
+      />
+
+      {/* Notificación flotante centralizada (éxitos se ocultan solos, errores quedan). */}
+      <Toast tipo={notif.tipo} texto={notif.texto} onCerrar={() => setNotif({ tipo: 'info', texto: '' })} />
     </div>
   );
 }

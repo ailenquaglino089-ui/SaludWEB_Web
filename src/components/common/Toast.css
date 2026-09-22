@@ -1,0 +1,101 @@
+/* ============================================================
+   Toast.css - Notificaciones flotantes (toasts)
+   ============================================================ */
+
+/* Toast base: fijo en la esquina superior derecha */
+.toast {
+  /* Fijo: siempre visible aunque la página haga scroll */
+  position: fixed;
+  /* Esquina superior derecha */
+  top: 20px;
+  right: 20px;
+  /* Capa superior (por encima de modales y tablas) */
+  z-index: 1200;
+  /* Relleno interno */
+  padding: 14px 18px;
+  /* Esquinas redondeadas */
+  border-radius: 10px;
+  /* Texto blanco */
+  color: #fff;
+  /* Seminegrita */
+  font-weight: 600;
+  /* Tamaño del texto */
+  font-size: 14px;
+  /* Los botones y el texto se alinean en fila */
+  display: flex;
+  align-items: center;
+  /* Espacio entre el texto y la ✕ */
+  gap: 12px;
+  /* Sombra que separa el toast del contenido */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  /* Animación de entrada */
+  animation: toast-entrada 0.25s ease-out;
+  /* Ancho máximo para que los mensajes largos no ocupen toda la pantalla */
+  max-width: 360px;
+}
+
+/* Variante éxito: verde */
+.toast--exito {
+  background: #16a34a;
+}
+
+/* Variante error: rojo (permanece hasta cerrarse) */
+.toast--error {
+  background: #dc2626;
+}
+
+/* Variante info: azul */
+.toast--info {
+  background: #2563eb;
+}
+
+/* Texto del toast: permite salto de línea si hace falta */
+.toast-texto {
+  line-height: 1.4;
+}
+
+/* Botón de cerrar (✕) */
+.toast-cerrar {
+  /* Fondo transparente para integrarse al toast */
+  background: transparent;
+  /* Sin borde */
+  border: none;
+  /* Texto blanco */
+  color: #fff;
+  /* Tamaño del ícono */
+  font-size: 14px;
+  /* Cursor puntero */
+  cursor: pointer;
+  /* La ✕ no se encoge nunca */
+  flex-shrink: 0;
+  /* Aumenta el área táctil */
+  padding: 4px;
+}
+
+/* Hover de la ✕: se aclara para indicar interacción */
+.toast-cerrar:hover {
+  opacity: 0.8;
+}
+
+/* Animación: el toast entra deslizándose desde la derecha */
+@keyframes toast-entrada {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive: en pantallas chicas el toast se adapta */
+@media (max-width: 768px) {
+  .toast {
+    /* Se apoya en los bordes y ocupa el ancho disponible */
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    max-width: none;
+  }
+}
