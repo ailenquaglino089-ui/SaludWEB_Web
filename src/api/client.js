@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // URL base de la API: configurable por VITE_API_URL (ver .env.example)
 // con fallback al entorno local de XAMPP.
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_SaludWEB/repositorio_backend';
+const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 // Constante con la URL base de la API: toma de la variable de entorno VITE_API_URL (si está definida) o usa la URL local de XAMPP (fallback)
 
 // Crear instancia de Axios

@@ -89,8 +89,13 @@
   background: white;
   /* Esquinas redondeadas */
   border-radius: 8px;
-  /* Oculta el contenido que exceda las esquinas redondeadas */
-  overflow: hidden;
+  /* Nunca supera el ancho de su padre (evita desbordes en móviles) */
+  max-width: 100%;
+  /* Si la tabla es más ancha que la pantalla, se desplaza con scroll horizontal
+     en lugar de desbordar el layout (diseño responsivo) */
+  overflow-x: auto;
+  /* Scroll fluido con inercia en iOS */
+  -webkit-overflow-scrolling: touch;
   /* Sombra sutil */
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -384,6 +389,77 @@
     align-items: flex-start;
   }
 
+  /* ============================================================
+     TABLAS RESPONSIVAS: de tabla a tarjetas apiladas
+     En pantallas angostas se oculta la fila de encabezados y cada
+     fila se convierte en una tarjeta. La etiqueta de cada dato se
+     trae de <td data-label="..."> mediante attr(data-label).
+     Así ninguna tabla desborda el ancho del dispositivo.
+     ============================================================ */
+  /* Ocultamos la fila de encabezados (theader) en móviles */
+  .tabla thead {
+    display: none;
+  }
+
+  /* Tabla y sus partes pasan a comportarse como bloques */
+  .tabla,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Cada fila de datos se vuelve una tarjeta independiente */
+  .tabla tbody tr {
+    /* Tarjeta con borde y esquinas redondeadas */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    /* Separación entre tarjetas */
+    margin-bottom: 16px;
+    /* Relleno interior */
+    padding: 8px 12px;
+    /* Sombra sutil */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    /* Quita la línea inferior por defecto de las filas */
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  /* Cada celda muestra su etiqueta a la izquierda y su valor a la derecha */
+  .tabla td {
+    /* Disposición flex para separar etiqueta y valor */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Espacio entre etiqueta y valor */
+    gap: 12px;
+    /* Relleno compacto */
+    padding: 9px 6px;
+    /* Línea fina entre datos */
+    border-bottom: 1px solid #f0f0f0;
+    /* La celda no se parte a la mitad */
+    word-break: break-word;
+  }
+
+  /* La última celda de la tarjeta no repite la línea inferior */
+  .tabla td:last-child {
+    border-bottom: none;
+  }
+
+  /* Etiqueta de cada dato (se toma del atributo data-label) */
+  .tabla td::before {
+    /* content: attr(data-label) muestra el texto del atributo */
+    content: attr(data-label);
+    /* Texto seminegrita para diferenciar etiqueta de valor */
+    font-weight: 600;
+    /* Mismo gris de los encabezados */
+    color: #495057;
+    /* La etiqueta se alinea a la izquierda */
+    text-align: left;
+    /* No deja que la etiqueta se comprima */
+    flex-shrink: 0;
+  }
+
   /* La tabla achica su fuente en móvil */
   .tabla {
     font-size: 12px;
@@ -397,7 +473,9 @@
 
   /* Los botones de acción se apilan verticalmente */
   .acciones {
+    /* En tarjeta, los botones van en columna y no forzan ancho */
     flex-direction: column;
+    align-items: stretch;
   }
 
   /* Los botones pequeños ocupan todo el ancho de la celda */

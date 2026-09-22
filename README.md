@@ -74,7 +74,7 @@ repositorio_web_spa/
 En `src/api/client.js`, configura la URL de tu backend:
 
 ```javascript
-const API_URL = 'http://localhost/Workspace_SaludWEB/repositorio_backend';
+const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 ```
 
 ---
@@ -119,5 +119,5 @@ const { usuario, login, logout, registro } = useAuth();
 ## 📚 Más información
 
 - [API Documentation](../API_DOCUMENTATION.md)
-- [Backend README](../repositorio_backend/README.md)
+- [Backend README](../SaludWEB_Backend/README.md)
 

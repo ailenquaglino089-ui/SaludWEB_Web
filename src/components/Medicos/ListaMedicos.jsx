@@ -9,7 +9,14 @@ import { useAuth } from '../../hooks/useAuth';
 // Importamos utilidades CRUD: manejo de errores de API, extracción de datos y helpers de badges de estado.
 import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../utils/crudHelpers';
 // Importamos los estilos CSS compartidos.
+// Importamos los estilos CSS compartidos.
 import './Medicos.css';
+// Importamos el componente de paginación reutilizable.
+import Paginacion from '../common/Paginacion';
+// Importamos el modal de confirmación (guía CRUD: eliminar con confirmación activa).
+import ConfirmarModal from '../common/ConfirmarModal';
+// Importamos las notificaciones flotantes (guía CRUD: feedback de éxito/error).
+import Toast from '../common/Toast';
 
 // Componente principal: lista de médicos con operaciones CRUD completas.
 export default function ListaMedicos() {
@@ -29,21 +36,52 @@ export default function ListaMedicos() {
   const [medicoEditando, setMedicoEditando] = useState(null);
   // Estado del texto de búsqueda para filtrar la tabla.
   const [busqueda, setBusqueda] = useState('');
+  // Estado del texto de búsqueda ya "debounceado": se usa recién 400 ms después
+  // de que el usuario deja de escribir (evita un request por cada tecla).
+  const [busquedaAplicada, setBusquedaAplicada] = useState('');
+  // Paginado: número de página actual, cantidad por página y totales del backend.
+  const [pagina, setPagina] = useState(1);         // Empieza en la página 1
+  const [porPagina, setPorPagina] = useState(10);  // 10 médicos por página
+  const [total, setTotal] = useState(0);           // Total de médicos (para la paginación)
+  const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
+  // Estado del médico pendiente de eliminación (null = no hay ninguno): abre el modal.
+  const [paraEliminar, setParaEliminar] = useState(null);
+  // Estado de la notificación flotante: { tipo: 'exito'|'error'|'info', texto }.
+  const [notif, setNotif] = useState({ tipo: 'info', texto: '' });
 
-  // useEffect de montaje: carga los médicos la primera vez que se renderiza el componente.
+  // Helper centralizado del sistema de notificaciones (guía: mostrarMensaje(tipo, texto)).
+  const mostrarNotif = (tipo, texto) => setNotif({ tipo, texto });
+
+  // Debounce de búsqueda: 400 ms después de la última tecla se aplica el filtro.
+  useEffect(() => {
+    // setTimeout programa la ejecución; clearTimeout la cancela si se escribe otra tecla antes.
+    const timer = setTimeout(() => {
+      setPagina(1);                        // Con un filtro nuevo volvemos a la página 1
+      setBusquedaAplicada(busqueda);       // Aplica el texto de búsqueda al backend
+    }, 400);
+    return () => clearTimeout(timer);      // Limpieza: cancela el timer anterior
+  }, [busqueda]); // Dependencia: se re-programa cada vez que cambia el texto
+
+  // Recarga la lista cuando cambia la página, el tamaño de página o la búsqueda aplicada.
   useEffect(() => {
     cargarMedicos();
-  }, []); // Dependencias vacías: se ejecuta una sola vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, porPagina, busquedaAplicada]); // Dependencias que disparan la recarga
 
-  // Función asíncrona que obtiene los médicos desde el backend.
+  // Función asíncrona que obtiene una página de médicos desde el backend.
   const cargarMedicos = async () => {
     try {
       // Activamos el estado de carga antes de hacer la petición.
       setCargando(true);
-      // GET a /api/medicos usando la instancia de axios (client) que agrega el token JWT automáticamente.
-      const response = await client.get('/api/medicos');
-      // getDatos extrae la lista real de la envoltura de la API ({ ok, mensaje, data }).
-      setMedicos(getDatos(response, []));
+      // GET a /api/medicos con los parámetros de paginado (pagina, por_pagina) y búsqueda (q).
+      // El backend valida/acota los valores; así nunca se trae toda la tabla.
+      const response = await client.get('/api/medicos', { params: { pagina, por_pagina: porPagina, q: busquedaAplicada } });
+      // getDatos extrae la estructura paginada ({ ok, mensaje, data: {items, total, ...} }).
+      const datos = getDatos(response, { items: [], total: 0, total_paginas: 1, pagina: 1 });
+      // Solo se guarda la página actual en el estado (no los cientos de médicos juntos).
+      setMedicos(datos.items);
+      setTotal(datos.total);
+      setTotalPaginas(datos.total_paginas);
       // Al cargar bien, limpiamos cualquier error previo.
       setError(null);
     } catch (err) {
@@ -72,21 +110,31 @@ export default function ListaMedicos() {
     setMostrarFormulario(true);
   };
 
-  // Handler del botón "Eliminar": recibe el id del médico.
-  const handleEliminarMedico = async (id) => {
-    // Confirmación nativa del navegador: si el usuario cancela, salimos sin eliminar.
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este médico?')) return;
+  // Handler del botón "Eliminar": abre el modal de confirmación (no el confirm nativo).
+  const handleEliminarMedico = (medico) => {
+    // Guardamos el médico en el estado para que el modal describa qué se elimina.
+    setParaEliminar(medico);
+  };
 
+  // Confirmación del modal: ejecuta el DELETE con prevención de doble clic.
+  const confirmarEliminar = async () => {
     try {
       // DELETE a /api/medicos/{id} (el interceptor de client adjunta el token).
-      await client.delete(`/api/medicos/${id}`);
-      // Actualizamos el estado local filtrando el médico eliminado (optimiza sin recargar).
-      setMedicos(medicos.filter(m => m.id !== id));
-      // Limpiamos errores tras operación exitosa.
+      await client.delete(`/api/medicos/${paraEliminar.id}`);
+      // Con paginado conviene recargar la página actual: así el total y las
+      // páginas se recalculan con el dato real del backend (no con un filtro local).
+      await cargarMedicos();
+      // Cierra el modal de confirmación.
+      setParaEliminar(null);
+      // Limpia el error global y avisa con un toast de éxito.
       setError(null);
+      mostrarNotif('exito', 'Médico eliminado correctamente.');
     } catch (err) {
-      // Mostramos el mensaje de error traducido de la API.
+      // El error queda visible (alert persistente) y el modal se mantiene abierto
+      // para que el usuario pueda reintentar (el botón se re-habilita).
       setError(handleApiError(err));
+      // Se propaga para que el modal re-habilite el botón de confirmación.
+      throw err;
     }
   };
 
@@ -97,20 +145,22 @@ export default function ListaMedicos() {
         // Actualizar
         // PUT a /api/medicos/{id} con los datos editados.
         await client.put(`/api/medicos/${medicoEditando.id}`, datosFormulario);
-        // Reemplazamos en el estado el médico editado, conservando su id.
-        setMedicos(medicos.map(m => m.id === medicoEditando.id ? { ...datosFormulario, id: medicoEditando.id } : m));
+        // Con paginado recargamos la página actual para reflejar el cambio guardado.
       } else {
         // Crear
         // POST a /api/medicos con los datos nuevos (create).
-        const response = await client.post('/api/medicos', datosFormulario);
-        // Agregamos el médico creado (devuelto por la API) al final de la lista local.
-        setMedicos([...medicos, getDatos(response)]);
+        await client.post('/api/medicos', datosFormulario);
+        // Tras crear volvemos a la página 1 (donde suelen verse los primeros registros).
+        setPagina(1);
       }
-      // Tras guardar, ocultamos el formulario.
+      // Recarga la página actual para sincronizar con los datos reales del backend.
+      await cargarMedicos();
+      // Feedback de éxito con el sistema centralizado de notificaciones.
+      mostrarNotif('exito', medicoEditando ? 'Médico actualizado correctamente.' : 'Médico creado correctamente.');
+      // Tras guardar, ocultamos el formulario y limpiamos el médico en edición.
       setMostrarFormulario(false);
-      // Limpiamos el médico en edición para futuros formularios.
       setMedicoEditando(null);
-      // Limpiamos errores.
+      // Limpiamos errores globales de la lista.
       setError(null);
     } catch (err) {
       // Mostramos el error de la API en la lista.
@@ -118,18 +168,13 @@ export default function ListaMedicos() {
     }
   };
 
-  // Filtrado por búsqueda: filtra los médicos por nombre, matrícula o especialidad.
-  const medicosFiltr = medicos.filter(m =>
-    // Compara nombre (en minúsculas) contra el texto de búsqueda (en minúsculas)
-    m.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    // Compara matrícula contra el texto de búsqueda
-    m.matricula?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    // Compara especialidad contra el texto de búsqueda
-    m.especialidad?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  // Nota: con paginado la búsqueda y el filtrado se resuelven en el backend (params pagina/por_pagina/q).
+  // Por eso aquí NO hay filtrado local: el estado 'medicos' ya es la página actual filtrada.
 
   // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario.
-  if (mostrarFormulario) {
+  // RBAC: solo los administradores pueden llegar a crear/editar; cualquier otro
+  // rol (médico o paciente) nunca ve el formulario aunque intente manipular el estado.
+  if (mostrarFormulario && esAdmin) {
     return (
       <FormularioMedico
         // La prop 'medico' es el objeto a editar o null para alta nueva
@@ -151,10 +196,12 @@ export default function ListaMedicos() {
       {/* Cabecera con título y botón de nuevo médico */}
       <div className="lista-header">
         <h1>👨‍⚕️ Gestión de Médicos</h1>
-        {/* Botón que dispara el modo alta nueva */}
-        <button className="btn btn-primary" onClick={handleNuevoMedico}>
-          ➕ Nuevo Médico
-        </button>
+        {/* RBAC: el alta de médicos es operación de administración; solo se muestra a admin */}
+        {esAdmin && (
+          <button className="btn btn-primary" onClick={handleNuevoMedico}>
+            ➕ Nuevo Médico
+          </button>
+        )}
       </div>
 
       {/* Renderizado condicional: solo mostramos el alert si hay error */}
@@ -179,14 +226,15 @@ export default function ListaMedicos() {
           <div className="spinner"></div>
           <p>Cargando médicos...</p>
         </div>
-      ) : medicosFiltr.length === 0 ? (
+      ) : medicos.length === 0 ? (
         // Estado 2: el filtro no devolvió resultados
         <div className="lista-vacia">
-          <p>No hay médicos registrados</p>
+          <p>{busqueda ? 'No hay resultados para tu búsqueda' : 'No hay médicos registrados'}</p>
         </div>
       ) : (
         // Estado 3: hay médicos para mostrar en la tabla
-        <div className="tabla-container">
+        <>
+          <div className="tabla-container">
           <table className="tabla">
             <thead>
               <tr>
@@ -198,14 +246,14 @@ export default function ListaMedicos() {
               </tr>
             </thead>
             <tbody>
-              {/* Iteramos sobre la lista filtrada para generar una fila por médico */}
-              {medicosFiltr.map(medico => (
+              {/* Iteramos sobre la página actual para generar una fila por médico */}
+              {medicos.map(medico => (
                 // La key única por fila debe ser el id del médico
                 <tr key={medico.id}>
-                  <td>{medico.nombre}</td>
-                  <td>{medico.matricula}</td>
-                  <td>{medico.especialidad}</td>
-                  <td>
+                  <td data-label="Nombre">{medico.nombre}</td>
+                  <td data-label="Matrícula">{medico.matricula}</td>
+                  <td data-label="Especialidad">{medico.especialidad}</td>
+                  <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
                       className="status-badge"
@@ -215,19 +263,22 @@ export default function ListaMedicos() {
                       {getStatusBadge(medico.activo ? 'activo' : 'inactivo')}
                     </span>
                   </td>
-                  <td className="acciones">
-                    {/* Botón de editar: pasa el médico completo al handler */}
-                    <button 
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleEditarMedico(medico)}
-                    >
-                      ✏️ Editar
-                    </button>
+                  <td className="acciones" data-label="Acciones">
+                    {/* RBAC: la edición de médicos es administrativa; solo admin ve "Editar".
+                        Así un paciente (ni un médico) tiene expuesto el botón en la UI. */}
+                    {esAdmin && (
+                      <button 
+                        className="btn btn-sm btn-info"
+                        onClick={() => handleEditarMedico(medico)}
+                      >
+                        ✏️ Editar
+                      </button>
+                    )}
                     {/* RBAC: el botón Eliminar solo se muestra si el usuario es admin */}
                     {esAdmin && (
                       <button 
                         className="btn btn-sm btn-danger"
-                        onClick={() => handleEliminarMedico(medico.id)}
+                        onClick={() => handleEliminarMedico(medico)}
                       >
                         🗑️ Eliminar
                       </button>
@@ -238,7 +289,31 @@ export default function ListaMedicos() {
             </tbody>
           </table>
         </div>
+
+          {/* Controles de paginado: se muestran cuando hay más de una página */}
+          <Paginacion
+            pagina={pagina}
+            porPagina={porPagina}
+            total={total}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={setPagina}
+          />
+        </>
       )}
+
+      {/* Modal de confirmación de eliminación (reemplaza al confirm() nativo).
+          Mensaje descriptivo: qué médico se elimina y que la acción no se puede deshacer. */}
+      <ConfirmarModal
+        abierto={paraEliminar !== null}
+        titulo="Eliminar médico"
+        mensaje={paraEliminar ? `¿Eliminar al médico "${paraEliminar.nombre}"? Esta acción no se puede deshacer.` : ''}
+        textoConfirmar="Eliminar"
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setParaEliminar(null)}
+      />
+
+      {/* Notificación flotante centralizada (éxitos se ocultan solos, errores quedan). */}
+      <Toast tipo={notif.tipo} texto={notif.texto} onCerrar={() => setNotif({ tipo: 'info', texto: '' })} />
     </div>
   );
 }

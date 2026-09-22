@@ -19,7 +19,7 @@ export default defineConfig({
       // proxy: redirige peticiones del frontend hacia el backend evitando problemas de CORS en desarrollo
       '/api': {
         // '/api': todas las URLs que empiecen con /api serán manejadas por el proxy
-        target: 'http://localhost/Workspace_SaludWEB/repositorio_backend',
+        target: 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend',
         // target: servidor de destino real (backend PHP/API ubicado en XAMPP)
         changeOrigin: true,
         // changeOrigin: cambia el Host de la petición al del backend (el servidor destino ve la petición como propia)

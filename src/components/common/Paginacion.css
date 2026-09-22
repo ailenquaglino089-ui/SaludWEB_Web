@@ -1,0 +1,88 @@
+/* ============================================================
+   Paginacion.css - Controles de paginado de los listados
+   ============================================================ */
+
+/* Contenedor general de la paginación */
+.paginacion {
+  /* Separa la paginación de la tabla que tiene arriba */
+  margin-top: 20px;
+  /* Apila la info y los botones verticalmente */
+  display: flex;
+  flex-direction: column;
+  /* Centra el contenido */
+  align-items: center;
+  /* Espacio entre la info y los botones */
+  gap: 12px;
+}
+
+/* Texto "Mostrando X-Y de Z" */
+.paginacion-info {
+  /* Color gris suave */
+  color: #666;
+  /* Tamaño del texto */
+  font-size: 13px;
+}
+
+/* Contenedor de los botones de página */
+.paginacion-botones {
+  /* Los botones se alinean en fila */
+  display: flex;
+  /* Se adaptan cuando no entran en pantallas angostas */
+  flex-wrap: wrap;
+  /* Espacio entre botones */
+  gap: 6px;
+  /* Centrado horizontal */
+  justify-content: center;
+}
+
+/* Botones de la paginación */
+.paginacion-botones .btn {
+  /* Redondeo marcado (pildora) */
+  border-radius: 6px;
+  /* Ancho y alto mínimos para que los números queden parejos */
+  min-width: 36px;
+  text-align: center;
+}
+
+/* Botones deshabilitados (Anterior en la 1ra página, etc.) */
+.paginacion-botones .btn:disabled {
+  /* Fondo gris */
+  background: #e9ecef;
+  /* Texto gris */
+  color: #adb5bd;
+  /* Sin cursor de click */
+  cursor: not-allowed;
+}
+
+/* Separador "…" entre rangos de páginas */
+.paginacion-ellipsis {
+  /* Alineado con los botones */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Mismo alto mínimo que los botones */
+  min-width: 24px;
+  /* Color gris */
+  color: #999;
+}
+
+/* Botón de la página activa (el estilo .btn-primary ya la pinta de azul) */
+.paginacion-botones .btn-primary {
+  /* Al pasar el mouse no cambia de color el botón activo */
+  pointer-events: none;
+}
+
+/* Responsive: en pantallas angostas el texto y los botones siguen cabiendo */
+@media (max-width: 768px) {
+  .paginacion-botones {
+    /* Los botones se apilan si el ancho no alcanza */
+    gap: 4px;
+  }
+
+  /* Los números de página se achican para ganar espacio */
+  .paginacion-botones .btn {
+    padding: 5px 8px;
+    min-width: 32px;
+    font-size: 12px;
+  }
+}

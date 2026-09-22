@@ -12,6 +12,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { handleApiError, getDatos, getStatusBadge, getStatusColor, formatDate } from '../../utils/crudHelpers';
 // Importamos los estilos CSS de Prescripciones.
 import './Prescripciones.css';
+// Importamos el componente de paginación reutilizable.
+import Paginacion from '../common/Paginacion';
+// Importamos el modal de confirmación (guía CRUD: eliminar con confirmación activa).
+import ConfirmarModal from '../common/ConfirmarModal';
+// Importamos las notificaciones flotantes (guía CRUD: feedback de éxito/error).
+import Toast from '../common/Toast';
 
 // Componente principal: lista de prescripciones con operaciones CRUD y cambio de estado.
 export default function ListaPrescripciones() {
@@ -19,6 +25,11 @@ export default function ListaPrescripciones() {
   const { usuario } = useAuth();
   // RBAC en UI: 'esAdmin' es true solo si el tipo_usuario del usuario es 'admin'.
   const esAdmin = usuario?.tipo_usuario === 'admin';
+  // RBAC: 'esMedico' identifica al rol médico.
+  const esMedico = usuario?.tipo_usuario === 'medico';
+  // Regla de negocio: "Las prescripciones sólo pueden ser hechas por Médicos".
+  // Solo un médico puede recetar/editar; ni admin ni paciente ven estas opciones.
+  const puedeRecetar = esMedico;
   // Estado con el listado de prescripciones obtenidas de la API.
   const [prescripciones, setPrescripciones] = useState([]);
   // Estado de carga: controla la visualización del spinner mientras llega la respuesta.
@@ -35,23 +46,57 @@ export default function ListaPrescripciones() {
   const [prescripcionParaCambioEstado, setPrescripcionParaCambioEstado] = useState(null);
   // Estado del texto de búsqueda para filtrar la tabla.
   const [busqueda, setBusqueda] = useState('');
+  // Estado del texto de búsqueda ya "debounceado": se usa recién 400 ms después
+  // de que el usuario deja de escribir (evita un request por cada tecla).
+  const [busquedaAplicada, setBusquedaAplicada] = useState('');
+  // Paginado: número de página actual, cantidad por página y totales del backend.
+  const [pagina, setPagina] = useState(1);         // Empieza en la página 1
+  const [porPagina, setPorPagina] = useState(10);  // 10 prescripciones por página
+  const [total, setTotal] = useState(0);           // Total de prescripciones (para la paginación)
+  const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
   // Estado del filtro por estado (cadena vacía = todos los estados).
   const [filtroEstado, setFiltroEstado] = useState('');
+  // Estado de la prescripción pendiente de eliminación (null = no hay ninguna): abre el modal.
+  const [paraEliminar, setParaEliminar] = useState(null);
+  // Estado de la notificación flotante: { tipo: 'exito'|'error'|'info', texto }.
+  const [notif, setNotif] = useState({ tipo: 'info', texto: '' });
 
-  // useEffect de montaje: carga las prescripciones la primera vez que se renderiza el componente.
+  // Helper centralizado del sistema de notificaciones (guía: mostrarMensaje(tipo, texto)).
+  const mostrarNotif = (tipo, texto) => setNotif({ tipo, texto });
+
+  // Debounce de búsqueda: 400 ms después de la última tecla se aplica el filtro.
+  useEffect(() => {
+    // setTimeout programa la ejecución; clearTimeout la cancela si se escribe otra tecla antes.
+    const timer = setTimeout(() => {
+      setPagina(1);                        // Con un filtro nuevo volvemos a la página 1
+      setBusquedaAplicada(busqueda);       // Aplica el texto de búsqueda al backend
+    }, 400);
+    return () => clearTimeout(timer);      // Limpieza: cancela el timer anterior
+  }, [busqueda]); // Dependencia: se re-programa cada vez que cambia el texto
+
+  // Recarga la lista cuando cambia la página, el tamaño de página, la búsqueda
+  // aplicada o el filtro de estado.
   useEffect(() => {
     cargarPrescripciones();
-  }, []); // Dependencias vacías: se ejecuta una sola vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, porPagina, busquedaAplicada, filtroEstado]); // Dependencias que disparan la recarga
 
-  // Función asíncrona que obtiene las prescripciones desde el backend.
+  // Función asíncrona que obtiene una página de prescripciones desde el backend.
   const cargarPrescripciones = async () => {
     try {
       // Activamos el estado de carga antes de hacer la petición.
       setCargando(true);
-      // GET a /api/prescripciones usando la instancia de axios (client) que agrega el token JWT automáticamente.
-      const response = await client.get('/api/prescripciones');
-      // getDatos extrae la lista real de la envoltura de la API ({ ok, mensaje, data }).
-      setPrescripciones(getDatos(response, []));
+      // GET a /api/prescripciones con los parámetros de paginado (pagina, por_pagina),
+      // búsqueda (q) y filtro de estado (estado).
+      const response = await client.get('/api/prescripciones', {
+        params: { pagina, por_pagina: porPagina, q: busquedaAplicada, estado: filtroEstado }
+      });
+      // getDatos extrae la estructura paginada ({ ok, mensaje, data: {items, total, ...} }).
+      const datos = getDatos(response, { items: [], total: 0, total_paginas: 1, pagina: 1 });
+      // Solo se guarda la página actual en el estado (no los cientos de registros juntos).
+      setPrescripciones(datos.items);
+      setTotal(datos.total);
+      setTotalPaginas(datos.total_paginas);
       // Al cargar bien, limpiamos cualquier error previo.
       setError(null);
     } catch (err) {
@@ -88,21 +133,31 @@ export default function ListaPrescripciones() {
     setMostrarCambioEstado(true);
   };
 
-  // Handler del botón "Eliminar": recibe el id de la prescripción.
-  const handleEliminarPrescripcion = async (id) => {
-    // Confirmación nativa del navegador: si el usuario cancela, salimos sin eliminar.
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta prescripción?')) return;
+  // Handler del botón "Eliminar": abre el modal de confirmación (no el confirm nativo).
+  const handleEliminarPrescripcion = (prescripcion) => {
+    // Guardamos la prescripción en el estado para que el modal describa qué se elimina.
+    setParaEliminar(prescripcion);
+  };
 
+  // Confirmación del modal: ejecuta el DELETE con prevención de doble clic.
+  const confirmarEliminar = async () => {
     try {
       // DELETE a /api/prescripciones/{id} (el interceptor de client adjunta el token).
-      await client.delete(`/api/prescripciones/${id}`);
-      // Actualizamos el estado local filtrando la prescripción eliminada (optimiza sin recargar).
-      setPrescripciones(prescripciones.filter(p => p.id !== id));
-      // Limpiamos errores tras operación exitosa.
+      await client.delete(`/api/prescripciones/${paraEliminar.id}`);
+      // Con paginado conviene recargar la página actual: así el total y las
+      // páginas se recalculan con el dato real del backend (no con un filtro local).
+      await cargarPrescripciones();
+      // Cierra el modal de confirmación.
+      setParaEliminar(null);
+      // Limpia el error global y avisa con un toast de éxito.
       setError(null);
+      mostrarNotif('exito', 'Prescripción eliminada correctamente.');
     } catch (err) {
-      // Mostramos el mensaje de error traducido de la API.
+      // El error queda visible (alert persistente) y el modal se mantiene abierto
+      // para que el usuario pueda reintentar (el botón se re-habilita).
       setError(handleApiError(err));
+      // Se propaga para que el modal re-habilite el botón de confirmación.
+      throw err;
     }
   };
 
@@ -113,20 +168,22 @@ export default function ListaPrescripciones() {
         // Actualizar
         // PUT a /api/prescripciones/{id} con los datos editados.
         await client.put(`/api/prescripciones/${prescripcionEditando.id}`, datosFormulario);
-        // Reemplazamos en el estado la prescripción editada, conservando su id.
-        setPrescripciones(prescripciones.map(p => p.id === prescripcionEditando.id ? { ...datosFormulario, id: prescripcionEditando.id } : p));
+        // Con paginado recargamos la página actual para reflejar el cambio guardado.
       } else {
         // Crear
         // POST a /api/prescripciones con los datos nuevos (create).
-        const response = await client.post('/api/prescripciones', datosFormulario);
-        // Agregamos la prescripción creada (devuelta por la API) al final de la lista local.
-        setPrescripciones([...prescripciones, getDatos(response)]);
+        await client.post('/api/prescripciones', datosFormulario);
+        // Tras crear volvemos a la página 1 (donde suelen verse los registros más recientes).
+        setPagina(1);
       }
-      // Tras guardar, ocultamos el formulario.
+      // Recarga la página actual para sincronizar con los datos reales del backend.
+      await cargarPrescripciones();
+      // Feedback de éxito con el sistema centralizado de notificaciones.
+      mostrarNotif('exito', prescripcionEditando ? 'Prescripción actualizada correctamente.' : 'Prescripción creada correctamente.');
+      // Tras guardar, ocultamos el formulario y limpiamos la prescripción en edición.
       setMostrarFormulario(false);
-      // Limpiamos la prescripción en edición para futuros formularios.
       setPrescripcionEditando(null);
-      // Limpiamos errores.
+      // Limpiamos errores globales de la lista.
       setError(null);
     } catch (err) {
       // Mostramos el error de la API en la lista.
@@ -141,20 +198,16 @@ export default function ListaPrescripciones() {
       await client.patch(`/api/prescripciones/${prescripcionParaCambioEstado.id}/estado`, {
         estado: nuevoEstado
       });
-      // Actualizamos la prescripción correspondiente en el estado local con el nuevo estado.
-      setPrescripciones(prescripciones.map(p => 
-        // Buscamos la prescripción que se estaba editando
-        p.id === prescripcionParaCambioEstado.id 
-          // Solo a esa prescripción le actualizamos el campo 'estado'
-          ? { ...p, estado: nuevoEstado } 
-          // Al resto las dejamos intactas
-          : p
-      ));
+      // Recargamos la página: si el filtro de estado está activo, el registro
+      // puede dejar de pertenecer a esta página (lo decide el backend).
+      await cargarPrescripciones();
+      // Feedback de éxito del cambio de estado.
+      mostrarNotif('exito', `Estado actualizado a "${nuevoEstado}" correctamente.`);
       // Ocultamos el formulario de cambio de estado.
       setMostrarCambioEstado(false);
       // Limpiamos la prescripción seleccionada.
       setPrescripcionParaCambioEstado(null);
-      // Limpiamos errores.
+      // Limpiamos errores globales de la lista.
       setError(null);
     } catch (err) {
       // Mostramos el error de la API en la lista.
@@ -162,25 +215,13 @@ export default function ListaPrescripciones() {
     }
   };
 
-  // Función auxiliar: convierte la lista de medicamentos de una prescripción en un texto separado por comas.
-  const nombresMedicamentos = (p) =>
-    // El || [] evita errores si el campo 'medicamentos' viene null o indefinido
-    (p.medicamentos || []).map(m => m.nombre).join(', ');
+  // Nota: con paginado la búsqueda y los filtros se resuelven en el backend
+  // (params pagina/por_pagina/q/estado). NO hay filtrado local: el estado
+  // 'prescripciones' ya es la página actual filtrada.
 
-  // Filtrado combinado: por búsqueda (texto) y por estado (select).
-  const prescripcionesFiltr = prescripciones.filter(p => {
-    // Coincide si el texto de búsqueda aparece en medicamentos, paciente o médico.
-    const matchBusqueda = nombresMedicamentos(p).toLowerCase().includes(busqueda.toLowerCase()) ||
-                         p.nombre_paciente?.toLowerCase().includes(busqueda.toLowerCase()) ||
-                         p.nombre_medico?.toLowerCase().includes(busqueda.toLowerCase());
-    // Coincide si no hay filtro de estado ('') o si el estado coincide exactamente.
-    const matchEstado = !filtroEstado || p.estado === filtroEstado;
-    // La prescripción se muestra solo si cumple AMBAS condiciones.
-    return matchBusqueda && matchEstado;
-  });
-
-  // Si 'mostrarFormulario' es true, en lugar de la lista renderizamos el formulario de alta/edición.
-  if (mostrarFormulario) {
+  // Si 'mostrarFormulario' está activo y el rol está habilitado, lo mostramos.
+  // RBAC: un paciente nunca ve el formulario de prescripción (regla de negocio).
+  if (mostrarFormulario && puedeRecetar) {
     return (
       <FormularioPrescripcion
         // La prop 'prescripcion' es el objeto a editar o null para alta nueva
@@ -219,10 +260,12 @@ export default function ListaPrescripciones() {
       {/* Cabecera con título y botón de nueva prescripción */}
       <div className="lista-header">
         <h1>💊 Gestión de Prescripciones</h1>
-        {/* Botón que dispara el modo alta nueva */}
-        <button className="btn btn-primary" onClick={handleNuevaPrescripcion}>
-          ➕ Nueva Prescripción
-        </button>
+        {/* RBAC: la creación de prescripciones es operación médica; el paciente no la ve */}
+        {puedeRecetar && (
+          <button className="btn btn-primary" onClick={handleNuevaPrescripcion}>
+            ➕ Nueva Prescripción
+          </button>
+        )}
       </div>
 
       {/* Renderizado condicional: solo mostramos el alert si hay error */}
@@ -260,14 +303,15 @@ export default function ListaPrescripciones() {
           <div className="spinner"></div>
           <p>Cargando prescripciones...</p>
         </div>
-      ) : prescripcionesFiltr.length === 0 ? (
+      ) : prescripciones.length === 0 ? (
         // Estado 2: el filtro no devolvió resultados
         <div className="lista-vacia">
-          <p>No hay prescripciones registradas</p>
+          <p>{busqueda ? 'No hay resultados para tu búsqueda' : 'No hay prescripciones registradas'}</p>
         </div>
       ) : (
         // Estado 3: hay prescripciones para mostrar en la tabla
-        <div className="tabla-container">
+        <>
+          <div className="tabla-container">
           <table className="tabla">
             <thead>
               <tr>
@@ -280,19 +324,19 @@ export default function ListaPrescripciones() {
               </tr>
             </thead>
             <tbody>
-              {/* Iteramos sobre la lista filtrada para generar una fila por prescripción */}
-              {prescripcionesFiltr.map(prescripcion => (
+              {/* Iteramos sobre la página actual para generar una fila por prescripción */}
+              {prescripciones.map(prescripcion => (
                 // La key única por fila debe ser el id de la prescripción
                 <tr key={prescripcion.id}>
                   {/* Medicamentos formateados: "Nombre (Dosis)" separados por comas */}
-                  <td>{(prescripcion.medicamentos || [])
+                  <td data-label="Medicamentos">{(prescripcion.medicamentos || [])
                       .map(m => `${m.nombre}${m.dosis ? ` (${m.dosis})` : ''}`)
                       .join(', ')}</td>
-                  <td>{prescripcion.nombre_paciente}</td>
-                  <td>{prescripcion.nombre_medico}</td>
+                  <td data-label="Paciente">{prescripcion.nombre_paciente}</td>
+                  <td data-label="Médico">{prescripcion.nombre_medico}</td>
                   {/* formatDate convierte la fecha ISO del backend al formato local dd/mm/aaaa */}
-                  <td>{formatDate(prescripcion.fecha_emision)}</td>
-                  <td>
+                  <td data-label="Fecha Emisión">{formatDate(prescripcion.fecha_emision)}</td>
+                  <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
                       className="status-badge"
@@ -302,14 +346,16 @@ export default function ListaPrescripciones() {
                       {getStatusBadge(prescripcion.estado)}
                     </span>
                   </td>
-                  <td className="acciones">
-                    {/* Botón de editar: pasa la prescripción completa al handler */}
-                    <button 
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleEditarPrescripcion(prescripcion)}
-                    >
-                      ✏️ Editar
-                    </button>
+                  <td className="acciones" data-label="Acciones">
+                    {/* RBAC: solo médico o admin pueden editar una prescripción */}
+                    {puedeRecetar && (
+                      <button 
+                        className="btn btn-sm btn-info"
+                        onClick={() => handleEditarPrescripcion(prescripcion)}
+                      >
+                        ✏️ Editar
+                      </button>
+                    )}
                     {/* Botón para cambiar el estado (disponible para todos los usuarios) */}
                     <button 
                       className="btn btn-sm btn-warning"
@@ -321,7 +367,7 @@ export default function ListaPrescripciones() {
                     {esAdmin && (
                     <button 
                       className="btn btn-sm btn-danger"
-                      onClick={() => handleEliminarPrescripcion(prescripcion.id)}
+                      onClick={() => handleEliminarPrescripcion(prescripcion)}
                     >
                       🗑️ Eliminar
                     </button>
@@ -332,7 +378,31 @@ export default function ListaPrescripciones() {
             </tbody>
           </table>
         </div>
+
+          {/* Controles de paginado: se muestran cuando hay más de una página */}
+          <Paginacion
+            pagina={pagina}
+            porPagina={porPagina}
+            total={total}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={setPagina}
+          />
+        </>
       )}
+
+      {/* Modal de confirmación de eliminación (reemplaza al confirm() nativo).
+          Mensaje descriptivo: qué prescripción se elimina y que no se puede deshacer. */}
+      <ConfirmarModal
+        abierto={paraEliminar !== null}
+        titulo="Eliminar prescripción"
+        mensaje={paraEliminar ? `¿Eliminar la prescripción #${paraEliminar.id} de "${paraEliminar.nombre_paciente}"? Esta acción no se puede deshacer.` : ''}
+        textoConfirmar="Eliminar"
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setParaEliminar(null)}
+      />
+
+      {/* Notificación flotante centralizada (éxitos se ocultan solos, errores quedan). */}
+      <Toast tipo={notif.tipo} texto={notif.texto} onCerrar={() => setNotif({ tipo: 'info', texto: '' })} />
     </div>
   );
 }
