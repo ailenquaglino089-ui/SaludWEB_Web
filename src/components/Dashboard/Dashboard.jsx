@@ -32,6 +32,7 @@ export default function Dashboard() {
 
         {/* Tarjeta de acceso al módulo de Pacientes */}
         <div className="dashboard-card">
+          {/* Ícono representativo del módulo */}
           <div className="card-icon">👤</div>
           <h3>Pacientes</h3>
           <p>Administra la información de pacientes</p>
@@ -50,6 +51,7 @@ export default function Dashboard() {
 
         {/* Tarjeta de acceso a la Configuración */}
         <div className="dashboard-card">
+          {/* Ícono representativo del módulo */}
           <div className="card-icon">⚙️</div>
           <h3>Configuración</h3>
           <p>Ajusta tus preferencias</p>
@@ -69,12 +71,16 @@ export default function Dashboard() {
         </div>
         {/* Indicador de pacientes activos */}
         <div className="stat-box">
+          {/* Valor numérico de la estadística */}
           <p className="stat-value">156</p>
+          {/* Descripción de la estadística */}
           <p className="stat-label">Pacientes Activos</p>
         </div>
         {/* Indicador de prescripciones emitidas */}
         <div className="stat-box">
+          {/* Valor numérico de la estadística */}
           <p className="stat-value">389</p>
+          {/* Descripción de la estadística */}
           <p className="stat-label">Prescripciones Emitidas</p>
         </div>
       </div>
@@ -92,10 +98,15 @@ export default function Dashboard() {
         </p>
         {/* Lista no ordenada con las características destacadas */}
         <ul>
+          {/* Ítem 1: API REST desacoplada (Backend + Frontend) */}
           <li>API REST desacoplada (Backend + Frontend)</li>
+          {/* Ítem 2: Autenticación segura con JWT */}
           <li>Autenticación segura con JWT</li>
+          {/* Ítem 3: CRUD completo de Médicos, Pacientes y Prescripciones */}
           <li>CRUD completo de Médicos, Pacientes y Prescripciones</li>
+          {/* Ítem 4: Interfaz responsiva y moderna */}
           <li>Interfaz responsiva y moderna</li>
+          {/* Ítem 5: Validaciones y manejo de errores robusto */}
           <li>Validaciones y manejo de errores robusto</li>
         </ul>
       </div>

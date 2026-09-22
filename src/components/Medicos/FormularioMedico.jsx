@@ -107,6 +107,7 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
             className={errores.matricula ? 'input-error' : ''}
             placeholder="Ej: MP-123456"
           />
+          {/* Renderizado condicional del mensaje de error de la matrícula */}
           {errores.matricula && <span className="error-text">{errores.matricula}</span>}
         </div>
 
@@ -121,6 +122,7 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
             className={errores.especialidad ? 'input-error' : ''}
             placeholder="Ej: Cardiología, Dermatología"
           />
+          {/* Renderizado condicional del mensaje de error de la especialidad */}
           {errores.especialidad && <span className="error-text">{errores.especialidad}</span>}
         </div>
 
