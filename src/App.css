@@ -280,14 +280,110 @@ tr:hover {
   /* Transición suave del color del borde al enfocar (hover/focus) */
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  /* Estado :focus: cuando el usuario hace clic o tabula dentro de un campo */
-  outline: none;
-  /* Elimina el contorno azul por defecto del navegador para reemplazarlo por el propio */
+.form-group input:focus-visible,
+.form-group select:focus-visible,
+.form-group textarea:focus-visible {
+  /* Estado de foco VISIBLE: el usuario navegó con el teclado (Tab) o está usando
+     un teclado en pantalla. En ese caso el contorno del navegador no se quita:
+     es la única señal que le dice a una persona no vidente dónde está parada.
+     El :focus-visible separa "hice clic" de "estoy tabulando", así se puede
+     quitar el contorno al hacer clic sin perder accesibilidad. */
+  outline: 3px solid rgba(102, 126, 234, 0.55);
+  /* Contorno visible de 3px en el color primario, con opacidad para que se lea
+     sobre fondos claros y oscuros */
+  outline-offset: 1px;
+  /* Separa el contorno del borde del campo para que no se lean pegados */
   border-color: #667eea;
   /* El borde pasa al color primario: indica de forma clara cuál es el campo activo */
+}
+
+/* ==========================================================================
+   TEXTO SOLO PARA LECTORES DE PANTALLA
+   ==========================================================================
+   .sr-only oculta el texto VISUALMENTE pero lo deja disponible para los
+   lectores de pantalla. No es display:none ni visibility:hidden: con
+   cualquiera de esos dos, el elemento se saca del árbol de accesibilidad y el
+   lector tampoco lo lee, que es justo lo contrario de lo que se busca.
+
+   El caso real en esta app: un horario libre se dibuja como un botón verde y
+   el color es la única señal de que está disponible. El color no se anuncia,
+   así que el texto se completa con ", libre. Reservar este horario".
+
+   La técnica es la clásica de clipping: se deja el elemento con su tamaño
+   natural y se lo empuja fuera de la pantalla con position:absolute, en vez
+   de reducirlo a 1x1 px (que en algunos lectores rompe el cálculo del texto).
+   --------------------------------------------------------------------------
+   Es accesibilidad (WCAG 1.3.1, Info and Relationships), no un detalle
+   cosmético. */
+.sr-only {
+  position: absolute;
+  /* Se saca del flujo normal para que no ocupe lugar ni empuje al contenido
+     que lo rodea */
+  width: 1px;
+  /* Se le da un tamaño mínimo de 1px en cada eje */
+  height: 1px;
+  /* Altura mínima: sin esto, el elemento no se renderiza y el lector lo pierde */
+  padding: 0;
+  /* Sin relleno propio: el texto queda lo más ajustado posible al recuadro */
+  margin: -1px;
+  /* Margen negativo de 1px para que el borde del recorte no se vea si el
+     navegador lo dibuja en algún momento del render */
+  overflow: hidden;
+  /* Es lo que hace el recorte real: oculta lo que se sale del recuadro de 1px */
+  clip: rect(0, 0, 0, 0);
+  /* Recorta el contenido al punto de origen (forma abreviada) */
+  clip-path: inset(50%);
+  /* Alternativa moderna de clip, que algunos navegadores prefieren */
+  white-space: nowrap;
+  /* Impide que el texto se parta en varias líneas, que anularía el recorte */
+  border: 0;
+  /* Sin borde: solo el texto importa */
+}
+
+/* ==========================================================================
+   MOVIMIENTO REDUCIDO
+   ==========================================================================
+   Quien tiene activado "reducir movimiento" en el sistema (personas con
+   vértigo, migrañas, TDAH o sensibilidad al movimiento) sufre con las
+   animaciones de esta app: los botones que saltan, el spinner que gira y
+   las transiciones de 0.3s.
+   Con esta media query se desactivan todas las transiciones y animaciones,
+   y la app queda usable igual: solo deja de moverse.
+   --------------------------------------------------------------------------
+   Es accesibilidad (WCAG 2.3.3, Animation from Interactions), no un detalle
+   cosmético. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* El selector universal aplica la regla a TODOS los elementos de la página,
+       incluidos los que se agreguen en el futuro: no hay que acordarse de
+       desactivar cada animación por separado */
+    animation-duration: 0.01ms !important;
+    /* Reduce la duración de las animaciones a casi cero. El 0.01ms en lugar de
+       0 es a propósito: con 0 algunos navegadores cancelan la animación y
+       dispara el evento animationend que espera el JS, dejando elementos
+       invisibles para siempre */
+    animation-iteration-count: 1 !important;
+    /* Las animaciones que se repiten (spinners infinitos) pasan a correr una
+       sola vez en lugar de forever */
+    transition-duration: 0.01ms !important;
+    /* Reduce también las transiciones (cambios de color, hover, elevaciones) */
+    scroll-behavior: auto !important;
+    /* El scroll suave se convierte en salto instantáneo */
+  }
+
+  /* El spinner deja de girar: se muestra estático pero sigue siendo visible,
+     que es lo que comunica que la app está trabajando. Sin esto, quien tiene
+     el movimiento reducido se queda mirando un spinner congelado sin saber
+     si la app se colgó. */
+  .spinner {
+    animation: none !important;
+    /* Se anula la rotación del spinner */
+    border-top-color: #667eea;
+    /* Se deja un color de primer plano para que el círculo se distinga del
+       fondo aunque no esté girando */
+  }
 }
 
 /* Alertas */

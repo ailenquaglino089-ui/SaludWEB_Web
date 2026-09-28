@@ -72,10 +72,14 @@
   transition: border-color 0.3s;
 }
 
-/* Estado focus del input de búsqueda */
-.input-busqueda:focus {
-  /* Quita el outline del navegador */
-  outline: none;
+/* Estado focus del input de búsqueda.
+   :focus-visible en lugar de :focus para no taparle el contorno a quien navega
+   con teclado: si no, esa persona se queda sin ninguna señal de dónde está. */
+.input-busqueda:focus-visible {
+  /* Contorno visible en el azul del módulo */
+  outline: 3px solid rgba(33, 150, 243, 0.55);
+  /* Margen entre el contorno y el borde para que no se lean pegados */
+  outline-offset: 1px;
   /* Borde en azul */
   border-color: #2196F3;
   /* Halo azul suave alrededor del input */
@@ -306,12 +310,15 @@
   transition: border-color 0.3s;
 }
 
-/* Estado focus de los campos del formulario */
-.form-grupo input:focus,
-.form-grupo select:focus,
-.form-grupo textarea:focus {
-  /* Quita el outline del navegador */
-  outline: none;
+/* Estado focus de los campos del formulario.
+   :focus-visible para no borrar el contorno de quien navega con teclado. */
+.form-grupo input:focus-visible,
+.form-grupo select:focus-visible,
+.form-grupo textarea:focus-visible {
+  /* Contorno visible en el azul del módulo */
+  outline: 3px solid rgba(33, 150, 243, 0.55);
+  /* Margen entre el contorno y el borde */
+  outline-offset: 1px;
   /* Borde azul */
   border-color: #2196F3;
   /* Halo azul suave */

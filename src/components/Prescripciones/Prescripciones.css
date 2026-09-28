@@ -42,11 +42,14 @@
   min-width: 180px;
 }
 
-/* Estado focus de los filtros */
-.input-busqueda:focus,
-.select-filtro:focus {
-  /* Quita el outline del navegador */
-  outline: none;
+/* Estado focus de los filtros.
+   :focus-visible para no taparle el contorno a quien navega con teclado. */
+.input-busqueda:focus-visible,
+.select-filtro:focus-visible {
+  /* Contorno visible en el azul del módulo */
+  outline: 3px solid rgba(33, 150, 243, 0.55);
+  /* Margen entre el contorno y el borde */
+  outline-offset: 1px;
   /* Borde azul */
   border-color: #2196F3;
   /* Halo azul suave */

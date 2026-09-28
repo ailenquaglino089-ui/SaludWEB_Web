@@ -47,9 +47,13 @@ export default function ChangeStateForm({ prescripcion, onGuardar, onCancelar })
 
         {/* Grupo del selector de nuevo estado */}
         <div className="form-grupo">
-          <label>Nuevo Estado *</label>
+          {/* htmlFor apunta al id del select: permite enfocar el campo haciendo
+              clic en el texto y hace que un lector de pantalla anuncie
+              "Nuevo Estado" junto con la opción elegida */}
+          <label htmlFor="prescripcion-nuevo-estado">Nuevo Estado *</label>
           {/* Select controlado por el estado nuevoEstado: cada cambio de opción lo actualiza */}
           <select
+            id="prescripcion-nuevo-estado"
             value={nuevoEstado}
             onChange={(e) => setNuevoEstado(e.target.value)}
           >

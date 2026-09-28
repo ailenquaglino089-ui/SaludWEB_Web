@@ -19,6 +19,16 @@ import ListaPacientes from './components/Pacientes/ListaPacientes';
 // Componente que lista los pacientes (operaciones CRUD sobre el recurso pacientes)
 import ListaPrescripciones from './components/Prescripciones/ListaPrescripciones';
 // Componente que lista las prescripciones (operaciones CRUD sobre el recurso prescripciones)
+import Configuracion from './components/Configuracion/Configuracion';
+// Componente de la pantalla de configuración de la cuenta
+import CatalogoTurnera from './components/Turnera/CatalogoTurnera';
+// Catálogo público de profesionales de la turnera
+import AgendaMedico from './components/Turnera/AgendaMedico';
+// Agenda y horarios libres de un profesional (pública)
+import ReservarTurno from './components/Turnera/ReservarTurno';
+// Confirmación del turno (exige sesión y ficha vinculada)
+import MisTurnos from './components/Turnera/MisTurnos';
+// Lista de los turnos propios, con polling y acciones de confirmar/cancelar
 import './App.css';
 // Importa los estilos globales de la aplicación
 
@@ -127,6 +137,63 @@ function AppContent() {
                 {/* Se exige estar autenticado para acceder */}
                 <ListaPrescripciones />
                 {/* Lista de prescripciones (protegida) */}
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rutas de la turnera: el catálogo y la agenda son PÚBLICAS, a
+              propósito. La turnera existe para que alguien sin cuenta pueda
+              ver profesionales y horarios antes de decidir si le conviene
+              crear una; pedir login en este punto empujaría a la gente a un
+              formulario de registro antes de saber si el consultorio le
+              sirve. */}
+          <Route
+            path="/turnera"
+            element={<CatalogoTurnera />}
+          />
+          <Route
+            path="/turnera/agenda/:idMedico"
+            element={<AgendaMedico />}
+          />
+          <Route
+            path="/turnera/mis-turnos"
+            element={
+              <ProtectedRoute>
+                <MisTurnos />
+              </ProtectedRoute>
+            }
+          />
+          {/* Esta ruta NO va dentro de ProtectedRoute, y la contradicción es
+              deliberada.
+
+              "Mis turnos" sí exige sesión: no existe una forma de mostrar los
+              turnos de alguien sin saber quién es. La reserva es distinto, y
+              meterla detrás de ProtectedRoute rompe el flujo entero.
+
+              ReservarTurno ya tiene sus propios tres estados: sin sesión
+              ofrece registrarse o entrar, con sesión pide reservar, y con
+              sesión sin ficha vinculada manda a vincularla. Con la ruta
+              protegida, el primer estado nunca se ve: ProtectedRoute
+              redirige al login antes de que el componente llegue a
+              renderizarse. El resultado es que alguien que estaba mirando
+              los horarios de qué médico quiere ser expulsado de la página sin
+              explicación, cuando en realidad la siguiente pantalla tenía
+              justamente lo que necesitaba.
+
+              Poner la protección acá adentro significaría que cualquiera que
+              empiece a escribir un nombre se queda con la página a medio
+              cargar. Es peor que el problema que estamos resolviendo. */}
+          <Route
+            path="/turnera/agenda/:idMedico/reservar"
+            element={<ReservarTurno />}
+          />
+
+          {/* Ruta de configuración: exige sesión porque opera sobre la cuenta */}
+          <Route
+            path="/configuracion"
+            element={
+              <ProtectedRoute>
+                <Configuracion />
               </ProtectedRoute>
             }
           />

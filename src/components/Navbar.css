@@ -254,14 +254,33 @@
     max-height: 0;
     /* El contenido que exceda queda oculto mientras está colapsado */
     overflow: hidden;
+    /* Al abrirse, .open cambia a overflow-y: auto, así el contenido se puede
+       desplazar si no entra entero. Con overflow:hidden fijo, el panel era una
+       caja cerrada: lo que no cabía desaparecía sin scroll posible. */
     /* Transición suave al abrir o cerrar el panel */
     transition: max-height 0.3s;
   }
 
   /* Clase 'open' (agregada por React): expande el panel */
   .navbar-menu.open {
-    /* Altura máxima al desplegarse */
-    max-height: 300px;
+    /* Altura máxima al desplegarse.
+       *
+       * El valor es alto a propósito (80vh en vez de los 300px fijos que
+       * había antes) y va acompañado de overflow-y: auto en el estado
+       * colapsado, más abajo. La razón es que el contenido del menú no es
+       * constante: un visitante sin sesión ve dos enlaces, pero un
+       * administrador ve cinco, más el bloque con su nombre y rol, más el
+       * botón de cerrar sesión. Con 300px fijos y overflow:hidden, en un
+       * teléfono chico el botón de cerrar sesión quedaba literalmente
+       * cortado abajo, sin forma de llegar: el menú se abría, tapaba la
+       * pantalla y no había manera de cerrarlo salvo tocando otro enlace.
+       *
+       * 80vh deja pasar el menú completo en la mayoría de los teléfonos y,
+       * si aun así no alcanza, el scroll interno hace el resto. */
+    max-height: 80vh;
+    overflow-y: auto;
+    /* Con la altura tope de 80vh, el 20% restante muestra que hay más
+       contenido abajo en lugar de cortarlo sin aviso. */
   }
 
   /* Los enlaces principales se apilan verticalmente dentro del panel */
