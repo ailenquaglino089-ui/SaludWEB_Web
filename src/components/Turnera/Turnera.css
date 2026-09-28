@@ -222,7 +222,9 @@
 .medico-meta {
   /* Lista de datos pequeños (matrícula) */
   margin: 0 0 16px 0;
-  color: #777;
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: #767676;
   font-size: 13px;
   /* Cada <li> en su propia línea, con un bullet propio */
   list-style: none;
@@ -311,7 +313,10 @@
   /* Horario tomado o en el pasado */
   background: #f2f2f2;
   border-color: #ddd;
-  color: #aaa;
+  /* El tachado dice "esto ya no se puede", pero el horario tiene que seguir
+     siendo legible: #aaa sobre #f2f2f2 daba 2.08:1, por debajo del 4.5:1 de
+     WCAG AA. #6e6e6e llega a 4.55:1 y conserva el gris del disabled. */
+  color: #6e6e6e;
   text-decoration: line-through;
   cursor: not-allowed;
 }
@@ -487,7 +492,9 @@
 }
 
 .turno-motivo {
-  color: #777;
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: #767676;
   font-size: 13px;
   margin: 0;
   /* word-break evita que un motivo sin espacios desborde la tarjeta */
@@ -542,13 +549,16 @@
 .turnera-cargando {
   text-align: center;
   padding: 40px 20px;
-  color: #777;
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: #767676;
 }
 
 .vacio {
   text-align: center;
   padding: 40px 20px;
-  color: #888;
+  /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
+  color: #767676;
 }
 
 .vacio-icono {
@@ -563,7 +573,8 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #888;
+  /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
+  color: #767676;
   margin-bottom: 14px;
   flex-wrap: wrap;
 }

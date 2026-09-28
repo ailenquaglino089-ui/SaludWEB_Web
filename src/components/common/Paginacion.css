@@ -39,8 +39,15 @@
 .paginacion-botones .btn {
   /* Redondeo marcado (pildora) */
   border-radius: 6px;
-  /* Ancho y alto mínimos para que los números queden parejos */
-  min-width: 36px;
+  /* Ancho y alto mínimos para que los números queden parejos.
+     44px es el área táctil mínima (Apple HIG / Material). Con 36px los números
+     se apelmazaban y el objetivo de acierto caía por debajo del recomendado. */
+  min-width: 44px;
+  /* Alto mínimo de 44px: se logra con padding, no con font-size, para que el
+     número no tenga que crecer */
+  min-height: 44px;
+  /* Padding suficiente para llegar a 44px con la tipografía actual */
+  padding: 10px 12px;
   text-align: center;
 }
 
@@ -48,8 +55,9 @@
 .paginacion-botones .btn:disabled {
   /* Fondo gris */
   background: #e9ecef;
-  /* Texto gris */
-  color: #adb5bd;
+  /* Texto gris. #adb5bd sobre #e9ecef daba 1.75:1, ilegible incluso para
+     quien ya sabe que el botón está apagado; #606c78 llega a 4.53:1. */
+  color: #606c78;
   /* Sin cursor de click */
   cursor: not-allowed;
 }
@@ -62,8 +70,8 @@
   justify-content: center;
   /* Mismo alto mínimo que los botones */
   min-width: 24px;
-  /* Color gris */
-  color: #999;
+  /* Color gris. #999 sobre blanco daba 2.85:1. */
+  color: #767676;
 }
 
 /* Botón de la página activa (el estilo .btn-primary ya la pinta de azul) */
@@ -72,17 +80,22 @@
   pointer-events: none;
 }
 
-/* Responsive: en pantallas angostas el texto y los botones siguen cabiendo */
+/* Responsive: en pantallas angostas los botones conservan los 44px, pero se
+   muestran menos páginas porque el ancho es el recurso escaso.
+   Achicar los botones para que entren más números sería volver a romper el
+   área táctil: se bajan menos páginas, no el tamaño del toque. */
 @media (max-width: 768px) {
   .paginacion-botones {
     /* Los botones se apilan si el ancho no alcanza */
     gap: 4px;
   }
 
-  /* Los números de página se achican para ganar espacio */
+  /* Los números de página se achican tipográficamente, pero el área táctil
+     sigue siendo de 44px: el padding se reduce y el min-height no se toca. */
   .paginacion-botones .btn {
-    padding: 5px 8px;
-    min-width: 32px;
-    font-size: 12px;
+    padding: 0 8px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 13px;
   }
 }

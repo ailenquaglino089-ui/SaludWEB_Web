@@ -34,9 +34,12 @@
   max-width: 360px;
 }
 
-/* Variante éxito: verde */
+/* Variante éxito: verde.
+   #16a34a daba 3.30:1 con texto blanco, por debajo del 4.5:1 que pide WCAG
+   AA. #12883e es el mismo verde con la luminosidad apenas bajada: 4.55:1.
+   El ajuste se calculó con proponer_contraste.php, no a ojo. */
 .toast--exito {
-  background: #16a34a;
+  background: #12883e;
 }
 
 /* Variante error: rojo (permanece hasta cerrarse) */
@@ -68,8 +71,18 @@
   cursor: pointer;
   /* La ✕ no se encoge nunca */
   flex-shrink: 0;
-  /* Aumenta el área táctil */
-  padding: 4px;
+  /* Área táctil mínima de 44x44 (Apple HIG / Material Design).
+     Antes era padding: 4px, o sea un alvo de ~22px: la mitad de lo debido.
+     El ícono sigue viéndose chico de 14px porque el área invisible es la que
+     se agranda, no el glifo. */
+  min-width: 44px;
+  min-height: 44px;
+  /* Centra la ✕ dentro de esa área cuadrada */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* El área táctil no se estira al pulsar: 44px es suficiente */
+  border-radius: 8px;
 }
 
 /* Hover de la ✕: se aclara para indicar interacción */
