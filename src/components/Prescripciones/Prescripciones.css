@@ -47,20 +47,20 @@
 .input-busqueda:focus-visible,
 .select-filtro:focus-visible {
   /* Contorno visible en el azul del módulo */
-  outline: 3px solid rgba(33, 150, 243, 0.55);
+  outline: 3px solid rgba(25, 122, 199, 0.55);
   /* Margen entre el contorno y el borde */
   outline-offset: 1px;
   /* Borde azul */
-  border-color: #2196F3;
+  border-color: var(--info);
   /* Halo azul suave */
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 122, 199, 0.1);
 }
 
 /* Estilos para el formulario de cambio de estado */
 /* Caja informativa con los datos de la prescripción */
 .form-info {
   /* Fondo gris muy claro */
-  background: #f8f9fa;
+  background: var(--fondo);
   /* Relleno interior */
   padding: 16px;
   /* Esquinas redondeadas */
@@ -68,7 +68,7 @@
   /* Separación inferior con el selector */
   margin-bottom: 20px;
   /* Barra lateral azul como acento visual */
-  border-left: 4px solid #2196F3;
+  border-left: 4px solid var(--info);
 }
 
 /* Líneas de datos dentro de la caja informativa */
@@ -78,7 +78,7 @@
   /* Tamaño del texto */
   font-size: 14px;
   /* Color gris oscuro */
-  color: #495057;
+  color: var(--texto-medio);
 }
 
 /* Etiquetas en negrita de la caja informativa (Medicamentos, Paciente, etc.) */
@@ -94,7 +94,7 @@
   /* Relleno pequeño */
   padding: 4px 12px;
   /* Fondo azul */
-  background: #2196F3;
+  background: var(--info);
   /* Texto en blanco */
   color: white;
   /* Forma de píldora */
@@ -109,7 +109,7 @@
 /* Botón de acción "Cambiar Estado" */
 .btn-warning {
   /* Fondo naranja */
-  background: #FF9800;
+  background: var(--aviso);
   /* Texto en blanco */
   color: white;
   /* Sin borde */
@@ -128,8 +128,12 @@
 
 /* Botón warning al pasar el mouse */
 .btn-warning:hover {
-  /* Naranja más oscuro */
-  background: #F57C00;
+  /* Más OSCURO que la base, no más claro.
+     Antes era #F57C00, que da 2.70:1 con el texto blanco y además
+    subía el brillo en el hover, justo al revés de lo que tiene que
+     pasar: oscurecer marca "acá está" sin perder legibilidad. Con
+     este valor queda en 6.28:1. */
+  background: #8f5100;
 }
 
 /* Responsive para filtros */

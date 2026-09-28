@@ -77,13 +77,13 @@
    con teclado: si no, esa persona se queda sin ninguna señal de dónde está. */
 .input-busqueda:focus-visible {
   /* Contorno visible en el azul del módulo */
-  outline: 3px solid rgba(33, 150, 243, 0.55);
+  outline: 3px solid rgba(25, 122, 199, 0.55);
   /* Margen entre el contorno y el borde para que no se lean pegados */
   outline-offset: 1px;
   /* Borde en azul */
-  border-color: #2196F3;
+  border-color: var(--info);
   /* Halo azul suave alrededor del input */
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 122, 199, 0.1);
 }
 
 /* Tabla */
@@ -115,7 +115,7 @@
 /* Fila de encabezados de la tabla */
 .tabla thead {
   /* Fondo gris muy claro para diferenciar del cuerpo */
-  background: #f8f9fa;
+  background: var(--fondo);
   /* Línea gruesa inferior de separación */
   border-bottom: 2px solid #dee2e6;
 }
@@ -129,7 +129,7 @@
   /* Texto seminegrita */
   font-weight: 600;
   /* Color gris oscuro */
-  color: #495057;
+  color: var(--texto-medio);
   /* Tamaño del texto */
   font-size: 14px;
 }
@@ -145,7 +145,7 @@
 /* Fila de la tabla al pasar el mouse */
 .tabla tbody tr:hover {
   /* Resalta la fila con un fondo gris claro */
-  background-color: #f8f9fa;
+  background-color: var(--fondo);
 }
 
 /* Celda de datos de la tabla */
@@ -155,7 +155,7 @@
   /* Tamaño del dato */
   font-size: 14px;
   /* Color gris oscuro */
-  color: #495057;
+  color: var(--texto-medio);
 }
 
 /* Status badge */
@@ -195,7 +195,7 @@
 /* Botón de información (Editar) - azul */
 .btn-info {
   /* Fondo azul */
-  background: #2196F3;
+  background: var(--info);
   /* Texto blanco */
   color: white;
   /* Sin borde */
@@ -217,7 +217,7 @@
 /* Botón de peligro (Eliminar) - rojo */
 .btn-danger {
   /* Fondo rojo */
-  background: #f44336;
+  background: var(--error);
   /* Texto blanco */
   color: white;
   /* Sin borde */
@@ -244,7 +244,7 @@
   /* Relleno generoso para centrar el mensaje */
   padding: 60px 20px;
   /* Color gris */
-  color: #999;
+  color: var(--texto-suave);
   /* Tamaño del mensaje */
   font-size: 16px;
   /* Fondo blanco de la tarjeta */
@@ -316,13 +316,13 @@
 .form-grupo select:focus-visible,
 .form-grupo textarea:focus-visible {
   /* Contorno visible en el azul del módulo */
-  outline: 3px solid rgba(33, 150, 243, 0.55);
+  outline: 3px solid rgba(25, 122, 199, 0.55);
   /* Margen entre el contorno y el borde */
   outline-offset: 1px;
   /* Borde azul */
-  border-color: #2196F3;
+  border-color: var(--info);
   /* Halo azul suave */
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 122, 199, 0.1);
 }
 
 /* Checkbox dentro de los formularios */
@@ -348,7 +348,7 @@
 /* Campo con error de validación */
 .input-error {
   /* Borde rojo forzado (importante para ganarle al borde por defecto) */
-  border-color: #f44336 !important;
+  border-color: var(--error) !important;
   /* Fondo rojizo tenue para indicar el campo problemático */
   background-color: #ffebee;
 }
@@ -356,7 +356,7 @@
 /* Mensaje de error debajo del campo */
 .error-text {
   /* Texto rojo */
-  color: #f44336;
+  color: var(--error);
   /* Tamaño pequeño */
   font-size: 12px;
   /* Pequeño margen superior respecto al input */
@@ -460,7 +460,7 @@
     /* Texto seminegrita para diferenciar etiqueta de valor */
     font-weight: 600;
     /* Mismo gris de los encabezados */
-    color: #495057;
+    color: var(--texto-medio);
     /* La etiqueta se alinea a la izquierda */
     text-align: left;
     /* No deja que la etiqueta se comprima */

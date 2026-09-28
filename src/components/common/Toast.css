@@ -39,7 +39,7 @@
    AA. #12883e es el mismo verde con la luminosidad apenas bajada: 4.55:1.
    El ajuste se calculó con proponer_contraste.php, no a ojo. */
 .toast--exito {
-  background: #12883e;
+  background: var(--exito);
 }
 
 /* Variante error: rojo (permanece hasta cerrarse) */

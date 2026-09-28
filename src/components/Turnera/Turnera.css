@@ -21,7 +21,7 @@
 
 .turnera-header {
   /* El separador de 1px de debajo es lo que da aire al contenido */
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--borde);
   /* Espacio hasta ese separador */
   padding-bottom: 20px;
   /* Espacio entre el separador y lo que sigue */
@@ -97,9 +97,9 @@
 .filtro-grupo select:focus-visible {
   /* Contorno visible al navegar con teclado (mismo criterio que el resto
      del proyecto: :focus-visible, no :focus) */
-  outline: 3px solid rgba(102, 126, 234, 0.55);
+  outline: 3px solid rgba(90, 111, 208, 0.55);
   outline-offset: 1px;
-  border-color: #667eea;
+  border-color: var(--primario);
 }
 
 /* ------------------------------------------------------------
@@ -127,7 +127,7 @@
 
 .btn-turnera:focus-visible {
   /* Contorno visible al navegar con teclado */
-  outline: 3px solid rgba(102, 126, 234, 0.55);
+  outline: 3px solid rgba(90, 111, 208, 0.55);
   outline-offset: 2px;
 }
 
@@ -141,7 +141,7 @@
 
 .btn-primario {
   /* Degradado con los dos colores de la marca */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   color: white;
 }
 
@@ -163,7 +163,7 @@
 
 .btn-peligro {
   /* Rojo de "esta acción no se puede deshacer" */
-  background: #e05252;
+  background: var(--cancelado);
   color: white;
 }
 
@@ -191,7 +191,7 @@
   background: white;
   /* Borde de 1px (no 2px como en el dashboard): estas son más densas y un
      borde de 2px las hace verse recargadas */
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--borde);
   border-radius: 12px;
   padding: 20px;
   /* La tarjeta es un contenedor flex en columna para poder distributes
@@ -202,8 +202,8 @@
 }
 
 .medico-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.12);
+  border-color: var(--primario);
+  box-shadow: 0 6px 18px rgba(90, 111, 208, 0.12);
 }
 
 .medico-card h3 {
@@ -213,7 +213,7 @@
 }
 
 .medico-especialidad {
-  color: #667eea;
+  color: var(--primario);
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 12px 0;
@@ -224,7 +224,7 @@
   margin: 0 0 16px 0;
   /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
      llega a 4.54:1. */
-  color: #767676;
+  color: var(--texto-suave);
   font-size: 13px;
   /* Cada <li> en su propia línea, con un bullet propio */
   list-style: none;
@@ -279,9 +279,9 @@
      teclado y los lectores de pantalla lo anuncian como pulsable */
   padding: 11px 6px;
   border-radius: 8px;
-  border: 1px solid #667eea;
+  border: 1px solid var(--primario);
   background: white;
-  color: #667eea;
+  color: var(--primario);
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
@@ -290,19 +290,19 @@
 }
 
 .slot:hover:not(:disabled) {
-  background: #667eea;
+  background: var(--primario);
   color: white;
 }
 
 .slot:focus-visible {
-  outline: 3px solid rgba(102, 126, 234, 0.55);
+  outline: 3px solid rgba(90, 111, 208, 0.55);
   outline-offset: 2px;
 }
 
 .slot.slot-elegido {
   /* El horario elegido se invierte de color. Es la única forma de saber
      visualmente cuál está seleccionado sin revisar todos los botones */
-  background: #667eea;
+  background: var(--primario);
   color: white;
   /* El grosor de borde suma 2px más que los demás: el botón "crece" un poco,
      que refuerza la selección más allá del color (sirve para daltonismo) */
@@ -316,7 +316,7 @@
   /* El tachado dice "esto ya no se puede", pero el horario tiene que seguir
      siendo legible: #aaa sobre #f2f2f2 daba 2.08:1, por debajo del 4.5:1 de
      WCAG AA. #6e6e6e llega a 4.55:1 y conserva el gris del disabled. */
-  color: #6e6e6e;
+  color: var(--texto-tenue);
   text-decoration: line-through;
   cursor: not-allowed;
 }
@@ -337,19 +337,19 @@
 
 .aviso-info {
   background: #eef2ff;
-  border-color: #667eea;
+  border-color: var(--primario);
   color: #3d3f7a;
 }
 
 .aviso-exito {
   background: #e8f6ed;
-  border-color: #2e9e5b;
+  border-color: var(--confirmado);
   color: #1d6b3c;
 }
 
 .aviso-error {
   background: #fdecec;
-  border-color: #e05252;
+  border-color: var(--cancelado);
   color: #a03232;
 }
 
@@ -362,7 +362,7 @@
    ------------------------------------------------------------ */
 .turnera-form {
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--borde);
   border-radius: 12px;
   padding: 24px;
 }
@@ -403,9 +403,9 @@
 .form-campo input:focus-visible,
 .form-campo select:focus-visible,
 .form-campo textarea:focus-visible {
-  outline: 3px solid rgba(102, 126, 234, 0.55);
+  outline: 3px solid rgba(90, 111, 208, 0.55);
   outline-offset: 1px;
-  border-color: #667eea;
+  border-color: var(--primario);
 }
 
 /* ------------------------------------------------------------
@@ -414,7 +414,7 @@
 .resumen-turno {
   background: #f8f9fc;
   border: 1px solid #e0e4ee;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--primario);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
@@ -457,7 +457,7 @@
    ------------------------------------------------------------ */
 .turno-item {
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--borde);
   border-radius: 12px;
   padding: 18px 20px;
   margin-bottom: 12px;
@@ -485,7 +485,7 @@
 }
 
 .turno-profesional {
-  color: #667eea;
+  color: var(--primario);
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 2px 0;
@@ -494,7 +494,7 @@
 .turno-motivo {
   /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
      llega a 4.54:1. */
-  color: #767676;
+  color: var(--texto-suave);
   font-size: 13px;
   margin: 0;
   /* word-break evita que un motivo sin espacios desborde la tarjeta */
@@ -520,7 +520,9 @@
 
 .estado-pendiente {
   background: #fff4e0;
-  color: #a86b12;
+  color: var(--aviso-texto);
+  /* --aviso-texto vale #9d6410, que da 4.52:1 sobre este lavado.
+     El valor anterior, #a86b12, daba 4.03:1 y quedaba fuera de AA. */
 }
 
 .estado-confirmada {
@@ -551,14 +553,14 @@
   padding: 40px 20px;
   /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
      llega a 4.54:1. */
-  color: #767676;
+  color: var(--texto-suave);
 }
 
 .vacio {
   text-align: center;
   padding: 40px 20px;
   /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
-  color: #767676;
+  color: var(--texto-suave);
 }
 
 .vacio-icono {
@@ -574,7 +576,7 @@
   gap: 8px;
   font-size: 12px;
   /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
-  color: #767676;
+  color: var(--texto-suave);
   margin-bottom: 14px;
   flex-wrap: wrap;
 }
@@ -585,12 +587,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #2e9e5b;
+  background: var(--confirmado);
   flex-shrink: 0;
 }
 
 .punto-vivo.parado {
-  background: #bbb;
+  background: var(--texto-suave);
 }
 
 @keyframes latir {
@@ -631,18 +633,18 @@
 }
 
 .dia-btn:hover:not(:disabled) {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--primario);
+  color: var(--primario);
 }
 
 .dia-btn:focus-visible {
-  outline: 3px solid rgba(102, 126, 234, 0.55);
+  outline: 3px solid rgba(90, 111, 208, 0.55);
   outline-offset: 2px;
 }
 
 .dia-btn.elegido {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--primario);
+  border-color: var(--primario);
   color: white;
 }
 

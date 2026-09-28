@@ -5,7 +5,7 @@
 /* Contenedor principal de la barra de navegación */
 .navbar {
   /* Degradado de fondo en tonos violeta/azul característico de la app */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   /* Texto e íconos en color blanco para contrastar con el fondo */
   color: white;
   /* Sin relleno interior */
@@ -215,7 +215,7 @@
   /* El fondo se vuelve blanco */
   background: white;
   /* El texto cambia al color primario de la marca */
-  color: #667eea;
+  color: var(--primario);
 }
 
 /* Responsive: a partir de 768px de ancho se aplica el diseño móvil */
@@ -241,7 +241,7 @@
     left: 0;
     right: 0;
     /* Mismo fondo degradado que la barra */
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--degradado-marca);
     /* Los elementos se apilan verticalmente */
     flex-direction: column;
     /* Sin separación entre elementos apilados */

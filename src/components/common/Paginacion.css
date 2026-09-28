@@ -54,10 +54,10 @@
 /* Botones deshabilitados (Anterior en la 1ra página, etc.) */
 .paginacion-botones .btn:disabled {
   /* Fondo gris */
-  background: #e9ecef;
+  background: var(--borde-tenue);
   /* Texto gris. #adb5bd sobre #e9ecef daba 1.75:1, ilegible incluso para
      quien ya sabe que el botón está apagado; #606c78 llega a 4.53:1. */
-  color: #606c78;
+  color: var(--texto-deshabilitado);
   /* Sin cursor de click */
   cursor: not-allowed;
 }
@@ -71,7 +71,7 @@
   /* Mismo alto mínimo que los botones */
   min-width: 24px;
   /* Color gris. #999 sobre blanco daba 2.85:1. */
-  color: #767676;
+  color: var(--texto-suave);
 }
 
 /* Botón de la página activa (el estilo .btn-primary ya la pinta de azul) */
