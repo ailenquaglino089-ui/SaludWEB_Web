@@ -1,0 +1,33 @@
+{
+  "name": "SaludWEB",
+  "short_name": "SaludWEB",
+  "description": "Sistema de gestión de salud: turnos, prescripciones, pacientes y médicos.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f2f2",
+  "theme_color": "#1c8140",
+  "lang": "es",
+  "categories": ["health", "medical", "productivity"],
+  "icons": [
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

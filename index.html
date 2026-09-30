@@ -6,8 +6,20 @@
     <!-- <head> contiene metadatos del documento que no se muestran directamente en la página -->
     <meta charset="UTF-8" />
     <!-- charset="UTF-8" define la codificación de caracteres para soportar tildes y símbolos en español -->
+    <meta name="theme-color" content="#1c8140" />
+    <!-- theme-color: color de la barra del navegador en móviles y del frame de la PWA instalada -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <!-- Favicon (icono de la pestaña del navegador) apuntando al SVG que Vite genera por defecto -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <!-- manifest: describe la PWA (nombre, íconos, tema, display) para que el navegador
+         permita "Agregar a la pantalla de inicio / Instalar" -->
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <!-- apple-touch-icon: ícono que iOS usa para "Agregar a pantalla de inicio" -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- mobile-web-app-capable / apple-mobile-web-app-capable: permiten que la app
+         instalada se abra sin la barra de direcciones del navegador -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Viewport: hace que la SPA sea responsive/adaptable en móviles y tablets -->
     <title>SaludWEB - Sistema de Gestión de Salud</title>
