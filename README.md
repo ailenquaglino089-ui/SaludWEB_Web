@@ -121,3 +121,20 @@ const { usuario, login, logout, registro } = useAuth();
 - [API Documentation](../API_DOCUMENTATION.md)
 - [Backend README](../SaludWEB_Backend/README.md)
 
+
+---
+
+## PWA y arranque offline
+
+La SPA es instalable y abre sin red cuando ya se visito una vez:
+
+- `public/manifest.webmanifest` describe la app (nombre, iconos, tema, display).
+- `public/sw.js` cachea el caparazon (HTML + assets compilados con hash) y
+  sirve la navegacion con red primero / copia local de respaldo. Los datos de
+  `/api` **nunca** se cachean: turnos y prescripciones siempre se piden a la
+  red con autorizacion.
+- El service worker se registra solo en el build de produccion (`npm run
+  build`), en `src/main.jsx`.
+- Para probarlo: servir `dist/` en un contexto local (p.ej. XAMPP) y abrir
+  la app; la segunda visita con la red cortada muestra la app igual.
+- Requiere HTTPS (o `localhost`) para que el navegador active el service worker.

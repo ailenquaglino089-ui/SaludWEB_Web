@@ -29,6 +29,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext.jsx';
 import { useContext } from 'react';
 
 import Navbar from './components/Navbar';
+import AvisoOffline from './components/common/AvisoOffline';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -151,6 +152,13 @@ function AppContent() {
           cambiar de pantalla lo volvería a montar y perdería el estado; acá
           es una sola instancia que se mantiene durante toda la navegación. */}
       <Navbar />
+
+      {/* AvisoOffline es un cartel GLOBAL: va también fuera de <Routes>,
+          justo debajo del Navbar, porque "sin conexión" es un estado de la
+          aplicación entera, no de una pantalla. Al vivir acá no se desmonta
+          al navegar y conserva su estado (si el cartel está visible, sigue
+          visible al cambiar de ruta, que es lo correcto). */}
+      <AvisoOffline />
 
       <main className="main-content">
         <Routes>

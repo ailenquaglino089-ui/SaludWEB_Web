@@ -1,0 +1,75 @@
+/* ============================================================
+   AvisoOffline.css - Cartel fijo de "sin conexión"
+   ============================================================
+   El cartel es una barra fina que va entre el Navbar y el contenido,
+   en el flujo normal del documento (App.jsx lo coloca ahí). No necesita
+   position ni z-index: la barra simplemente ocupa su lugar, siempre visible
+   mientras el problema dure y sin tapar la navegación.
+
+   Usa los tokens de AVISO del design system (--aviso, --aviso-fondo,
+   --aviso-texto), no el color de la marca: "sin conexión" es una advertencia
+   temporal, y pintarla de primario la haría competir con los botones
+   principales sin transmitir "atención acá". */
+
+/* --------------------- fondo y posición -------------------- */
+.aviso-conexion {
+  display: flex;
+  /* Fila: ícono + texto + botón de cierre alineados en horizontal */
+  align-items: center;
+  /* Centra los tres elementos en el eje vertical de la barra */
+  justify-content: space-between;
+  /* Texto a la izquierda y botón de cierre pegado al borde derecho */
+  gap: 0.6rem;
+  /* Espacio entre ícono, texto y botón (el ritmo del sistema) */
+  padding: 0.55rem 1rem;
+  /* Aire interno: vertical compacto para no robarle protagonismo a la pantalla */
+  background: var(--aviso-fondo);
+  /* Fondo ámbar pálido: color de advertencia, igual que el de los toasts */
+  border-bottom: 2px solid var(--aviso);
+  /* Borde inferior ámbar: la barra queda "apoyada" sobre el contenido */
+  color: var(--aviso-texto);
+  /* Texto ámbar oscuro sobre fondo ámbar pálido (contraste WCAG AA verificado) */
+  font-size: var(--texto-base);
+  /* Tipografía base del sistema: no se achica, 16px es el mínimo en móvil */
+}
+
+/* ------------------ ícono y texto -------------------------- */
+.aviso-conexion-icono {
+  font-size: var(--texto-md);
+  /* El ícono es un poco más grande que el texto: se lee como pictograma */
+  flex-shrink: 0;
+  /* No se achica si la barra se queda angosta en un teléfono */
+}
+
+.aviso-conexion-texto {
+  flex: 1;
+  /* El texto ocupa el espacio disponible y empuja el botón al borde */
+}
+
+/* ------------------ botón de cierre ------------------------ */
+.aviso-conexion-cerrar {
+  background: transparent;
+  /* Sin fondo: es un botón de solo ícono, la barra ya tiene su color */
+  border: none;
+  /* Sin borde: el padding define el área táctil */
+  color: inherit;
+  /* El ícono toma el color del texto de la barra (contraste garantizado) */
+  font-size: var(--texto-base);
+  /* Tamaño del "✕", coherente con el texto de la barra */
+  cursor: pointer;
+  /* Manito al pasar: señal de que es interactivo (estándar de la web) */
+  padding: 0.35rem 0.6rem;
+  /* Aire alrededor del "✕": con él se llega al área táctil mínima de 44px */
+  border-radius: var(--radio-sm);
+  /* Esquinas suaves igual que los demás botones del sistema */
+  margin-left: 0.5rem;
+  /* Separación mínima del texto cuando la barra es angosta */
+}
+
+/* El foco siempre se ve: es el mínimo de accesibilidad para navegar por teclado */
+.aviso-conexion-cerrar:focus-visible {
+  outline: 2px solid var(--aviso);
+  /* Anillo de foco en el color de la advertencia (no se pierde con el fondo) */
+  outline-offset: 2px;
+  /* Separa el anillo del botón para que no se recorte con el borde de la barra */
+}
