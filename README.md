@@ -1,8 +1,23 @@
 # Frontend SPA - SaludWEB
 
-Frontend moderno construido con **React + Vite**.
+Frontend moderno construido con **React + Vite**. Consume la API REST del backend
+(`SaludWEB_Backend`) y proporciona la interfaz del sistema de gestión de salud.
 
-Consume la API REST del backend y proporciona una interfaz profesional para el sistema de gestión de salud.
+## Qué hacemos acá
+
+- **Web app profesional** (SPA) con login y registro JWT.
+- **Módulos de gestión**: médicos, pacientes y prescripciones (la app respeta las mismas
+  reglas que el backend: un paciente no puede crear médicos, solo los médicos recetan, etc.).
+- **Turnera (citas online)**: catálogo de especialidades → profesionales → reserva de turno;
+  mis turnos; agenda del profesional con *polling adaptativo* (en el backend se explica por
+  qué no se usó SSE/WebSocket).
+- **Roles y permisos en la UI**: cada usuario ve y hace solo lo que su rol permite
+  (`admin | medico | paciente`), usando `tipo_usuario` de `/api/auth/me`.
+- **Manejo de errores de red**: aviso global **"Sin conexión"** cuando el navegador queda
+  offline o una petición a la API muere sin respuesta.
+- **PWA instalable y arranque offline** (ver sección abajo).
+- **Regresión visual/estructural verificada**: `verificar_pwa.mjs` con Playwright
+  (vease "Verificar la PWA").
 
 ## 🚀 Inicio Rápido
 
@@ -29,68 +44,64 @@ npm run dev
 npm run build
 ```
 
----
-
 ## 📁 Estructura del Proyecto
 
 ```
-repositorio_web_spa/
+SaludWEB_Web/
+├── public/                  # assets servidos tal cual
+│   ├── manifest.webmanifest # PWA: nombre, iconos, tema, display
+│   ├── sw.js                # service worker (offline)
+│   ├── icono-192.png        # icono PWA
+│   ├── icono-512.png        # icono PWA
+│   ├── apple-touch-icon.png # icono iOS
+│   └── .htaccess
 ├── src/
 │   ├── api/
-│   │   └── client.js          # Cliente API HTTP
+│   │   ├── client.js        # cliente HTTP con JWT y manejo de red
+│   │   └── turnera.js       # cliente API del módulo turnera
 │   ├── components/
-│   │   ├── Auth/
-│   │   │   ├── Login.jsx
-│   │   │   └── Register.jsx
-│   │   ├── Dashboard/
-│   │   │   └── Dashboard.jsx
-│   │   ├── Medicos/
-│   │   │   ├── ListaMedicos.jsx
-│   │   │   ├── FormularioMedico.jsx
-│   │   │   └── DetallesMedico.jsx
-│   │   ├── Pacientes/
-│   │   │   ├── ListaPacientes.jsx
-│   │   │   └── FormularioPaciente.jsx
-│   │   ├── Prescripciones/
-│   │   │   ├── ListaPrescripciones.jsx
-│   │   │   └── FormularioPrescripcion.jsx
-│   │   └── Navbar.jsx
-│   ├── hooks/
-│   │   └── useAuth.js         # Hook de autenticación
-│   ├── context/
-│   │   └── AuthContext.js     # Context de autenticación
-│   ├── App.jsx                # Componente raíz
+│   │   ├── Auth/            # Login y Registro
+│   │   ├── Dashboard/       # panel (muestra el rol propio)
+│   │   ├── Medicos/         # listado/formulario/detalle
+│   │   ├── Pacientes/       # listado/formulario
+│   │   ├── Prescripciones/  # listado/formulario/cambio de estado
+│   │   ├── Turnera/         # catálogo, reservar, mis turnos, agenda
+│   │   ├── Usuarios/        # gestión de usuarios y roles (solo admin)
+│   │   ├── Configuracion/   # panel de configuración
+│   │   ├── Navbar.jsx       # barra de navegación superior
+│   │   └── common/          # Toast, Paginacion, ConfirmarModal, AvisoOffline
+│   ├── hooks/               # useAuth, usePolling
+│   ├── context/AuthContext.jsx
+│   ├── utils/crudHelpers.js
+│   ├── App.jsx              # componente raíz
 │   ├── App.css
-│   └── main.jsx
-├── index.html
+│   └── main.jsx             # registra el SW solo en producción
+├── index.html               # meta + theme-color de la marca
+├── verificar_pwa.mjs        # verificación E2E de la PWA (Playwright)
 ├── package.json
 └── vite.config.js
 ```
 
----
-
 ## 🔧 Configuración API
 
-En `src/api/client.js`, configura la URL de tu backend:
+En `src/api/client.js`, configura la URL del backend:
 
 ```javascript
 const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 ```
 
----
-
 ## 🎨 Características
 
-- ✅ Autenticación con JWT (login/registro)
-- ✅ CRUD de Médicos
-- ✅ CRUD de Pacientes
-- ✅ CRUD de Prescripciones
-- ✅ Dashboard interactivo
-- ✅ Validaciones de formularios
-- ✅ Manejo de errores
+- ✅ Autenticación con JWT (login/registro), misma API que la app móvil
+- ✅ CRUD de Médicos / Pacientes / Prescripciones con gating por rol
+- ✅ Turnera: especialidades → profesionales → reserva, mis turnos y agenda del médico
+- ✅ Gestión de usuarios y roles (solo admin)
+- ✅ Cambio de estado de prescripciones y cancelación de turnos
+- ✅ Dashboard interactivo que muestra el rol propio
+- ✅ Avviso global "Sin conexión" (AvisoOffline)
+- ✅ PWA instalable + arranque offline (sin tocar los datos de `/api`)
+- ✅ Validaciones de formularios y manejo de errores
 - ✅ Responsive design
-
----
 
 ## 📦 Dependencias Principales
 
@@ -99,8 +110,7 @@ const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 - **Axios** - Cliente HTTP
 - **Vite** - Build tool
 - **React Context** - Gestión de estado (autenticación)
-
----
+- **Playwright** (dev) - Verificación E2E de la PWA
 
 ## 🔐 Autenticación
 
@@ -114,27 +124,44 @@ const { usuario, login, logout, registro } = useAuth();
 // Se envía en cada request como Authorization header
 ```
 
----
+## Credenciales de demostración
 
-## 📚 Más información
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| Médico | `medico@prueba.com` | `medico123` |
+| Paciente | `paciente@prueba.com` | `paciente123` |
+| Administradora | `admin@salud.com` | (contraseña personal, no está en el repo) |
 
-- [API Documentation](../API_DOCUMENTATION.md)
-- [Backend README](../SaludWEB_Backend/README.md)
-
-
----
+> Las fichas de demo se regeneran con `php sembrar_datos_demo.php` en el backend.
 
 ## PWA y arranque offline
 
-La SPA es instalable y abre sin red cuando ya se visito una vez:
+La SPA es instalable y abre sin red cuando ya se visitó una vez:
 
 - `public/manifest.webmanifest` describe la app (nombre, iconos, tema, display).
-- `public/sw.js` cachea el caparazon (HTML + assets compilados con hash) y
-  sirve la navegacion con red primero / copia local de respaldo. Los datos de
-  `/api` **nunca** se cachean: turnos y prescripciones siempre se piden a la
-  red con autorizacion.
-- El service worker se registra solo en el build de produccion (`npm run
-  build`), en `src/main.jsx`.
-- Para probarlo: servir `dist/` en un contexto local (p.ej. XAMPP) y abrir
-  la app; la segunda visita con la red cortada muestra la app igual.
+- `public/sw.js` cachea el caparazón (HTML + assets compilados con hash) y sirve la
+  navegación con **red primero / copia local de respaldo**. Los datos de `/api` **nunca**
+  se cachean: turnos y prescripciones siempre se piden a la red con autorización.
+- El service worker se registra **solo en el build de producción** (`npm run build`), en
+  `src/main.jsx`.
 - Requiere HTTPS (o `localhost`) para que el navegador active el service worker.
+
+### Verificar la PWA (E2E en navegador real)
+
+```bash
+npm run build
+npx playwright install chromium    # primera vez, descarga el navegador
+npx vite preview                   # sirve dist/ en http://localhost:4173
+node verificar_pwa.mjs             # corre las 12 comprobaciones
+```
+
+`verificar_pwa.mjs` abre un Chromium real y comprueba: manifest instalable, íconos
+192/512, service worker activo y controlador, **arranque offline** desde el caparazón en
+caché, aviso "sin conexión" visible y que **`/api` nunca salga del caché** (los datos
+clínicos no se sirven viejos). Resultado esperado: `Pasos OK: 12 / Fallos: 0`.
+
+## 📚 Más información
+
+- [Backend README](../SaludWEB_Backend/README.md)
+- [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
+- [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
