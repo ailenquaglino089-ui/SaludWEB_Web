@@ -55,6 +55,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Vuelve a pedirle al backend los datos del usuario.
+   *
+   * Hace falta por un caso concreto: después de vincular la cuenta con una
+   * ficha, el backend le agrega a la sesión el id de esa ficha. Si la web no
+   * vuelve a consultarlo, el estado local sigue diciendo "no vinculado" y el
+   * formulario de reserva no aparecería hasta que el usuario recargara la
+   * página a mano.
+   *
+   * @returns {Promise<object|null>} El usuario actualizado, o null si falló.
+   */
+  const recargarSesion = async () => {
+    try {
+      const response = await client.get('/api/auth/me');
+      const datos = response.data?.data ?? null;
+      setUsuario(datos);
+      // Se actualiza el estado global con los datos frescos del servidor.
+      return datos;
+      // Se devuelve el usuario para que quien chamou sepa si pudo actualizarse.
+    } catch (err) {
+      // Si falla no se limpia la sesión: el token puede seguir siendo válido
+      // y el fallo ser de red momentáneo. El interceptor de Axios ya se
+      // encarga de cerrar la sesión si lo que falló fue un 401.
+      console.error('Error recargando la sesión:', err);
+      return null;
+    }
+  };
+
   const registro = async (email, password, nombre, tipoUsuario = 'paciente') => {
     // registro: crea una cuenta nueva en el backend (parámetros: credenciales, nombre y tipo de usuario; por defecto "paciente")
     try {
@@ -190,7 +218,10 @@ export const AuthProvider = ({ children }) => {
     logout,
     // Método de logout (exponer la función para que Navbar lo invoque)
     cambiarContrasena,
-    // Método de cambio de contraseña (exponer la función para el perfil/ajustes)
+    // Método de cambio de contraseña (exponer el método para el perfil/ajustes)
+    recargarSesion,
+    // Vuelve a consultar /api/auth/me. La usan la vinculación de ficha y la
+    // pantalla de Configuración, donde los datos cambian en el servidor.
   };
 
   return (

@@ -1,0 +1,115 @@
+# ============================================================
+# .htaccess - SaludWEB (frontend compilado)
+# ============================================================
+# POR QUÉ ESTE ARCHIVO
+# --------------------
+# La web es una SPA con react-router: las rutas como /turnera o
+# /turnera/mis-turnos NO son archivos. Son direcciones que existen solo
+# dentro de JavaScript.
+#
+# Sin este archivo, si alguien abre directamente
+# http://localhost/Workspace_SaludWEB/SaludWEB_Web/turnera/mis-turnos
+# (o refresca la página con F5 estando en esa ruta, o abre el enlace en
+# una pestaña nueva), Apache busca un archivo llamado "turnera" en disco,
+# no lo encuentra y devuelve un error 404.
+#
+# Con este archivo, Apache le pasa cualquier ruta desconocida a index.html
+# y es la SPA la que decide qué mostrar. Es el equivalente en Apache de lo
+# que hace Vite en desarrollo.
+# ============================================================
+
+# Activa el motor de reescritura de URLs (mod_rewrite).
+# Necesario para poder convertir rutas en rutas internas.
+RewriteEngine On
+
+# ------------------------------------------------------------------
+# Rutas de la API: NO deben pasar por la SPA
+# ------------------------------------------------------------------
+# En producción la web y la API se sirven desde el mismo Apache pero en
+# carpetas distintas, así que /api no debería llegar hasta acá. Este bloque
+# es una red de seguridad: si alguien configura mal el proxy y las
+# peticiones de API terminan en la carpeta de la web, sin esto la regla de
+# más abajo le devolvería un index.html, y el frontend recibiría HTML donde
+# esperaba JSON. El error típico en la consola sería un error de parseo de
+# JSON, que no dice nada sobre la causa real.
+#
+# POR QUÉ SE BLOQUEA Y NO SE REENVÍA
+# ---------------------------------
+# La alternativa sería redirigir al backend:
+#
+#     RewriteRule ^api/(.*)$ ../SaludWEB_Backend/api/$1 [L]
+#
+# Se descartó a propósito por dos razones concretas.
+#
+# La primera es que un destino que empieza con ../ es una RUTA DE SISTEMA DE
+# ARCHIVOS, no una URL. Mod_rewrite la resuelve contra el directorio actual y
+# el resultado queda fuera de la raíz pública de la web. Si el archivo destino
+# existe y el intérprete de PHP no lo procesa en esa ruta, Apache lo sirve como
+# texto y el cliente recibe el código fuente del backend. Convertir un error de
+# configuración en una filtración de código es un intercambio muy malo.
+#
+# La segunda es que un reenvío no resuelve el problema original: el destino
+# seguiría siendo una ruta local, así que depende de que las rutas relativas
+# Sean correctas justo en el despliegue donde algo ya está mal. Un bloqueo
+# explícito es imposible de confundir: dice "esto no se sirve desde acá" en
+# lugar de intentar adivinar a dónde debía ir.
+RewriteRule ^api/ - [F,L]
+# El flag [F]Forbidden corta la petición con 403, y el [L] evita que las reglas
+# siguientes (que entregarían index.html) sigan evaluándose.
+
+# ------------------------------------------------------------------
+# Todo lo demás que no sea un archivo real va a index.html
+# ------------------------------------------------------------------
+# La condición %{REQUEST_FILENAME} !-f evita reescribir los archivos que
+# SÍ existen de verdad (index.html, los .js y .css de la carpeta assets/,
+# las imágenes). Si se reescribieran, index.html devolvería el HTML en
+# lugar del archivo solicitado y el navegador intentaría parsear un .js
+# como si fuera una página.
+RewriteCond %{REQUEST_FILENAME} !-f
+# "!-f" significa "el archivo solicitado NO existe en disco"
+
+RewriteCond %{REQUEST_FILENAME} !-d
+# "!-d" significa "NO es un directorio". Sin esta condición, /assets/
+# (que es un directorio real) se reescribiría a index.html y el navegador
+# no podría cargar los archivos del build.
+
+RewriteRule ^ index.html [L]
+# Cualquier ruta que no haya sido capturada antes se entrega a index.html
+# y react-router la resuelve del lado del cliente.
+
+# ------------------------------------------------------------------
+# Cache
+# ------------------------------------------------------------------
+# Los archivos del build llevan un hash en el nombre
+# (index-a1b2c3d4.js), así que su contenido NUNCA cambia para un nombre
+# dado: se pueden cachear para siempre. Si se cambia el código, cambia el
+# hash y el navegador descarga el archivo nuevo.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Activa el módulo de cache del navegador
+
+  ExpiresByType text/css "access plus 1 year"
+  # Los estilos se cachean un año: su nombre incluye el hash del build
+  ExpiresByType application/javascript "access plus 1 year"
+  # Los scripts también: mismo motivo
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  # Las imágenes no cambian de nombre entre builds
+  ExpiresByType image/svg+xml "access plus 1 year"
+  # Los íconos SVG tampoco
+</IfModule>
+
+# ------------------------------------------------------------------
+# Compresión
+# ------------------------------------------------------------------
+# Reduce el tamaño de lo que se descarga. El HTML de la SPA y los .js/.css
+# comprimidos pesan bastante menos por gzip que sin comprimir, y en una
+# red móvil la diferencia se nota.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain
+  # Comprime HTML, CSS y texto plano
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  # Comprime los scripts de la SPA y las respuestas JSON de la API
+  AddOutputFilterByType DEFLATE image/svg+xml
+  # SVG es texto (XML), se comprime muy bien
+</IfModule>

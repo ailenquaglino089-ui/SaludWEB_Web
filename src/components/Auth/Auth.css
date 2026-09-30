@@ -13,7 +13,7 @@
   /* La tarjeta siempre ocupa al menos toda la altura de la ventana */
   min-height: 100vh;
   /* Fondo degradado en los colores de la marca */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   /* Tipografía estándar del sistema con fallbacks */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -37,7 +37,7 @@
 /* Encabezado superior de la tarjeta (logo y subtítulo) */
 .auth-header {
   /* Mismo degradado que el fondo para dar continuidad visual */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   /* Texto del encabezado en blanco */
   color: white;
   /* Relleno generoso: 40px vertical, 30px horizontal */
@@ -132,7 +132,7 @@
   /* Relleno interno cómodo para escribir */
   padding: 12px 14px;
   /* Borde gris claro */
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--borde);
   /* Esquinas redondeadas */
   border-radius: 8px;
   /* Tamaño del texto */
@@ -145,13 +145,20 @@
   box-sizing: border-box;
 }
 
-/* Estado focus: cuando el usuario hace clic en un campo */
-.form-group input:focus,
-.form-group select:focus {
-  /* Quita el outline que el navegador agrega por defecto */
-  outline: none;
+/* Estado focus: cuando el usuario hace clic o tabula dentro de un campo.
+   Se usa :focus-visible y no :focus a propósito: el contorno del navegador se
+   conserva cuando la navegación es con teclado (que es cuando la persona
+   necesita la señal para ubicarse) y se omite cuando el usuario hizo clic con
+   el mouse, donde el cursor ya cumple esa función. Quitarlo siempre dejaba a
+   quien navega solo con teclado sin ninguna pista de dónde estaba. */
+.form-group input:focus-visible,
+.form-group select:focus-visible {
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  /* Contorno visible en el color de la marca */
+  outline-offset: 1px;
+  /* Margen entre el contorno y el borde para que no se lean pegados */
+  border-color: var(--primario);
   /* El borde pasa al color primario de la marca */
-  border-color: #667eea;
 }
 
 /* Estado deshabilitado: campos bloqueados durante el envío */
@@ -170,7 +177,7 @@
   /* Relleno del botón */
   padding: 12px;
   /* Fondo degradado con los colores de la marca */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   /* Texto en blanco */
   color: white;
   /* Sin borde */
@@ -194,7 +201,7 @@
   /* El botón se eleva 2px */
   transform: translateY(-2px);
   /* Sombra de color acorde al degradado */
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(90, 111, 208, 0.4);
 }
 
 /* Botón deshabilitado (mientras se envía el formulario) */
@@ -220,7 +227,7 @@
 /* Enlace del pie (Regístrate aquí / Inicia sesión) */
 .auth-footer a {
   /* Color primario de la marca */
-  color: #667eea;
+  color: var(--primario);
   /* Sin subrayado */
   text-decoration: none;
   /* Seminegrita */
@@ -232,7 +239,7 @@
 /* Enlace al pasar el mouse */
 .auth-footer a:hover {
   /* Cambia al segundo color del degradado */
-  color: #764ba2;
+  color: var(--secundario);
 }
 
 /* Responsive: en pantallas muy angostas (móviles) se ajustan los tamaños */

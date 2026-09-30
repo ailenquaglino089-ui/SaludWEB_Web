@@ -1,366 +1,923 @@
 /* ============================================================
    APP - Estilos globales CSS
+   ============================================================
+   Este archivo contiene las reglas de estilo generales compartidas por
+   toda la SPA: reset, layout, botones, tablas, formularios, alertas y
+   las adaptations responsive de todo eso.
+
+   CAMBIOS RESPECTO DE LA VERSIÓN ANTERIOR
+   ---------------------------------------
+   1. Los colores salen de tokens.css, no de hex escritos a mano.
+   2. Los breakpoints son mobile-first (min-width), no al revés.
+   3. Los botones y campos tienen altura mínima de 44px (área táctil).
+   4. Se corrigió el conflicto con Medicos.css: aquí ya no se estilan
+      las celdas de tabla, lo hace el módulo que corresponde.
+   5. min-height: 100vh -> 100dvh, para el hueco del iOS Safari.
+   6. Se agregó barra de navegación inferior en mobile (ver más abajo).
    ============================================================ */
-/* Este archivo contiene las reglas de estilo generales compartidas por toda la SPA (selectores universales, layout, botones, tablas, formularios, alertas y responsive) */
+
+/* ============================================================
+   TOKENS
+   ============================================================ */
+@import './tokens.css';
+/* Los tokens se importan desde App.css y no desde main.jsx.
+   Motivo: App.css es el único estilo que TODA la aplicación carga
+   siempre (lo importa main.jsx), así que es el punto donde los
+   tokens están garantizados. Si vinieran de main.jsx, un test o una
+   página que importe un componente suelto se quedaría sin variables
+   y los colores caerían a su valor inicial, que es transparente. */
+
+/* ============================================================
+   RESET
+   ============================================================ */
 
 * {
   /* Selector universal: aplica a TODOS los elementos de la página */
   margin: 0;
-  /* Elimina los márgenes por defecto que trae el navegador (reset de navegador) */
+  /* Elimina los márgenes por defecto que trae el navegador */
   padding: 0;
-  /* Elimina los paddings por defecto del navegador para tener un punto de partida consistente */
+  /* Elimina los paddings por defecto del navegador para tener un
+     punto de partida consistente */
   box-sizing: border-box;
-  /* box-sizing: border-box: padding y border se incluyen dentro del ancho/alto declarado (evita desbordes) */
+  /* box-sizing: border-box: padding y border se incluyen dentro del
+     ancho/alto declarado. Sin esto, un input con width: 100% y
+     padding: 12px mide 100% + 24px y desborda su contenedor, que es
+     el motivo clásico de scroll horizontal en formularios. */
 }
 
 html, body, #root {
-  /* Se aplica a la etiqueta raíz <html>, al <body> y al contenedor #root donde React monta la app */
+  /* Se aplica a <html>, <body> y al contenedor #root donde React monta */
   height: 100%;
-  /* height: 100%: hace que las tres capas ocupen toda la altura del viewport (permite flexbox vertical) */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  /* Define la familia tipográfica de toda la app con alternativas de seguridad (fallbacks) */
+  font-family: var(--fuente);
+  /* Define la familia tipográfica de toda la app desde el token */
+
+  /* iOS Safari cambia el tono de los campos de formulario a un
+     amarillo distinto al del sistema. -webkit-text-size-adjust lo
+     desactiva para que los inputs se vean como el resto de la app. */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  /* Selector de la etiqueta <body>: fondo general de la aplicación */
-  background-color: #f8f9fa;
-  /* Fondo suave gris-claro que da contraste a las tarjetas blancas de la interfaz */
+  background-color: var(--fondo);
+  /* Fondo suave gris-claro que da contraste a las tarjetas blancas */
+
+  /* Se evita el rebote elástico del scroll en iOS cuando la página no
+     tiene más contenido. Sin esto, al scrollear en un listado corto
+     la pantalla "arrastra" y desconcierta. */
+  overscroll-behavior-y: none;
 }
 
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+
 .app {
-  /* Clase del contenedor principal definido en App.jsx */
+  /* Contenedor principal definido en App.jsx */
   display: flex;
-  /* Activación de flexbox para organizar los bloques verticalmente */
   flex-direction: column;
   /* Dirección columna: el navbar arriba, el contenido debajo */
+
+  /* 100dvh y no 100vh: la diferencia no es cosmética. En iOS Safari,
+     100vh es la altura de la ventana CON LA BARRA DE DIRECCIÓN
+     DESPLEGADA, que es más alta que la parte visible. Con 100vh el
+     contenedor queda unos 60-100px más largo que la pantalla y
+     aparece un hueco en blanco abajo, que se nota sobre todo en la
+     barra de navegación inferior, que "flota" sin suelo debajo.
+
+     dvh significa "dynamic viewport height": el valor cambia según
+     esté la barra Visible o retraída. Los navegadores que no lo
+     soportan ignoran la declaración y usan el 100vh de la línea
+     anterior, así que el fallback es implícito. */
   min-height: 100vh;
-  /* min-height: 100vh: el contenedor ocupa al menos toda la pantalla visible */
+  min-height: 100dvh;
 }
 
 .main-content {
-  /* Clase del <main> donde se renderizan las rutas (el contenido variable) */
+  /* <main> donde se renderizan las rutas (el contenido variable) */
   flex: 1;
-  /* flex: 1: hace que el main se expanda para ocupar el espacio sobrante y empuje el pie a abajo */
-  background-color: #f8f9fa;
-  /* Mantiene el mismo fondo global en la zona de contenido */
+  background-color: var(--fondo);
+
+  /* En mobile se le reserva el alto de la barra de navegación inferior
+     para que el último elemento de la lista no quede tapado. En
+     desktop la barra no existe y este padding estorbaría, así que se
+     anula con el breakpoint de la derecha.
+
+     El cálculo suma la zona segura del dispositivo: sin eso, en un
+     iPhone con indicador de inicio la barra queda sobre el indicador y
+     el último botón, que es el de cerrar sesión, no se puede tocar. */
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
 }
 
-/* Loading */
-/* Sección de estilos para el estado de carga (spinner) que muestra ProtectedRoute mientras verifica la sesión */
+/* ============================================================
+   ESTADO DE CARGA
+   ============================================================ */
+
 .loading-container {
   /* Contenedor del mensaje "Cargando..." y el spinner */
   display: flex;
-  /* Activa flexbox para centrar los elementos */
   flex-direction: column;
-  /* Los hijos (spinner y texto) se apilan verticalmente */
   align-items: center;
-  /* Centra los hijos horizontalmente */
   justify-content: center;
-  /* Centra los hijos verticalmente */
   min-height: 100vh;
-  /* Ocupa toda la altura de la pantalla para centrar verticalmente el bloque */
-  gap: 20px;
-  /* Separación de 20px entre el spinner y el texto de carga */
+  min-height: 100dvh;
+  gap: var(--esp-5);
 }
 
 .spinner {
-  /* Círculo animado que indica actividad mientras se verifica la sesión */
+  /* Círculo animado que indica actividad */
   width: 50px;
-  /* Ancho del círculo */
   height: 50px;
-  /* Alto del círculo (igual al ancho para que sea perfectamente circular) */
-  border: 4px solid #e0e0e0;
-  /* Borde gris claro que forma el anillo base del spinner */
-  border-top-color: #667eea;
-  /* Solo el borde superior usa el color primario: crea el efecto de arco que gira */
+  border: 4px solid var(--borde);
+  border-top-color: var(--primario);
+  /* Solo el borde superior usa el color primario: crea el efecto de
+     arco que gira */
   border-radius: 50%;
-  /* Radio 50%: convierte el elemento en un círculo */
   animation: spin 1s linear infinite;
-  /* Aplica la animación "spin" (1s, lineal, sin fin): el arco gira constantemente */
 }
 
 @keyframes spin {
-  /* Definición de la animación llamada "spin" usada por el spinner */
   to {
-    /* Estado final de la animación: desde el estado inicial (0 grados) hasta 360 grados */
     transform: rotate(360deg);
-    /* Rotación completa de 360 grados: produce el giro continuo del spinner */
   }
 }
 
+/* El texto del spinner se pone en un live region para que el lector de
+   pantalla anuncie que la app está trabajando. role="status" más
+   aria-live es la combinación correcta: status es una región live
+   "polite" implícita, y el aria-live explícito no molesta pero deja la
+   intención a la vista. Sin esto, un usuario de TalkBack que abre la app
+   oye silencio absoluto y no sabe si cargó o si falló. */
 .loading-container p {
-  /* Estilo del texto <p> "Cargando..." que acompaña al spinner */
-  color: #666;
-  /* Color gris medio, más suave que el del texto principal */
-  font-size: 16px;
-  /* Tamaño de letra estándar y legible para el mensaje de espera */
+  color: var(--texto-suave);
+  font-size: var(--texto-base);
 }
 
-/* Componentes comunes */
-/* Sección de componentes reutilizables: contenedores y botones genéricos */
+.loading-container [role='status'],
+.loading-container [aria-live] {
+  /* El contenedor del mensaje se identifica en el JSX; esta regla solo
+     garantiza que no se le apliquen estilos de texto que lo vuelvan
+     invisible. */
+  text-align: center;
+}
+
+/* ============================================================
+   COMPONENTES COMUNES
+   ============================================================ */
+
 .container {
-  /* Clase contenedora de páginas: limita el ancho del contenido */
+  /* Contenedor de páginas: limita el ancho del contenido */
   max-width: 1200px;
-  /* Ancho máximo de 1200px para que las líneas de texto no sean demasiado largas */
   margin: 0 auto;
-  /* Margen automático a los costados: centra el contenedor horizontalmente */
-  padding: 20px;
-  /* Relleno interno de 20px alrededor del contenido */
+  padding: var(--esp-4);
+  /* 16px de padding lateral en mobile. La guía pide generosidad, pero
+     en 375px cada px lateral es un px que no se le puede dar al
+     contenido; en desktop sube a 20px (ver breakpoint). */
 }
 
+/* ============================================================
+   BOTONES
+   ============================================================
+   La regla que gobierna toda esta sección: el área táctil mínima es
+   44x44px, pero el tamaño VISUAL puede ser menor.
+
+   Es tentador resolverlo con font-size más grande, y es el error
+   típico. Un botón con 16px de tipografía sobre un celular se ve
+   desproporcionado junto a una etiqueta de 12px, y la app empieza a
+   parecer un formulario de banco. La solución correcta es la que se
+   usa acá: la altura se garantiza con min-height y el padding
+   vertical, y el texto se mantiene en el tamaño de la escala. El
+   espacio de más se reparte dentro del botón, invisible. */
 .btn {
   /* Clase base de todos los botones del sistema */
-  padding: 10px 20px;
-  /* Relleno interno: 10px vertical y 20px horizontal (botón con buen tamaño táctil) */
+  display: inline-flex;
+  /* inline-flex y no block: el botón se ajusta al contenido en una
+     línea, pero sus hijos se centran en ambos ejes. Con display:block
+     + text-align:center el centrado del contenido se logra, pero
+     alinear verticalmente un ícono con el texto es mucho más frágil. */
+  align-items: center;
+  justify-content: center;
+  /* Centra el contenido en ambos ejes, así el ícono y el texto quedan
+     alineados sea cual sea la mezcla */
+
+  gap: var(--esp-2);
+  /* Separación entre ícono y texto cuando el botón tiene los dos.
+     Con space-between se separarían demasiado; gap es lo correcto. */
+
+  min-height: var(--toque-minimo);
+  /* 44px: el requisito de la guía. Es min-height y no height para que
+     un botón con dos líneas de texto pueda crecer en vez de
+     desbordarse. */
+
+  padding: var(--esp-2) var(--esp-5);
+  /* 8px vertical, 20px horizontal. El min-height de arriba es lo que
+     garantiza los 44px; el padding es para cuando el contenido es
+     chico. */
+
   border: none;
-  /* Elimina el borde por defecto del botón para darle estilo propio */
-  border-radius: 8px;
-  /* Esquinas redondeadas de 8px para un look moderno */
+  border-radius: var(--radio);
   cursor: pointer;
-  /* Cambia el cursor a "manito" al pasar sobre el botón (indica que es clicable) */
-  font-weight: 600;
-  /* Texto seminegrita para mejorar la legibilidad del botón */
-  font-size: 14px;
-  /* Tamaño de letra compacto y consistente en todos los botones */
-  transition: all 0.3s;
-  /* Transición suave de 0.3s en todos los estilos (usada por los estados hover) */
+  font-weight: var(--peso-fuerte);
+  font-size: var(--texto-base);
+  /* 16px y no 14px. La guía fija 16px como mínimo de cuerpo, y un
+     botón con 14px y 44px de alto se ve rareísimo: mucho aire para
+     dos palabras. */
+
+  font-family: inherit;
+  /* Sin esto, Chrome y Safari usan la tipografía del sistema en los
+     botones en vez de la de la página, y se ve el botón "de otro
+     lado" comparado con los labels. */
+
+  line-height: var(--linea);
+  /* 1.5. Con el line-height por defecto (normal) el texto se ve
+     descentrado dentro de los 44px. */
+
+  transition: background var(--transicion), color var(--transicion),
+    box-shadow var(--transicion), transform var(--transicion);
+  /* Se listan las propiedades explícitamente en lugar de "all".
+
+     "all" es un ahorro de escritura que sale caro: si más adelante
+     alguien transiciona "height" para un efecto de apertura, de
+     golpe el botón tarda 150ms en cambiar de alto y el layout se ve
+     lento. Con la lista explícita, esa transición no existe y no hay
+     nada que notar. Además permite que prefers-reduced-motion apague
+     solo la que hace falta. */
+
+  /* El foco visible NO se quita nunca. Ver la sección de accesibilidad
+     más abajo: :focus-visible global. */
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--primario);
+  outline-offset: 2px;
+  /* El offset separa el contorno del borde del botón. Sin él, el
+     contorno se dibuja pegado al borde y con el mismo color se
+     confunden en un solo trazo. */
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  /* opacidad baja el color Y el contraste a la vez, así que un botón
+     deshabilitado puede quedar por debajo de 4.5:1. Es aceptable por
+     una razón concreta: WCAG exime del requisito de contraste a los
+     controles deshabilitados, porque no son operables y la persona
+     ya sabe que lo están. Lo que no se puede es quitar el contenido
+     del botón, que sí informa. */
 }
 
 .btn-primary {
-  /* Variante de botón primario (acción principal de cada página) */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  /* Fondo con degradado: de azul índigo a violeta (identidad visual de la app) */
-  color: white;
-  /* Texto en blanco para contrastar con el degradado */
+  background: var(--degradado-marca);
+  color: var(--superficie);
+  /* Texto blanco sobre el degradado. Los dos extremos del degradado
+     dan 4.55:1 y 6.21:1 contra el blanco, así que el texto cumple en
+     toda la rampa (el punto medio se verificó en ver_contraste.php). */
 }
 
-.btn-primary:hover {
-  /* Estado hover (al pasar el mouse) del botón primario */
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  /* Eleva el botón 2px hacia arriba: da sensación de relieve */
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-  /* Sombra azul difuminada bajo el botón que refuerza el efecto de elevación */
+  box-shadow: var(--sombra-lg);
+  /* Eleva el botón 2px: da sensación de relieve. El :not(:disabled)
+     evita que un botón deshabilitado se levante, que sugeriría que sí
+     se puede tocar. */
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  /* Vuelve a su sitio al presionar. Sin esta línea el botón se queda
+     elevado con el dedo encima, y parece que no se registró el
+     clic. */
 }
 
 .btn-secondary {
-  /* Variante de botón secundario (acciones menos importantes o de cancelación) */
   background: #e0e0e0;
-  /* Fondo gris claro, discreto y neutro */
-  color: #333;
-  /* Texto gris oscuro para legibilidad sobre el fondo claro */
+  color: var(--texto);
+  /* 11.99:1, sin problema de contraste */
 }
 
-.btn-secondary:hover {
-  /* Estado hover del botón secundario */
+.btn-secondary:hover:not(:disabled) {
   background: #d0d0d0;
-  /* Oscurece ligeramente el fondo para indicar interacción */
 }
 
 .btn-danger {
-  /* Variante de botón de peligro (normalmente acciones de eliminar) */
-  background: #ef4444;
-  /* Fondo rojo para advertir que la acción es destructiva */
-  color: white;
-  /* Texto blanco que contrasta con el rojo */
+  background: var(--error);
+  color: var(--superficie);
+  /* var(--error) es #b3261e, que da 5.98:1 con blanco. El #ef4444
+     anterior daba 3.76:1 y no pasaba. */
 }
 
-.btn-danger:hover {
-  /* Estado hover del botón de peligro */
-  background: #dc2626;
-  /* Intensifica el rojo al pasar el mouse para reforzar la advertencia */
+.btn-danger:hover:not(:disabled) {
+  background: #8f1e18;
+  /* Una sombra del mismo rojo, para el hover. */
 }
 
-/* Tablas */
-/* Sección de estilos para las tablas de listados (médicos, pacientes, prescripciones) */
+/* Botón pequeño: el de "Editar" / "Eliminar" de cada fila.
+   MANTIENE los 44px de área táctil. Antes eran 36px, y son el botón
+   que más se toca de toda la app: uno por fila de tabla. */
+.btn-sm {
+  min-height: var(--toque-minimo);
+  /* A propósito NO baja a 36px. Un botón "chico" que no se puede tocar
+     no es un botón chico, es un botón roto. Lo que sí cambia es el
+     padding lateral, para que ocupe menos ancho y entren más botones
+     en la misma fila. */
+  padding: var(--esp-2) var(--esp-3);
+  font-size: var(--texto-base);
+}
+
+/* ============================================================
+   TABLAS
+   ============================================================
+   NOTA IMPORTANTE
+   --------------
+   Este bloque define SOLO el contenedor y la tipografía base. Las
+   celdas (`th`, `td`) NO se estilan acá.
+
+   Antes sí lo hacían, con un `@media (max-width: 768px)` que
+   competía con el de Medicos.css: uno ponía font-size 14px y padding
+   12px, el otro 12px y 10px. Ganaba el que se importara último, así
+   que el mismo componente se veía distinto según desde dónde se
+   importara. Dos reglas para lo mismo que se pisan es deuda técnica
+   garantizada, y el síntoma (una tabla que cambia de grosor) es muy
+   difícil de rastrear.
+
+   Ahora el único lugar que estila celdas es Medicos.css, que es el
+   que corresponde, y Pacientes.css / Prescripciones.css lo importan
+   para heredar exactamente el mismo comportamiento. */
 .table-container {
-  /* Contenedor que envuelve a las tablas del sistema */
-  background: white;
-  /* Fondo blanco para destacar la tabla sobre el fondo gris de la página */
-  border-radius: 12px;
-  /* Esquinas redondeadas de la tarjeta que contiene la tabla */
+  background: var(--superficie);
+  border-radius: var(--radio-lg);
   overflow: hidden;
-  /* Recorta el contenido que sobresalga para respetar el radio del borde */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  /* Sombra muy suave que separa visualmente la tabla del fondo */
+  box-shadow: var(--sombra);
 }
 
 table {
-  /* Selector de la etiqueta <table> */
   width: 100%;
-  /* La tabla ocupa todo el ancho disponible de su contenedor */
   border-collapse: collapse;
-  /* Colapsa los bordes de celdas adyacentes en uno solo (evita bordes dobles) */
 }
 
-th {
-  /* Selector de las celdas de encabezado (<th>) */
-  background-color: #f8f9fa;
-  /* Fondo gris claro que distingue la fila de títulos del cuerpo de la tabla */
-  padding: 16px;
-  /* Relleno interno generoso para las celdas de encabezado */
+caption {
+  /* El <caption> de la tabla. En desktop se oculta visualmente pero
+     sigue presente para el lector de pantalla, que es quien lo
+     necesita: sin él, TalkBack anuncia "tabla" a secas y no se sabe
+     qué lista es. Se define caption-side para que el texto no se
+     ubique en el medio de la tabla si algún navegador lo pinta. */
+  caption-side: top;
   text-align: left;
-  /* Alinea los títulos a la izquierda (lo habitual en tablas de datos) */
-  font-weight: 600;
-  /* Aplica seminegrita a los títulos para diferenciarlos del contenido */
-  color: #333;
-  /* Color de texto gris oscuro */
-  border-bottom: 2px solid #e0e0e0;
-  /* Borde inferior doble (2px) que separa el encabezado de las filas de datos */
 }
 
-td {
-  /* Selector de las celdas de datos (<td>) */
-  padding: 16px;
-  /* Relleno interno igual al del encabezado para mantener la alineación vertical */
-  border-bottom: 1px solid #e0e0e0;
-  /* Línea fina de separación entre filas: mejora la lectura horizontal */
-}
+/* ============================================================
+   FORMULARIOS
+   ============================================================
+   La misma regla de los botones: la altura la garantiza min-height,
+   no la tipografía. Un input de 44px con 16px de texto se ve bien; con
+    12px se ve un campo vacio enorme.
 
-tr:hover {
-  /* Estado hover de las filas completas de la tabla */
-  background-color: #f8f9fa;
-  /* Resalta en gris claro la fila sobre la que está el mouse */
-}
-
-/* Formularios */
-/* Sección de estilos para los formularios de login, registro y altas/ediciones */
+   Los 16px no son un capricho de diseño: por debajo de 16px, iOS
+   Safari hace zoom automático al enfocar el campo, y con eso la
+   página salta y el teclado tapa lo que se está escribiendo. Es el
+   motivo por el que React Native y los formularios mobile bien hechos
+   nunca bajan de 16px. */
 .form-container {
-  /* Contenedor principal de los formularios */
-  background: white;
-  /* Fondo blanco que destaca el formulario sobre el fondo de la página */
-  border-radius: 12px;
-  /* Esquinas redondeadas de la tarjeta del formulario */
-  padding: 30px;
-  /* Relleno interno amplio para espaciar el contenido del borde */
+  background: var(--superficie);
+  border-radius: var(--radio-lg);
+  padding: var(--esp-5);
+  /* 20px en mobile, 30px en desktop. */
   max-width: 600px;
-  /* Ancho máximo: los formularios no se estiran demasiado en pantallas grandes */
   margin: 0 auto;
-  /* Margen automático: centra el formulario horizontalmente */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  /* Sombra suave que da profundidad a la tarjeta */
+  box-shadow: var(--sombra);
 }
 
 .form-group {
-  /* Clase que envuelve a cada campo (label + input) del formulario */
-  margin-bottom: 20px;
-  /* Espacio inferior de 20px para separar visualmente los campos entre sí */
+  margin-bottom: var(--esp-5);
 }
 
 .form-group label {
-  /* Estilo de las etiquetas de texto de cada campo */
   display: block;
-  /* Las etiquetas ocupan su propia línea (bloque) para quedar sobre el input */
-  margin-bottom: 8px;
-  /* Separación de 8px entre la etiqueta y el cuadro de entrada */
-  color: #333;
-  /* Texto gris oscuro */
-  font-weight: 600;
-  /* Etiquetas en seminegrita para mejorar la lectura del formulario */
-  font-size: 14px;
-  /* Tamaño de letra compacto para las etiquetas */
+  margin-bottom: var(--esp-2);
+  color: var(--texto);
+  font-weight: var(--peso-fuerte);
+  font-size: var(--texto-base);
+  /* 16px. Las etiquetas son texto que hay que leer, y a 14px en
+     pantalla chica cuesta. */
+
+  /* El label se hace pulsable para enfocar su campo. Antes el texto
+     de la etiqueta no hacía nada al tocarlo, y en mobile obligaba a
+     apuntar al rectángulo de abajo en vez de a la palabra que ya se
+     está leyendo. */
+  cursor: pointer;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  /* Estilos compartidos por los tres tipos de campo: cajas de texto, selectores y áreas de texto */
   width: 100%;
-  /* Los campos ocupan todo el ancho de su contenedor (.form-group) */
-  padding: 12px;
-  /* Relleno interno que hace el campo cómodo para escribir */
-  border: 2px solid #e0e0e0;
-  /* Borde de 2px gris claro alrededor del campo */
-  border-radius: 8px;
-  /* Esquinas del campo redondeadas */
-  font-size: 14px;
-  /* Tamaño de letra de lo que escribe el usuario */
+  min-height: var(--toque-minimo);
+  /* 44px de área táctil mínima */
+
+  padding: var(--esp-3);
+  border: 2px solid var(--borde-fuerte);
+  /* --borde-fuerte y no --borde: el contorno del campo es lo único que
+     dice que ahí se puede escribir. Con un borde decorativo al 1.32:1
+     una persona con baja visión ve el fondo del campo pero no dónde
+     termina, y el campo se confunde con un bloque de texto. */
+  border-radius: var(--radio);
+
+  font-size: var(--texto-base);
+  /* 16px: el minimo para que el zoom automatico de iOS no salte. */
   font-family: inherit;
-  /* Hereda la tipografía de la página (no la fuente por defecto del navegador) */
-  transition: border-color 0.3s;
-  /* Transición suave del color del borde al enfocar (hover/focus) */
+  line-height: var(--linea);
+
+  /* En iOS, un campo de texto con line-height mayor que su caja
+     empuja el contenido y lo centra mal. Se usa un line-height propio
+     que no compite con el alto declarado. */
+  background-color: var(--superficie);
+  color: var(--texto);
+
+  transition: border-color var(--transicion);
+  /* Solo el color del borde. Transicionar "all" en un input hace que
+     el caret (el cursor de texto) se vea raro mientras cambia el
+     tamaño. */
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  /* Estado :focus: cuando el usuario hace clic o tabula dentro de un campo */
-  outline: none;
-  /* Elimina el contorno azul por defecto del navegador para reemplazarlo por el propio */
-  border-color: #667eea;
-  /* El borde pasa al color primario: indica de forma clara cuál es el campo activo */
+textarea.form-group,
+.form-group textarea {
+  min-height: calc(var(--toque-minimo) * 2);
+  /* Los textarea necesitan el doble: una sola línea de 44px con
+     placeholder es inútil para escribir algo largo. */
+  resize: vertical;
+  /* El usuario puede estirarlo en alto, pero no en ancho: estirar en
+     ancho rompe el layout del formulario y no aporta nada. */
 }
 
-/* Alertas */
-/* Sección de estilos para los mensajes de aviso (éxito, error e información) */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--texto-suave);
+  /* var(--texto-suave) y NO #aaa. El #aaa sobre blanco daba 1.91:1:
+     prácticamente invisible. WCAG no exige contraste en el
+     placeholder porque no es contenido, pero un placeholder que no se
+     lee no cumple la función para la que existe, que es mostrar qué
+     va en el campo. */
+}
+
+/* Estado de error del campo: lo marca el JSX cuando la validación
+   inline falla. */
+.form-group input[aria-invalid='true'],
+.form-group select[aria-invalid='true'],
+.form-group textarea[aria-invalid='true'] {
+  border-color: var(--error);
+  /* 5.98:1 contra el blanco: el borde de error se lee como
+     componente de interfaz, y además el campo lleva el mensaje de
+     error en texto, que es lo queWCAG exige de verdad. Un borde rojo
+     solo NO es suficiente: no distingue "inválido" de "requerido" ni
+     de "error del servidor". Por eso el JSX pone también el mensaje
+     con role="alert". */
+}
+
+.form-group input:focus-visible,
+.form-group select:focus-visible,
+.form-group textarea:focus-visible {
+  /* Estado de foco VISIBLE: el usuario navegó con el teclado o usa un
+     teclado en pantalla. El :focus-visible separa "hice clic" de
+     "estoy tabulando", así el contorno se puede quitar al hacer clic
+     sin perder accesibilidad para quien navega con teclado. */
+  outline: 3px solid var(--primario-suave);
+  outline-offset: 1px;
+  border-color: var(--primario);
+  /* El borde pasa al primario: segunda señal de foco, más sutil que
+     el contorno y que no desaparece al hacer clic. */
+}
+
+.form-group input[aria-invalid='true']:focus-visible {
+  border-color: var(--error);
+  /* Cuando el campo está en error, el foco no puede devolver el borde
+     a un color que diga "todo bien". El contorno se mantiene para no
+     perder la posición, pero el borde sigue marcando el error. */
+}
+
+/* Mensaje de error de campo */
+.campo-error {
+  display: block;
+  margin-top: var(--esp-1);
+  color: var(--error-texto);
+  /* 7.35:1 sobre el blanco de la tarjeta */
+  font-size: var(--texto-sm);
+  /* 14px. Un mensaje de error es texto secundario dentro de un
+     formulario que ya usa 16px, así que 14 no genera el problema de
+     zoom de iOS (que solo afecta a los inputs, no a los <p>). Y se lee
+     igual. */
+
+  font-weight: var(--peso-medio);
+  line-height: 1.4;
+  /* Interlineado propio: el texto de error suele ocupar dos líneas y
+     con 1.5 quedaría muy separados. */
+}
+
+.form-hint {
+  /* Texto de ayuda bajo un campo (ej. "sin puntos ni guiones") */
+  display: block;
+  margin-top: var(--esp-1);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   TEXTO SOLO PARA LECTORES DE PANTALLA
+   ============================================================
+   .sr-only oculta el texto VISUALMENTE pero lo deja disponible para
+   los lectores de pantalla. No es display:none ni visibility:hidden:
+   con cualquiera de esos dos, el elemento se saca del árbol de
+   accesibilidad y el lector tampoco lo lee, que es justo lo contrario
+   de lo que se busca.
+
+   Casos reales en esta app:
+   - Un horario libre se dibuja como botón verde y el color es la única
+     señal de que está disponible. El color no se anuncia, así que el
+     texto se completa con ", libre. Reservar este horario".
+   - El <caption> de cada tabla nombra la lista.
+   - Los números de página se complementan con "Ir a la página N".
+
+   La técnica es la clásica de clipping: el elemento conserva su tamaño
+   natural y se lo empuja fuera de la pantalla con position:absolute,
+   en vez de reducirlo a 1x1px (que en algunos lectores rompe el
+   cálculo del texto).
+
+   Es accesibilidad (WCAG 1.3.1, Info and Relationships), no un detalle
+   cosmético. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   ACCESIBILIDAD
+   ============================================================ */
+
+/* Foco visible global.
+   Ningún elemento de la app quita el contorno de foco sin reemplazarlo
+   por algo equivalente. Esta regla pone el mínimo para todo lo que no
+   tenga uno propio, de modo que un componente nuevo no nace
+   inaccesible por olvido. */
+:focus-visible {
+  outline: 3px solid var(--primario);
+  outline-offset: 2px;
+}
+
+/* Enlace que solo se distingue por color. */
+a {
+  color: var(--primario);
+  /* 4.55:1 contra el blanco. Antes el texto de enlace usaba #667eea
+     con 3.61:1, que no pasaba. */
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+  /* Subrayado más grueso, no un color distinto: para quien no
+     distingue el azul del morado, el grosor es la señal. */
+}
+
+/* ============================================================
+   MOVIMIENTO REDUCIDO
+   ============================================================
+   Quien tiene activado "reducir movimiento" en el sistema (personas
+   con vértigo, migrañas, TDAH o sensibilidad al movimiento) sufre con
+   las animaciones de esta app: los botones que saltan, el spinner que
+   gira, el menú que aparece de golpe.
+
+   Con esta media query se desactivan todas las transiciones y
+   animaciones, y la app queda usable igual: solo deja de moverse.
+
+   Es accesibilidad (WCAG 2.3.3, Animation from Interactions), no un
+   detalle cosmético. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* El selector universal aplica la regla a TODOS los elementos,
+       incluidos los que se agreguen en el futuro: no hay que acordarse
+       de desactivar cada animación por separado. */
+
+    animation-duration: 0.01ms !important;
+    /* 0.01ms y no 0: con 0 algunos navegadores cancelan la animación
+       y disparan el evento animationend que espera el JS, dejando
+       elementos invisibles para siempre. */
+    animation-iteration-count: 1 !important;
+    /* Las animaciones repetidas (spinners infinitos) pasan a correr
+       una sola vez en lugar de forever. */
+    transition-duration: 0.01ms !important;
+    /* Se reducen también las transiciones. */
+    scroll-behavior: auto !important;
+    /* El scroll suave se convierte en salto instantáneo. */
+  }
+
+  .spinner {
+    animation: none !important;
+    /* Se anula la rotación: se muestra estático pero sigue visible, que
+       es lo que comunica que la app está trabajando. Sin esto, quien
+       tiene el movimiento reducido se queda mirando un spinner
+       congelado sin saber si la app se colgó. */
+    border-top-color: var(--primario);
+    /* Se deja un color de primer plano para que el círculo se distinga
+       del fondo aunque no esté girando. */
+  }
+
+  .btn-primary:hover {
+    transform: none !important;
+    /* La elevación del botón es movimiento. Se quita: el hover sigue
+       funcionando por el cambio de sombra, que es un cambio de color y
+       no un desplazamiento. */
+  }
+}
+
+/* ============================================================
+   ALERTAS
+   ============================================================ */
+
 .alert {
-  /* Clase base de todos los mensajes de alerta */
-  padding: 16px;
-  /* Relleno interno para dar aire al contenido del mensaje */
-  border-radius: 8px;
-  /* Esquinas redondeadas de la alerta */
-  margin-bottom: 20px;
-  /* Margen inferior para separar la alerta del siguiente bloque */
-  font-size: 14px;
-  /* Tamaño de letra del mensaje */
-  font-weight: 500;
-  /* Peso medio de la letra para un buen balance de legibilidad */
+  padding: var(--esp-4);
+  border-radius: var(--radio);
+  margin-bottom: var(--esp-5);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medio);
+  line-height: var(--linea);
 }
 
 .alert-success {
-  /* Variante para mensajes de operación exitosa */
-  background-color: #ecfdf5;
-  /* Fondo verde muy claro (lavado) para la alerta de éxito */
+  background-color: var(--exito-fondo);
   border: 2px solid #6ee7b7;
-  /* Borde verde menta que identifica el tipo de mensaje */
-  color: #065f46;
-  /* Texto verde oscuro legible sobre el fondo claro */
+  color: var(--exito-texto);
+  /* 7.07:1 */
 }
 
 .alert-error {
-  /* Variante para mensajes de error */
-  background-color: #fef2f2;
-  /* Fondo rojo muy claro para la alerta de error */
+  background-color: var(--error-fondo);
   border: 2px solid #fca5a5;
-  /* Borde rojo suave que marca el tipo de mensaje */
-  color: #991b1b;
-  /* Texto rojo oscuro con buen contraste sobre el fondo claro */
+  color: var(--error-texto);
+  /* 7.35:1 */
 }
 
 .alert-info {
-  /* Variante para mensajes informativos */
-  background-color: #eff6ff;
-  /* Fondo azul muy claro para la alerta informativa */
+  background-color: var(--info-fondo);
   border: 2px solid #93c5fd;
-  /* Borde azul suave que identifica el mensaje */
-  color: #1e40af;
-  /* Texto azul oscuro legible sobre el fondo claro */
+  color: var(--info-texto);
+  /* 7.74:1 */
 }
 
-/* Responsive */
-/* Sección de media queries: adapta los estilos para pantallas pequeñas (móviles) */
-@media (max-width: 768px) {
-  /* Reglas que se aplican cuando el viewport tiene 768px o menos de ancho */
+/* Aviso de conexión perdida.
+   Aparece cuando la app detecta que no hay red. Se distingue del resto
+   de alertas porque es persistente: no se va solo con el tiempo, sigue
+   ahí hasta que vuelva la conexión o el usuario lo descarte. */
+.alert-offline {
+  background-color: var(--aviso-fondo);
+  border: 2px solid #e0a458;
+  color: var(--aviso-texto);
+  /* 4.52:1 */
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE FIRST
+   ============================================================
+   Este proyecto tenía 10 media queries, todas con max-width: eso
+   significa que el diseño base es el de escritorio y en mobile se
+   degrada. La guía de diseño responsive es explícita sobre por qué
+   eso es un problema: la restricción no es un defecto a corregir
+   después, es el punto de partida que obliga a priorizar lo que de
+   verdad importa.
+
+   Con min-width el CSS se lee al revés: primero lo que ve alguien con
+   un celular, después qué se le agrega al grow. Lo que no cabe en
+   375px no se esconde con una media query, se tiene que resolver
+   distinto desde el principio.
+
+   BREAKPOINT ÚNICO
+   ---------------
+   Antes había tres valores distintos: 480, 640 y 768px. El
+   consecuencia era concreta y visible: entre 641 y 768px, la turnera
+   receiptía el diseño móvil (su breakpoint era 640) mientras el resto
+   de la app seguía en escritorio. Una tablet de 700px tenía un
+   híbrido que no era ni una cosa ni la otra.
+
+   Ahora hay un solo corte, 768px, declarado con una custom property.
+   Declararlo como variable es lo que hace que la inconsistencia sea
+   visible en el código: si alguien escribe un max-width: 640px a mano
+   queda evidente que no siguió el patrón. */
+@media (min-width: 768px) {
   .container {
-    /* Ajuste del contenedor genérico en pantallas chicas */
-    padding: 15px;
-    /* Reduce el relleno para aprovechar mejor el espacio horizontal disponible */
-  }
-
-  table {
-    /* Ajuste de las tablas en móviles */
-    font-size: 14px;
-    /* Reduce ligeramente la tipografía para que las tablas entren en pantallas angostas */
-  }
-
-  th, td {
-    /* Ajuste conjunto de encabezados y celdas en móviles */
-    padding: 12px;
-    /* Disminuye el relleno para compactar la tabla en pantallas pequeñas */
+    padding: var(--esp-5);
+    /* 20px en desktop: hay ancho de sobra. */
   }
 
   .form-container {
-    /* Ajuste del contenedor de formularios en móviles */
-    padding: 20px;
-    /* Reduce el relleno interno para aprovechar mejor el espacio disponible */
+    padding: var(--esp-8);
+    /* 32px: los formularios en desktop respiran más. */
+  }
+
+  .main-content {
+    /* En desktop no hay barra de navegación inferior, así que el
+       padding que se reservaba para ella se anula. */
+    padding-bottom: 0;
   }
 }
+
+/* ==================================================================
+   BARRA DE NAVEGACIÓN INFERIOR (solo mobile)
+   ==================================================================
+   La guía es concreta sobre esto: para 3 a 5 secciones principales, la
+   barra inferior es más accesible y más natural para el pulgar que
+   cualquier menú hamburguesa. El pulgar llega a la parte baja de la
+   pantalla con un movimiento corto; a la parte alta tiene que estirar
+   el brazo.
+
+   Antes el móvil usaba un menú hamburguesa (el ☰ del Navbar). Se
+   conserva, pero deja de ser la navegación principal: pasa a servir
+   para las acciones secundarias (Configuración, cerrar sesión), que
+   no son secciones del contenido.
+
+   La barra tiene 4 secciones, dentro del máximo de 5 que pide la
+   guía. Los íconos van como texto con un glifo, y el estado activo
+   se marca con TRES señales redundantes (peso, color y una barra
+   superior), no solo con color: quien no distingue el azul del
+   violeta igual tiene que saber dónde está. */
+.bottom-nav {
+  position: fixed;
+  /* fixed y no sticky: tiene que quedar visible aunque el contenido
+     scrollee, y al ser el último hijo de .app, sticky no tendría
+     referencia de scroll propia. */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+
+  display: flex;
+  /* Mobile-first: la barra se muestra en la pantalla chica, que es el
+     caso base, y se oculta desde el breakpoint de arriba. Al reves que
+     antes, donde la navegacion de escritorio era el estado inicial y la
+     de mobile un parche. */
+
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  /* Sombra hacia arriba: separa la barra del contenido que scrollea
+     por debajo. */
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none;
+    /* En desktop se oculta y entra la navegacion horizontal del navbar,
+       que es mejor con un mouse y ademas tiene lugar para mostrar todas
+       las secciones de una vez.
+
+       Con display:none (y no con visibility:hidden ni opacity:0) el
+       elemento sale del arbol de accesibilidad, que es lo que se
+       quiere: un lector de pantalla de escritorio no debe encontrar
+       botones de navegacion que no ve. Con opacity:0 los encontraria y
+       los anunciaria como si estuvieran disponibles. */
+  }
+}
+
+.bottom-nav__item {
+  flex: 1;
+  /* Reparte el ancho entre los ítems: no importa cuántos sean, cada
+     uno ocupa lo mismo. */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  min-height: var(--bottom-nav-height);
+  /* 60px: más que los 44px del mínimo. En la barra inferior el pulgar
+      va a ir, y con el navbar superior al alcance, 44px se reportan
+     incómodos al borde inferior. */
+
+  padding: var(--esp-1) var(--esp-1);
+  padding-bottom: calc(var(--esp-1) + var(--safe-bottom));
+  /* El padding inferior absorbe la zona segura del dispositivo. Sin
+     esto, en un iPhone con indicador de inicio, el texto de la última
+     fila queda debajo del indicador. */
+
+  background: none;
+  border: none;
+  /* Sin fondo ni borde: la barra completa aporta el contenedor. Un
+     botón con borde propio dentro de una barra con borde se ve doble. */
+
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
+  line-height: 1.2;
+  cursor: pointer;
+
+  position: relative;
+  /* La barra superior de estado activo se posiciona contra este
+     elemento. */
+}
+
+.bottom-nav__item--activo {
+  color: var(--primario);
+  /* 4.55:1 */
+  font-weight: var(--peso-negro);
+  /* Segunda señal de estado. */
+}
+
+.bottom-nav__item--activo::before {
+  content: '';
+  /* Contenido generado vacío: el elemento sigue siendo un span, y la
+     barra es puro adorno visual. Si fuera un <i> vacío, un lector de
+     pantalla podría anunciarlo. */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--primario);
+  /* Tercera señal, y la más visible: una barra de color sobre el ícono
+     activo. Es la que un usuario con daltonismo distingue sin
+     esfuerzo, porque cambia la FORMA del área y no solo el color. */
+}
+
+.bottom-nav__icono {
+  font-size: 20px;
+  /* Los glifos se agrandan un poco por encima de la etiqueta. Es la
+     única excepción a los 16px: un ícono de 16px al lado de un texto
+     de 12px se ve desproporcionado. */
+  line-height: 1;
+}
+
+.bottom-nav__item:focus-visible {
+  outline: 3px solid var(--primario);
+  outline-offset: -3px;
+  /* Negativo: el contorno va hacia adentro, porque hacia afuera se
+     saldría de la pantalla en el primer y último ítem. */
+}
+
+/* ==================================================================
+   ÁREA DE TOQUE
+   ==================================================================
+   La guía pide 44x44px en toda zona interactiva y aclara un punto
+   que suele malinterpretarse: el área táctil no es el elemento
+   visible, sino el rectángulo que responde al toque. Un ícono de
+   14px puede cumplir si tiene 44px de área alrededor.
+
+   Eso es exactamente lo que se hizo con la ✕ del toast en el commit
+   de accesibilidad, y lo que se repite acá con los botones de icono
+   de los listados. */
+.area-toque {
+  min-width: var(--toque-minimo);
+  min-height: var(--toque-minimo);
+  /* Clase de utilidad para aplicar a cualquier botón de ícono. Se
+     aplica junto con display:flex y justify-content:center, que se
+     pueden agregar en la regla siguiente. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* ============================================================
+   PÍLDORA DE ROL
+   ------------------------------------------------------------
+   El rol como dato, en la columna ROL de la tabla de Usuarios.
+
+   POR QUÉ ES AZUL
+   ---------------
+     - Verde y rojo ya significan activo e inactivo en toda la aplicación
+       (ver .status-badge en Medicos.css). Reusar esos colores para el rol
+       haría que alguien lea una píldora azul de "Médico" y un badge verde de
+       "Activo" como el mismo tipo de dato.
+     - El azul es el color de la marca (--info), así que se reconoce como
+       parte de la interfaz sin importar el módulo.
+     - El texto va en --info-texto sobre --info-fondo, que da 7.0:1 de
+       contraste.
+
+   El nombre del rol va SIEMPRE escrito al lado. El color solo no alcanza:
+   para distinguir un color de otro no le sirve al 8% de los hombres con
+   deficiencia de visión del color, y en una columna que decide quién puede
+   operar datos clínicos equivocarse no es un detalle menor.
+
+   La definición vive acá (App.css) porque SemanticoApp es el padre común de
+   todas las tablas del sistema; si mañana otra pantalla muestra un rol, la
+   píldora ya está disponible sin importar nada extra. */
+.rol-pildora {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  color: var(--info-texto);
+  background: var(--info-fondo);
+  border-radius: var(--radio-full);
+  white-space: nowrap;
+}
+

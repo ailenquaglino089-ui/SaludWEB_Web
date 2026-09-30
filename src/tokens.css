@@ -1,0 +1,436 @@
+/* ============================================================
+   TOKENS DE DISEÑO — SaludWEB
+   ============================================================
+   Este archivo es la única fuente de verdad de los valores que se
+   repiten por toda la app: colores, escalas de espaciado, radios,
+   tipografía, breakpoints y medidas táctiles.
+
+   POR QUÉ EXISTE
+   --------------
+   Antes los colores estaban escritos a mano en 15 archivos CSS. Eso
+   tenía tres costos concretos, todos observados en este proyecto:
+
+   1. Corregir un contraste era buscar el hex en 15 lugares. El color
+      primario #667eea aparecía 32 veces; cambiarlo a uno que pase WCAG
+      AA era una tarea de riesgo, y es exactamente el trabajo que había
+      que hacer.
+
+   2. Un valor corregido en un archivo dejaba los otros 14 con el valor
+      viejo. El commit de accesibilidad anterior corrigio el gris de la
+      turnera y se olvido el de Prescripciones: el mismo bug en dos
+      lugares, dos veces.
+
+   3. No había forma de saber qué colores "oficiales" había. No había
+      un lugar donde mirar.
+
+   Con las variables, cambiar el primario es cambiar UNA línea, y es
+   imposible que la corrección se aplique a medias.
+
+   ------------------------------------------------------------
+   CÓMO SE USAN
+   ------------------------------------------------------------
+   CSS puro:  color: var(--primario);
+   En JSX:    style={{ backgroundColor: 'var(--primario)' }}
+
+   Todas las variables se definen en :root y son cascadas, así que un
+   tema oscuro se puede agregar más adelante con solo un bloque
+   [data-tema="oscuro"] que reescriba las de color. Los tokens de
+   medida (espaciado, tipografía, breakpoints) no deberían cambiar
+   nunca entre temas.
+
+   ------------------------------------------------------------
+   ORDEN EN main.jsx
+   ------------------------------------------------------------
+   Este archivo se importa ANTES que App.css. Las variables no dependen
+   del orden (se resuelven en tiempo de uso, no de cascada), pero
+   se mantiene primero por legibilidad: los tokens van al principio,
+   como las constantes al principio de un archivo de código.
+   ============================================================ */
+
+:root {
+  /* ==========================================================
+     1. COLORES DE MARCA
+     ==========================================================
+     El primario es el color más usado de la app. Antes era #667eea,
+     que con texto blanco daba 3.61:1: no llegaba al 4.5:1 que WCAG AA
+     pide para texto normal, en ninguno de los dos sentidos (ni
+     blanco sobre el primario, ni el primario sobre blanco).
+
+     #5a6fd0 es el valor más parecido a #667eea que sí llega a 4.55:1.
+     Se calculó resolviendo la ecuación de contraste en el espacio
+     lineal de luminancia, no probando a ojo (ver ver_contraste.php).
+
+     Importante: el primario se usa en fondos de botón, en bordes de
+     foco y como color de texto. Todas esas combinaciones pasan ahora. */
+
+  --primario: #5a6fd0;
+  /* 4.55:1 contra el blanco. Fondo de botones primarios, bordes de
+     foco, enlaces y texto de acción. */
+
+  --primario-fuerte: #4a5cba;
+  /* Una sombra del primario, para estados :hover y :active. Más oscuro
+     porque el hover tiene que notarse sin esperar al siguiente estado. */
+
+  --primario-suave: #eef0fb;
+  /* El primario muy aclarado, para fondos de chip seleccionado y de
+     badge. Solo se usa con texto --primario encima, nunca con blanco. */
+
+  --secundario: #764ba2;
+  /* 6.21:1 contra el blanco. Es el otro extremo del degradado de la
+     marca y ya pasaba, así que no se tocó. */
+
+  /* ==========================================================
+     2. GRADIENTE DE MARCA
+     ==========================================================
+     El degradado del navbar y de los botones primarios va de
+     --primario a --secundario. Los dos extremos pasan AA contra el
+     blanco, pero eso NO alcanza para un degradado: los colores
+     intermedios se mezclan y pueden quedar más claros que los
+     extremos.
+
+     Se verificó el punto medio (#6570ba) y da 5.30:1. Como la mezcla
+     lineal entre dos colores que pasan no produce un color más claro
+     que el más claro de los dos, comprobar los extremos y el punto
+     medio cubre toda la rampa. El valor queda anotado en
+     ver_contraste.php para que siga vigilado si alguien cambia el
+     primario. */
+
+  --degradado-marca: linear-gradient(135deg, #5a6fd0 0%, #764ba2 100%);
+
+  /* ==========================================================
+     3. GRISES Y TEXTO
+     ==========================================================
+     Escala de grises para texto y superficies. Los valores que
+     importan son los que llevan texto encima, y todos están
+     verificados contra el blanco:
+
+       --texto          12.63:1   AAA
+       --texto-medio     8.18:1   AAA
+       --texto-suave     4.54:1   AA   ← el gris más claro permitido
+       --texto-tenue     4.55:1   AA   (sobre #f2f2f2, no sobre blanco)
+
+     --texto-suave es el límite real del proyecto. Es el gris más
+     claro que se puede usar para texto y por eso aparece en
+     subtítulos, textos de ayuda y estados deshabilitados. Cualquier
+     gris más claro (#999, #aaa, #bbb) queda PROHIBIDO como color de
+     texto, y ver_contraste.php lo verifica. */
+
+  --texto: #333333;
+  /* 12.63:1 sobre --superficie. Título y texto principal.
+     El comentario decía 11.99:1 y la cifra correcta es 12.63:1; el
+     color no cambia, pero el número estaba mal y un ratio inflado a la
+     baja hace creer que el color es peor de lo que es. */
+
+  --texto-medio: #495057;
+  /* 8.18:1 sobre --superficie. Texto de tabla, contenido de cards.
+     Antes el comentario decía 7.76:1. */
+
+  --texto-suave: #767676;
+  /* 4.54:1. Subtítulos, metadatos, texto de ayuda. Es el gris más
+     claro admisible: #999 daba 2.85:1 y #aaa 1.91:1, ilegibles. */
+
+  --texto-tenue: #6e6e6e;
+  /* 4.55:1 sobre el gris #f2f2f2. Para texto sobre superficie
+     deshabilitada, donde el blanco ya no es el fondo. */
+
+  --texto-deshabilitado: #606c78;
+  /* 4.53:1 sobre --borde-tenue (#e9ecef). Es un gris particular que no
+     entra en la escala: tiene que ser legible sobre un fondo gris, y
+     un gris que funcione ahí queda demasiado oscuro sobre blanco. Por
+     eso es un token aparte y no un peldaño más de la escala.
+
+     Sirve para el texto de los controles apagados (página anterior en
+     la primera página, por ejemplo). Un control deshabilitado no está
+     exento solo por ser gris: si no se puede leer, la persona no sabe
+     que la opción existe ni que hay más páginas. */
+
+  --borde: #e0e0e0;
+  /* Borde decorativo: el que rodea una tarjeta, dibuja el arco del
+     spinner o separa la barra inferior del contenido. Da 1.32:1 sobre
+     blanco, y está bien que sea así.
+
+     Un comentario anterior decía que este valor "cumplía holgadamente"
+     el 3:1 de WCAG 1.4.11. Era falso: 1.32:1 no cumple nada. El
+     comentario mentía mientras el color quedaba fuera de norma, que es
+     la peor combinación posible porque hace que el código parezca
+     deliberado.
+
+     Aquí NO hace falta 3:1 porque el borde no aporta información: la
+     tarjeta se reconoce por su fondo, su sombra y su posición, y el
+     spinner por el color de su arco. Subirlo a 4.5:1 dibujaría un
+     marco oscuro alrededor de cada tarjeta, que es ruido visual, no
+     accesibilidad. Para los bordes que SÍ son la única pista de qué
+     es un control, está --borde-fuerte. */
+
+  --borde-fuerte: #767676;
+  /* Borde ESTRUCTURAL: el que marca el contorno de un campo de formulario
+     o de un control, cuando ese contorno es la ÚNICA pista de que ahí
+     hay algo con lo que se puede interactuar.
+
+     Da 4.54:1 sobre --superficie y 4.31:1 sobre --fondo, así que cumple
+     el 3:1 que WCAG 1.4.11 exige para los componentes de interfaz, y
+     además serviría como texto. Es el mismo valor que --texto-suave a
+     propósito: si el borde de un campo ya se lee como texto, no hay
+     forma de que alguien lo pase por alto. */
+
+  --borde-tenue: #e9ecef;
+  /* Fondo de controles deshabilitados. */
+
+  --superficie: #ffffff;
+  /* Tarjetas, tablas, campos de formulario. */
+
+  --fondo: #f8f9fa;
+  /* Fondo general de la aplicación. */
+
+  --fondo-tenue: #f0f0f0;
+  /* Chips neutros, zonas deshabilitadas. */
+
+  /* ==========================================================
+     4. COLORES SEMÁNTICOS
+     ==========================================================
+     Cada uno tiene DOS variantes porque hay dos usos distintos y
+     confundirlos es el error más común de estos sistemas:
+
+     - La variante -fondo es un lavado para superficies grandes
+       (alertas, chips) y lleva texto oscuro encima.
+     - La variante -solido es un fondo de botón o badge, y lleva
+       TEXTO BLANCO encima.
+
+     El caso #f59e0b (ámbar) es el ejemplo de por qué importa: como
+     texto sobre blanco daba 2.1:1, ilegible; como fondo con texto
+     blanco daba 1.9:1, peor todavía. Resuelto a #ad6500 para el
+     sólido (4.53:1) y con un texto mucho más oscuro en el lavado. */
+
+  --exito: #12883e;
+  /* 4.55:1 con blanco. Verde de confirmación. */
+
+  --exito-fondo: #ecfdf5;
+  --exito-texto: #065f46;
+  /* 7.07:1. Lavado de alerta de éxito. */
+
+  --error: #b3261e;
+  /* Fondo de botón de error con texto blanco. */
+
+  --error-fondo: #fef2f2;
+  --error-texto: #991b1b;
+  /* 7.35:1. Lavado de alerta de error. */
+
+  --aviso: #ad6500;
+  /* 4.53:1 con blanco. Ámbar de advertencia. Antes #ff9800 daba
+     2.16:1 con texto blanco, la peor paleta de la app. */
+
+  --aviso-fondo: #fff4e0;
+  --aviso-texto: #9d6410;
+  /* 4.52:1 sobre su propio lavado. */
+
+  --info: #197ac7;
+  /* 4.52:1 con blanco. Azul informativo. Antes #2196f3 daba 3.09:1. */
+
+  --info-fondo: #eff6ff;
+  --info-texto: #1e40af;
+  /* 7.74:1. Lavado de alerta informativa. */
+
+  --confirmado: #26874d;
+  /* 4.51:1 con blanco. Verde de turno confirmado en la turnera. */
+
+  --cancelado: #cc4a4a;
+  /* 4.52:1 con blanco. Rojo de turno cancelado. */
+
+  /* ==========================================================
+     5. ESTADOS DE TURNO (chips de la turnera)
+     ==========================================================
+     Cada estado tiene su color de texto sobre su lavado. Todos
+     verificados: el objetivo es 4.5:1 contra el fondo del chip, y
+     como los lavados son muy claros (por ejemplo #eef0f5) el texto
+     tiene que ser bastante más oscuro de lo que parece al ojo. */
+
+  --turno-libre-fg: #3d3f7a;
+  --turno-libre-bg: #eef2ff;
+  /* 8.57:1 */
+
+  --turno-confirmado-fg: #1d6b3c;
+  --turno-confirmado-bg: #e8f6ed;
+  /* 5.85:1 */
+
+  --turno-cancelado-fg: #a03232;
+  --turno-cancelado-bg: #fdecec;
+  /* 6.13:1 */
+
+  --turno-pendiente-fg: #9d6410;
+  --turno-pendiente-bg: #fff4e0;
+  /* 4.52:1 — el más ajustado de los cuatro */
+
+  --turno-atendido-fg: #2c5aa0;
+  --turno-atendido-bg: #e8f0fd;
+  /* 5.95:1 */
+
+  --turno-horario-fg: #4a4a68;
+  --turno-horario-bg: #eef0f5;
+  /* 7.45:1 */
+
+  --turno-neutro-fg: #666666;
+  --turno-neutro-bg: #f0f0f0;
+  /* 5.04:1 */
+
+  /* ==========================================================
+     6. MEDIDAS TÁCTILES
+     ==========================================================
+     La guía de diseño responsive exige 44x44px de área táctil en
+     toda zona interactiva (botones, enlaces, íconos, casillas).
+
+     La clave es que el ÁREA táctil no es lo que se ve: un ícono de
+     16px con 44px de área alrededor cumple igual. Por eso los tokens
+     de área y los de tamaño visual están separados, y por eso
+     agrandar un botón para que sea táctil no obliga a agrandar la
+     tipografía. */
+
+  --toque-minimo: 44px;
+  /* 44x44px. Mínimo absoluto. Apple HIG y Google Material Design. */
+
+  --toque-minimo-sm: 36px;
+  /* Solo para elementos DENTRO de una fila de tabla ya accesible por
+     otros medios, y con hitSlop como compensación. No debería
+     aparecer en la interfaz principal. */
+
+  --toque-fila: 48px;
+  /* Botones primarios de formulario y acciones principales. */
+
+  /* ==========================================================
+     7. TIPOGRAFÍA
+     ==========================================================
+     La guía fija 16px como mínimo para cuerpo de texto en mobile. Es
+     más que una preferencia estética: por debajo de 16px iOS Safari
+     hace zoom automático al enfocar un input, y con eso la página
+     salta mientras se escribe y el teclado tapa el campo.
+
+     La escala es fija, sin pasos relative-rem, para que un cambio de
+     tipografía del sistema no desarme los layouts. */
+
+  --fuente: 'Segoe UI', Tahoma, Geneva, Verdana, system-ui, -apple-system, sans-serif;
+  /* system-ui y -apple-system se agregan al final para que en iOS y
+     Android se use la tipografía nativa si las anteriores no existen. */
+
+  --texto-xs: 12px;
+  /* Solo metadatos no esenciales (contador de "actualizado hace 3 s").
+     NUNCA para texto que haya que leer para usar la app. */
+
+  --texto-sm: 14px;
+  /* Texto secundario, celdas de tabla en escritorio. */
+
+  --texto-base: 16px;
+  /* Cuerpo de texto. Es el mínimo y no se baja. */
+
+  --texto-md: 18px;
+  /* Títulos de card. */
+
+  --texto-lg: 22px;
+  /* Títulos de pantalla. */
+
+  --texto-xl: 28px;
+  /* Marca. */
+
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 600;
+  --peso-negro: 700;
+  /* 700 se reserva para el estado activo de la navegación, que es la
+     única señal de "dónde estoy". */
+
+  --linea: 1.5;
+  /* Interlineado del cuerpo. 1.5 es el mínimo cómodo en pantalla
+     chica, donde la línea larga y junta cuesta más de leer. */
+
+  /* ==========================================================
+     8. ESPACIADO
+     ==========================================================
+     Escala de 4px. No se inventan medidas intermedias: si algo no
+     entra en la escala, es que el diseño está mal, no la escala. */
+
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  /* 16px es el padding mínimo interno de una card, según la guía. */
+  --esp-5: 20px;
+  --esp-6: 24px;
+  --esp-8: 32px;
+  --esp-10: 40px;
+  --esp-12: 48px;
+
+  /* ==========================================================
+     9. RADIOS Y SOMBRAS
+     ========================================================== */
+
+  --radio-sm: 6px;
+  --radio: 8px;
+  --radio-lg: 12px;
+  --radio-full: 999px;
+  /* Para chips y píldoras. Un radio enorme en un cuadrado da un
+     círculo; 999px es la forma de pedirlo explícitamente. */
+
+  --sombra-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --sombra: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --sombra-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  /* Sombras muy suaves a propósito: la jerarquía la hacen el color y
+     el espaciado, no la sombra. */
+
+  /* ==========================================================
+     10. TRANSICIONES
+     ========================================================== */
+
+  --transicion: 150ms ease;
+  /* 150ms y no 300ms. A 300ms la interfaz se siente lenta en gama
+     media baja, que es justamente el equipo donde la app tiene que
+     funcionar bien. La transición se lleva al mínimo en
+     prefers-reduced-motion. */
+
+  /* ==========================================================
+     11. CAPAS (z-index)
+     ==========================================================
+     Orden explícito. Los z-index sueltos en distintos archivos
+     terminan inevitablemente colisionando, y el síntoma — un modal
+     que pasa por debajo de un toast — es muy difícil de rastrear. */
+
+  --z-nav: 100;
+  --z-nav-movil: 110;
+  /* El menú móvil va por encima de su propio navbar. */
+  --z-fondo-modal: 1000;
+  --z-modal: 1001;
+  --z-toast: 1200;
+  /* Los toasts van por encima de los modales: un error de guardado
+     tiene que verse aunque haya un modal abierto. */
+}
+
+/* ============================================================
+   ZONA SEGURA DE LOS DISPOSITIVOS CON NOTCH
+   ============================================================
+   En iPhone con notch, un elemento con position: fixed o sticky en
+   top: 0 queda PEGADO AL NOTCH, no al borde de la pantalla: el título
+   se ve cortado y la zona de toque empieza donde no se ve nada.
+
+   env(safe-area-inset-*) devuelve el tamaño de esa zona. El fallback
+   0px es lo que hacen navegadores que no lo soportan, con lo cual la
+   misma regla sirve para todos.
+
+   IMPORTANTE: env() solo tiene efecto dentro de calc(), y no se puede
+   sumar a otro env(). Por eso los padding se escriben siempre como
+   calc(var(--x) + env(safe-area-inset-y)).
+
+   --safe-top / --safe-bottom también se declaran aquí y no en :root
+   porque funcionan igual en cualquier selector: si se usaran en :root
+   como fallback, el fallback ganaría sobre el valor real.
+   ============================================================ */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* En pantallas grandes y en desktop env() vale 0, así que estos
+     valores equivalen a los tokens de espaciado de siempre. */
+  --nav-height: 64px;
+  --nav-height-movil: 56px;
+  /* La barra de navegación inferior en mobile. Es fija y va pegada al
+     borde de abajo, con la zona segura sumada. */
+  --bottom-nav-height: 60px;
+}

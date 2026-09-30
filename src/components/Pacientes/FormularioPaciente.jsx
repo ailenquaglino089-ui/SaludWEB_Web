@@ -128,10 +128,13 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
       <form className="formulario" onSubmit={handleSubmit}>
         {/* Grupo del campo Nombre Completo */}
         <div className="form-grupo">
-          <label>Nombre Completo *</label>
+          {/* htmlFor apunta al id del input: permite hacer clic en el texto para
+              enfocar el campo y que un lector de pantalla anuncie la etiqueta */}
+          <label htmlFor="paciente-nombre">Nombre Completo *</label>
           {/* El atributo name coincide con la clave de formData y className marca errores del campo */}
           <input
             type="text"
+            id="paciente-nombre"
             name="nombre"
             value={formData.nombre}
             onChange={handleChange}
@@ -143,9 +146,10 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
 
         {/* Grupo del campo DNI */}
         <div className="form-grupo">
-          <label>DNI *</label>
+          <label htmlFor="paciente-dni">DNI *</label>
           <input
             type="text"
+            id="paciente-dni"
             name="dni"
             value={formData.dni}
             onChange={handleChange}
@@ -158,9 +162,10 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
 
         {/* Grupo del selector de Obra Social */}
         <div className="form-grupo">
-          <label>Obra Social</label>
+          <label htmlFor="paciente-obra-social">Obra Social</label>
           {/* Select controlado por el estado: value es el id de obra social elegida y cada cambio lo actualiza */}
           <select
+            id="paciente-obra-social"
             name="id_obra_social"
             value={formData.id_obra_social}
             onChange={handleChange}

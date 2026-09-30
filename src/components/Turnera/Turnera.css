@@ -1,0 +1,857 @@
+/* ============================================================
+   TURNERA - Estilos del módulo de gestión de citas online
+   ============================================================
+   Convención de este archivo: cada regla lleva arriba un comentario que
+   explica QUÉ hace y POR QUÉ. No se comenta "esto es un margen de 20px"
+   (eso se ve solo leyendo el número), sino la razón de la decisión.
+
+   EL MÓDULO Y SUS TRES PANTALLAS. La turnera tiene catálogo, agenda y
+   reserva. Las tres comparten la misma gramática visual porque son pasos
+   del mismo recorrido: la persona está eligiendo un profesional y un
+   horario. Por eso un turno se ve igual en las tres, y los colores de
+   estado (libre, confirmado, cancelado, pendiente, atendido) se
+   declaran como tokens --turno-*-fg / --turno-*-bg en tokens.css y no
+   como hex sueltos acá. Si un estado cambia de color, se cambia en el
+   token y no se buscan los cuatro usos en este archivo.
+
+   UN breakpoint, no varios. Hay un solo @media (max-width: 640px) al
+   final del archivo. La regla que se sigue es mobile-first donde importa
+   (anchos en %, fuentes relativas al viewport) y una sola corrección
+   concentrada para el resto. Agregar un segundo breakpoint por pantalla
+   concreta hace que se comporten distinto entre sí, y con tres
+   pantallas que comparten layout eso se paga caro.
+
+   LO QUE ESTÁ EN SUBA. En un subdirectorio los selectores de tipo se
+   mantienen (h1, p) porque las pantallas son propias del módulo. No
+   existen márgenes hacia los costados; los construye .turnera. Así el
+   contenido se puede meter en un modal o en una columna angosta sin
+   tener que deshacer el layout del módulo.
+
+   COLORES: todos los textos y superficies usan var(--token). Los hex que
+   quedan son bordes decorativos sin texto encima, donde el contraste no
+   aplica porque no hay nada que leer.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Contenedor y cabecera
+   ------------------------------------------------------------ */
+.turnera {
+  /* Relleno similar al del dashboard para que las pantallas no den un
+     salto visual al navegar entre módulos */
+  padding: 30px 20px;
+  /* Límite de ancho: en pantallas enormes el texto se vuelve ilegible */
+  max-width: 1100px;
+  /* Centrado horizontal */
+  margin: 0 auto;
+}
+
+.turnera-header {
+  /* El separador de 1px de debajo es lo que da aire al contenido */
+  border-bottom: 2px solid var(--borde);
+  /* Espacio hasta ese separador */
+  padding-bottom: 20px;
+  /* Espacio entre el separador y lo que sigue */
+  margin-bottom: 28px;
+}
+
+.turnera-header h1 {
+  /* Limpia el margen por defecto del h1 para controlar el espacio a mano */
+  margin: 0 0 6px 0;
+  color: var(--texto);
+  font-size: 30px;
+}
+
+.turnera-header p {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------
+   Barra de filtros del catálogo
+   ------------------------------------------------------------ */
+.turnera-filtros {
+  /* Flexbox: los filtros se alinean en fila y se reparten el ancho */
+  display: flex;
+  /* Si no entran en una pantalla angosta, bajan a otra línea en vez de
+     desbordarse. Sin wrap, en un celular el buscador se salía del borde */
+  flex-wrap: wrap;
+  /* Separación entre los filtros */
+  gap: 14px;
+  /* Alineación vertical: los controles de distinta altura quedan en línea base */
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.filtro-grupo {
+  /* Permite que el buscador crezca más que los selectores */
+  flex: 1 1 220px;
+  /* min-width: 0 es lo que permite que el campo se encoja dentro del flex.
+     Sin esto, un input con ancho fijo no baja de su tamaño y desborda */
+  min-width: 0;
+}
+
+.filtro-grupo label {
+  /* Etiqueta del filtro, siempre visible (no un placeholder disfrazado:
+     los placeholders desaparecen al escribir y el campo queda sin nombre) */
+  display: block;
+  /* Un poco más chica que el texto normal */
+  font-size: 13px;
+  color: var(--texto-medio);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.filtro-grupo input,
+.filtro-grupo select {
+  /* Ancho completo del contenedor del grupo */
+  width: 100%;
+  padding: 10px 12px;
+  /* El mismo tamaño de fuente que el resto del texto. Si el input tuviera
+     13px en un móvil, iOS lo amplía solo y rompe el layout */
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  /* El box-sizing evita que el padding empuje el ancho total por encima
+     del 100% y desborde el contenedor */
+  box-sizing: border-box;
+  color: var(--texto);
+}
+
+.filtro-grupo input:focus-visible,
+.filtro-grupo select:focus-visible {
+  /* Contorno visible al navegar con teclado (mismo criterio que el resto
+     del proyecto: :focus-visible, no :focus) */
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  outline-offset: 1px;
+  border-color: var(--primario);
+}
+
+/* ------------------------------------------------------------
+   Botones
+   ------------------------------------------------------------ */
+.btn-turnera {
+  /* Se muestra como bloque y ocupa el ancho de su contenedor */
+  display: inline-block;
+  padding: 10px 18px;
+  font-size: 15px;
+  /* Bordes redondeados */
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  /* Hereda la tipografía del proyecto en lugar de usar la del navegador */
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-turnera:active {
+  /* Al apretar baja un poco: da la sensación de "botón hundido" */
+  transform: translateY(1px);
+}
+
+.btn-turnera:focus-visible {
+  /* Contorno visible al navegar con teclado */
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  outline-offset: 2px;
+}
+
+.btn-turnera:disabled {
+  /* Un botón deshabilitado que parece habilitado es la peor señal posible:
+     el usuario hace clic y no pasa nada y cree que la app falló */
+  opacity: 0.55;
+  /* cursor: not-allowed comunica que el clic está bloqueado a propósito */
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  /* Degradado con los dos colores de la marca */
+  background: var(--degradado-marca);
+  color: white;
+}
+
+.btn-primario:hover:not(:disabled) {
+  /* Se oscurece al pasar el mouse, solo si el botón está habilitado */
+  filter: brightness(1.08);
+}
+
+.btn-secundario {
+  background: var(--turno-horario-bg);
+  color: var(--turno-horario-fg);
+  /* El borde separa el botón de un fondo del mismo tono */
+  border: 1px solid #d5d9e4;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: #e2e5ee;
+}
+
+.btn-peligro {
+  /* Rojo de "esta acción no se puede deshacer" */
+  background: var(--cancelado);
+  color: white;
+}
+
+.btn-peligro:hover:not(:disabled) {
+  background: #c33;
+}
+
+.btn-chico {
+  /* Versión chica para acciones dentro de una fila de tabla */
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------
+   Tarjetas de profesional
+   ------------------------------------------------------------ */
+.turnera-grid {
+  /* CSS Grid con mínimo de 260px: en pantallas anchas se forman varias
+     columnas y en angostas bajan a una sola */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.medico-card {
+  background: white;
+  /* Borde de 1px (no 2px como en el dashboard): estas son más densas y un
+     borde de 2px las hace verse recargadas */
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 20px;
+  /* La tarjeta es un contenedor flex en columna para poder distributes
+     el botón al fondo con margin-top: auto */
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.medico-card:hover {
+  border-color: var(--primario);
+  box-shadow: 0 6px 18px rgba(90, 111, 208, 0.12);
+}
+
+.medico-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  color: var(--texto);
+}
+
+.medico-especialidad {
+  color: var(--primario);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.medico-meta {
+  /* Lista de datos pequeños (matrícula) */
+  margin: 0 0 16px 0;
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: var(--texto-suave);
+  font-size: 13px;
+  /* Cada <li> en su propia línea, con un bullet propio */
+  list-style: none;
+  padding: 0;
+}
+
+.medico-meta li {
+  margin-bottom: 4px;
+}
+
+/* El botón de la tarjeta se empuja al fondo, así todas las tarjetas quedan
+   con el botón en la misma línea de base aunque tengan distinto texto */
+.medico-card .btn-turnera {
+  margin-top: auto;
+}
+
+/* ------------------------------------------------------------
+   Grilla de horarios (slots)
+   ------------------------------------------------------------ */
+.slots-grid {
+  /* Mínimo de 110px: un botón de "08:00" no necesita más, y con menos
+     no entran seis por fila en una tablet */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  /* Sin esto, cada horario aparecería con el punto de viñeta de la lista.
+     La grilla alinea las celdas por columnas, pero el marcador se dibuja
+     igual: son dos estilos independientes y el reset global de la aplicación
+     solo quita márgenes, no las viñetas. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Cada celda de la grilla es un <li> que envuelve al botón. El <li> es lo que
+   ocupa la columna, así que sin esto los botones quedarían con el ancho justo
+   de su texto, desalineados dentro de celdas de 110px: la grilla se vería
+   como una grilla, pero con botones desiguales pegados a la izquierda. */
+.slots-grid > li {
+  display: block;
+  margin: 0;
+}
+
+.slots-grid > li > .slot {
+  width: 100%;
+  /* Así cada botón ocupa la celda entera y todos los bordes quedan alineados */
+  display: block;
+}
+
+.slot {
+  /* Cada horario es un botón real, no un div con onClick: así funciona con
+     teclado y los lectores de pantalla lo anuncian como pulsable */
+  padding: 11px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--primario);
+  background: white;
+  color: var(--primario);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.slot:hover:not(:disabled) {
+  background: var(--primario);
+  color: white;
+}
+
+.slot:focus-visible {
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  outline-offset: 2px;
+}
+
+.slot.slot-elegido {
+  /* El horario elegido se invierte de color. Es la única forma de saber
+     visualmente cuál está seleccionado sin revisar todos los botones */
+  background: var(--primario);
+  color: white;
+  /* El grosor de borde suma 2px más que los demás: el botón "crece" un poco,
+     que refuerza la selección más allá del color (sirve para daltonismo) */
+  border-width: 2px;
+}
+
+.slot:disabled {
+  /* Horario tomado o en el pasado */
+  background: var(--fondo-tenue);
+  border-color: var(--borde);
+  /* El tachado dice "esto ya no se puede", pero el horario tiene que seguir
+     siendo legible: #aaa sobre #f2f2f2 daba 2.08:1, por debajo del 4.5:1 de
+     WCAG AA. #6e6e6e llega a 4.55:1 y conserva el gris del disabled. */
+  color: var(--texto-tenue);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------
+   Avisos y estados
+   ------------------------------------------------------------ */
+.aviso {
+  /* Caja de mensaje con color según la severidad */
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  /* El borde izquierdo grueso es lo que permite identificar el tipo
+     de un vistazo, incluso sin distinguir los colores */
+  border-left: 4px solid;
+}
+
+.aviso-info {
+  background: var(--turno-libre-bg);
+  border-color: var(--primario);
+  color: var(--turno-libre-fg);
+}
+
+.aviso-exito {
+  background: var(--turno-confirmado-bg);
+  border-color: var(--confirmado);
+  color: var(--turno-confirmado-fg);
+}
+
+.aviso-error {
+  background: var(--turno-cancelado-bg);
+  border-color: var(--cancelado);
+  color: var(--turno-cancelado-fg);
+}
+
+.aviso-texto {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------
+   Formularios
+   ------------------------------------------------------------ */
+.turnera-form {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.form-campo {
+  margin-bottom: 18px;
+}
+
+.form-campo label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  margin-bottom: 6px;
+}
+
+.form-campo input,
+.form-campo select,
+.form-campo textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  /* font-family: inherit es necesario porque los textarea y algunos inputs
+     usan una tipografía distinta por defecto en el navegador */
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.form-campo textarea {
+  /* El textarea se estira a lo ancho con resize: vertical, para que el
+     usuario no pueda estirarlo en horizontal y romper la maqueta */
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-campo input:focus-visible,
+.form-campo select:focus-visible,
+.form-campo textarea:focus-visible {
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  outline-offset: 1px;
+  border-color: var(--primario);
+}
+
+/* ------------------------------------------------------------
+   Resumen del turno elegido
+   ------------------------------------------------------------ */
+.resumen-turno {
+  background: var(--fondo);
+  border: 1px solid #e0e4ee;
+  border-left: 4px solid var(--primario);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.resumen-turno dl {
+  /* El dl de HTML ya tiene márgenes propios que rompen el espaciado */
+  margin: 0;
+}
+
+.resumen-fila {
+  display: flex;
+  /* justify-content: space-between empuja el valor a la derecha del rótulo */
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 14px;
+  /* El borde inferior separa cada fila como una tabla */
+  border-bottom: 1px solid #e8eaf0;
+}
+
+.resumen-fila:last-child {
+  /* La última fila no lleva borde: cerraría el recuadro por abajo y
+     parecería que falta contenido */
+  border-bottom: none;
+}
+
+.resumen-fila dt {
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+.resumen-fila dd {
+  margin: 0;
+  color: var(--texto);
+  text-align: right;
+}
+
+/* ------------------------------------------------------------
+   Lista de mis turnos
+   ------------------------------------------------------------ */
+.turno-item {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  /* Flex: la info crece y las acciones quedan a la derecha */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* gap permite separar info de acciones sin usar márgenes hackeados */
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.turno-info {
+  /* min-width: 0 permite que el texto largo se corte en vez de empujar
+     los botones fuera de la tarjeta */
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.turno-fecha {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--texto);
+  margin: 0 0 4px 0;
+}
+
+.turno-profesional {
+  color: var(--primario);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.turno-motivo {
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: var(--texto-suave);
+  font-size: 13px;
+  margin: 0;
+  /* word-break evita que un motivo sin espacios desborde la tarjeta */
+  word-break: break-word;
+}
+
+.turno-acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Etiqueta de color según el estado del turno */
+.estado-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.estado-pendiente {
+  background: var(--turno-pendiente-bg);
+  color: var(--aviso-texto);
+  /* --aviso-texto vale #9d6410, que da 4.52:1 sobre este lavado.
+     El valor anterior, #a86b12, daba 4.03:1 y quedaba fuera de AA. */
+}
+
+.estado-confirmada {
+  background: var(--turno-confirmado-bg);
+  color: var(--turno-confirmado-fg);
+}
+
+.estado-completada {
+  background: var(--turno-atendido-bg);
+  color: var(--turno-atendido-fg);
+}
+
+.estado-cancelada {
+  background: var(--turno-cancelado-bg);
+  color: var(--turno-cancelado-fg);
+}
+
+.estado-ausente {
+  background: var(--fondo-tenue);
+  color: var(--texto-suave);
+}
+
+/* ------------------------------------------------------------
+   Estados de carga
+   ------------------------------------------------------------ */
+.turnera-cargando {
+  text-align: center;
+  padding: 40px 20px;
+  /* #777 sobre blanco daba 4.48:1, apenas por debajo del mínimo. #767676
+     llega a 4.54:1. */
+  color: var(--texto-suave);
+}
+
+.vacio {
+  text-align: center;
+  padding: 40px 20px;
+  /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
+  color: var(--texto-suave);
+}
+
+.vacio-icono {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Indicador de "actualizado hace N segundos" */
+.actualizacion-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  /* #888 sobre blanco daba 3.54:1. #767676 es el gris que sí pasa AA (4.54:1). */
+  color: var(--texto-suave);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.punto-vivo {
+  /* Punto verde que "late" mientras la pantalla se actualiza sola.
+     Es la señal más barata de que los datos no están congelados */
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--confirmado);
+  flex-shrink: 0;
+}
+
+.punto-vivo.parado {
+  background: var(--texto-suave);
+}
+
+@keyframes latir {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.punto-vivo.animando {
+  animation: latir 2s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------
+   Selector de días
+   ------------------------------------------------------------ */
+.dias-selector {
+  display: flex;
+  gap: 8px;
+  /* Wrap porque son 7 botones y en un móvil no entran en una línea */
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.dia-btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid #d5d9e4;
+  background: white;
+  color: var(--turno-horario-fg);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dia-btn:hover:not(:disabled) {
+  border-color: var(--primario);
+  color: var(--primario);
+}
+
+.dia-btn:focus-visible {
+  outline: 3px solid rgba(90, 111, 208, 0.55);
+  outline-offset: 2px;
+}
+
+.dia-btn.elegido {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: white;
+}
+
+.dia-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Número del día dentro del botón: va en una línea aparte y con menos peso
+   visual, porque el nombre del día es la información principal y el número
+   es el complemento */
+.dia-numero {
+  display: block;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------ */
+@media (max-width: 640px) {
+  .turnera {
+    padding: 20px 14px;
+  }
+
+  .turnera-header h1 {
+    font-size: 24px;
+  }
+
+  /* Un botón de "reservar" a media pantalla es cómodo; a una sola columna
+     ocupe todo el ancho y el pulgar lo alcanza sin esfuerzo */
+  .btn-turnera {
+    width: 100%;
+  }
+
+  .turno-item {
+    /* En angosto los botones pasan a ocupar todo el ancho en vez de
+       quedar apretados en una fila al costado */
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .turno-acciones .btn-turnera {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   CLASES QUE USAN LAS PANTALLAS NUEVAS
+   ============================================================
+   Estas reglas se agregaron al terminar la agenda, la reserva y mis turnos.
+   EN VEZ DE ESTILAR DESDE CERO LO QUE YA EXISTIA
+   ----------------------------------------------------
+   `.dias-selector`, `.dia-btn`, `.slots-grid`, `.slot`, `.turno-item`,
+   `.turno-profesional` y `.estado-badge` ya estaban definidas arriba, y las
+   pantallas nuevas las reutilizan tal cual. Solo se agrega lo que de verdad
+   faltaba: la lista de turnos, los rótulos de estado vacío, el subtítulo y
+   el texto para lectores de pantalla.
+   */
+
+/* ------------------------------------------------------------
+   LISTA DE TURNOS
+   ------------------------------------------------------------ */
+/* La grilla y el padding de .turno-item ya están resueltos más arriba. Lo que
+   hace falta acá es quitar las viñetas y el margen por defecto de la <ul>:
+   sin list-style:none, cada turno aparecería con un punto a la izquierda que
+   no aporta nada y desalinea la primera línea de la fecha. */
+.turnos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ------------------------------------------------------------
+   FILA DEL PACIENTE (solo aparece para el personal)
+   ------------------------------------------------------------
+   .turno-profesional existe arriba, pero el nombre del paciente va en un tono
+   distinto: es un dato secundario para quien ve la agenda, y para el propio
+   paciente es redundante (ya sabe su nombre). */
+.turno-paciente {
+  color: var(--texto-medio);
+  font-size: 0.9em;
+  margin: 2px 0 0;
+}
+
+/* Envoltorio de la insignia de estado. Antes el <span> estaba suelto dentro de
+   la tarjeta y la insignia se alineaba por accidente según el texto de al
+   lado. El envoltorio le da una posición fija en la fila. */
+.turno-estado {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------
+   SUBTÍTULOS Y RÓTULOS
+   ------------------------------------------------------------ */
+/* "Martes 29 de septiembre" o "3 de 12 horarios libres". Va en un tono atenuado
+   porque acompaña a un título: si tuviera el mismo peso visual, competiría
+   con el h1 en lugar de contextualizarlo. */
+.turnera-subtitulo {
+  color: var(--texto-medio);
+  font-size: 0.95em;
+  margin: 4px 0 0;
+}
+
+.agenda-dia {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--borde-tenue);
+}
+
+/* El título del día sí es un encabezado de nivel 2 y no un <p> en grande: de
+   esa forma un lector de pantalla puede navegar por encabezados y saltar
+   directo a la sección del día. */
+.agenda-dia-titulo {
+  font-size: 1.15em;
+  margin: 0 0 12px;
+}
+
+/* "Este profesional no atiende ese día" y "Este profesional no tiene días de
+   atención cargados". No son errores, así que van en tono suave: usar el rojo
+   de los avisos haría pensar que algo falló cuando en realidad es un dato
+   correcto. */
+.sin-dias,
+.sin-horarios {
+  color: var(--texto-medio);
+  background: var(--fondo);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------
+   HORARIOS OCUPADOS
+   ------------------------------------------------------------ */
+/* .slot:disabled más arriba ya baja la opacidad del botón entero, pero eso
+   alcanza para que se note que "no se puede". Tachar la hora le dice además
+   que ese horario EXISTE y ya se usó, que es información distinta: sin el
+   tachado, un horario atenuado es indistinguible de uno que todavía no
+   cargaron. */
+.slot-ocupado {
+  text-decoration: line-through;
+  /* Tacha la hora: el horario está tomado */
+  opacity: 0.55;
+  /* Opacidad algo más baja que la del :disabled genérico, para que los
+     horarios disponibles sigan destacándose por encima de los ocupados */
+}
+
+/* El .slot:disabled de arriba ya baja la opacidad. Esta regla solo separa la
+   causa del bloqueo en una línea más chica, para que se entienda POR QUÉ el
+   horario no se puede tomar sin tener que pasar el mouse por encima. */
+.slot-ocupado-marca {
+  display: block;
+  font-size: 0.7em;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------
+   CONFIGURACIÓN
+   ------------------------------------------------------------ */
+/* .turnera-form ya define el bloque de campos. Lo que aporta la sección es la
+   separación entre bloques: sin ella, el formulario de contraseña y el de
+   vinculación se leen como uno solo, y no queda claro dónde termina uno. */
+.config-seccion {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--borde-tenue);
+}
+
+.config-seccion h2 {
+  font-size: 1.1em;
+  margin: 0 0 4px;
+}
+
+.config-seccion > p {
+  color: var(--texto-medio);
+  margin: 0 0 16px;
+}

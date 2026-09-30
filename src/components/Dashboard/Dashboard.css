@@ -59,7 +59,7 @@
   /* Fondo blanco */
   background: white;
   /* Borde gris claro */
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--borde);
   /* Esquinas muy redondeadas */
   border-radius: 16px;
   /* Relleno interior */
@@ -75,9 +75,9 @@
 /* Efecto al pasar el mouse sobre una tarjeta */
 .dashboard-card:hover {
   /* El borde pasa al color primario */
-  border-color: #667eea;
+  border-color: var(--primario);
   /* Sombra de color azul para realzar */
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 10px 30px rgba(90, 111, 208, 0.15);
   /* La tarjeta se eleva 5px */
   transform: translateY(-5px);
 }
@@ -117,7 +117,7 @@
   /* Se comporta como elemento en bloque dentro de la línea */
   display: inline-block;
   /* Color primario de la marca */
-  color: #667eea;
+  color: var(--primario);
   /* Sin subrayado */
   text-decoration: none;
   /* Seminegrita */
@@ -131,7 +131,7 @@
 /* Enlace al pasar el mouse */
 .card-link:hover {
   /* Cambia al segundo color del degradado */
-  color: #764ba2;
+  color: var(--secundario);
 }
 
 /* Estadísticas */
@@ -149,7 +149,7 @@
 /* Caja individual de estadística */
 .stat-box {
   /* Fondo degradado con los colores de la marca */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--degradado-marca);
   /* Texto en blanco */
   color: white;
   /* Relleno interior */
@@ -184,7 +184,7 @@
 /* Sección "Sobre SaludWEB" */
 .dashboard-info {
   /* Fondo gris muy claro */
-  background: #f8f9fa;
+  background: var(--fondo);
   /* Esquinas redondeadas */
   border-radius: 12px;
   /* Relleno interior */
@@ -254,4 +254,109 @@
   .dashboard-info {
     padding: 20px;
   }
+}
+/* ============================================================
+   AGREGADO AL RECONVERTIR EL PANEL
+   ============================================================
+   El panel pasó a leer estadísticas reales del backend y a armar sus tarjetas
+   según el rol, así que hacen falta cuatro cosas que antes no existían:
+   el encabezado con la fecha de actualización, el detalle de cada indicador,
+   la lista de próximos turnos del paciente y el mensaje de "no tenés turnos".
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   ENCABEZADO DE LOS INDICADORES
+   ------------------------------------------------------------ */
+/* El título y el "Actualizado hace N s" van en una fila con el texto a la
+   derecha. El motivo es que el indicador tiene que estar pegado a sus
+   números: separado por un encabezado de otra sección, deja de ser evidente
+   que esos números se acaban de calcular. */
+.stats-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.stats-encabezado h2 {
+  margin: 0;
+  font-size: 1.15em;
+}
+
+/* Tono atenuado y cuerpo chico: es un dato de contexto, no el foco de la
+   pantalla. Si tuviera el mismo tamaño que el título competiría con él. */
+.stats-actualizado {
+  color: #5b6472;
+  font-size: 0.85em;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------
+   DETALLE DE CADA INDICADOR
+   ------------------------------------------------------------ */
+/* La línea chica que aclara de dónde sale el número ("40 de 60 horarios
+   ofrecidos"). Va debajo de la etiqueta y en tono suave para que se lea como
+   explicación y no como un segundo indicador. */
+.stat-detalle {
+  color: #5b6472;
+  font-size: 0.8em;
+  margin: 4px 0 0;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------
+   PRÓXIMOS TURNOS DEL PACIENTE
+   ------------------------------------------------------------ */
+.proximos-turnos {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proximo-turno {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  /* flex-wrap porque en pantallas angostas los tres datos en fila se
+     desbordarían: la fecha y el nombre del médico son larguísimos juntos */
+  background: white;
+  border: 1px solid #e4e8ee;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+/* La fecha va primero y en seminegrita porque es lo que se busca al mirar esta
+   lista: "¿cuándo tengo que ir?". */
+.proximo-fecha {
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.proximo-medico {
+  color: #5b6472;
+  font-size: 0.92em;
+  flex: 1;
+  /* Ocupa el espacio sobrante y empuja la insignia a la derecha */
+  min-width: 0;
+}
+
+.sin-turnos {
+  color: #5b6472;
+  background: #f4f6f9;
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  margin: 12px 0 0;
+}
+
+.sin-turnos a {
+  color: var(--primario);
+  font-weight: 600;
 }

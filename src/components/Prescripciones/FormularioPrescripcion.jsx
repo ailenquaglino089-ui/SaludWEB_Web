@@ -185,9 +185,12 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
       <form className="formulario" onSubmit={handleSubmit}>
         {/* Grupo del selector de Paciente */}
         <div className="form-grupo">
-          <label>Paciente *</label>
+          {/* htmlFor apunta al id del select: habilita el clic en el texto para
+              enfocar el campo y la lectura de la etiqueta por lector de pantalla */}
+          <label htmlFor="prescripcion-paciente">Paciente *</label>
           {/* El value del select es el id del paciente seleccionado y cada cambio lo actualiza */}
           <select
+            id="prescripcion-paciente"
             name="id_paciente"
             value={formData.id_paciente}
             onChange={handleChange}
@@ -207,8 +210,9 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
 
         {/* Grupo del selector de Médico */}
         <div className="form-grupo">
-          <label>Médico *</label>
+          <label htmlFor="prescripcion-medico">Médico *</label>
           <select
+            id="prescripcion-medico"
             name="id_medico"
             value={formData.id_medico}
             onChange={handleChange}
@@ -227,8 +231,14 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
         </div>
 
         {/* Grupo de la lista de medicamentos */}
-        <div className="form-grupo">
-          <label>Medicamentos *</label>
+        {/* role="group" + aria-labelledby: este rótulo describe un CONJUNTO de
+            campos (una fila por medicamento), no un control único, así que
+            htmlFor no serviría. Con aria-labelledby el lector de pantalla
+            anuncia "Medicamentos" al entrar en cualquiera de los campos del
+            grupo, que es exactamente lo que necesita para saber qué está
+            completeando. */}
+        <div className="form-grupo" role="group" aria-labelledby="grupo-medicamentos">
+          <label id="grupo-medicamentos">Medicamentos *</label>
           {/* Mapeamos cada fila de medicamento a un bloque con dos inputs y botón de quitar */}
           {formData.medicamentos.map((med, index) => (
             // key por índice (aceptable para listas dinámicas locales de inputs)
@@ -272,9 +282,10 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
 
         {/* Grupo del campo de indicaciones */}
         <div className="form-grupo">
-          <label>Indicaciones</label>
+          <label htmlFor="prescripcion-indicaciones">Indicaciones</label>
           {/* Área de texto controlada por formData.indicaciones: guarda las instrucciones */}
           <textarea
+            id="prescripcion-indicaciones"
             name="indicaciones"
             value={formData.indicaciones}
             onChange={handleChange}
@@ -285,10 +296,11 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
 
         {/* Grupo del campo de fecha de vencimiento */}
         <div className="form-grupo">
-          <label>Fecha de Vencimiento</label>
+          <label htmlFor="prescripcion-vencimiento">Fecha de Vencimiento</label>
           {/* Input tipo fecha controlado por formData.fecha_vencimiento */}
           <input
             type="date"
+            id="prescripcion-vencimiento"
             name="fecha_vencimiento"
             value={formData.fecha_vencimiento}
             onChange={handleChange}
@@ -297,9 +309,14 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
 
         {/* Grupo del selector de estado */}
         <div className="form-grupo">
-          <label>Estado</label>
+          <label htmlFor="prescripcion-estado">Estado</label>
           {/* Select de estado controlado por formData.estado */}
-          <select name="estado" value={formData.estado} onChange={handleChange}>
+          <select
+            id="prescripcion-estado"
+            name="estado"
+            value={formData.estado}
+            onChange={handleChange}
+          >
             {/* Cada opción tiene como value el código de estado del backend */}
             <option value="activa">✓ Activa</option>
             <option value="vencida">⚠ Vencida</option>

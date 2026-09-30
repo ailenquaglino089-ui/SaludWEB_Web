@@ -83,10 +83,14 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
       <form className="formulario" onSubmit={handleSubmit}>
         {/* Grupo del campo Nombre */}
         <div className="form-grupo">
-          <label>Nombre *</label>
+          {/* htmlFor apunta al id del input: es lo que hace que al hacer clic
+              en el texto "Nombre" se enfoque el campo, y lo que permite que un
+              lector de pantalla anuncie la etiqueta al llegar al input */}
+          <label htmlFor="medico-nombre">Nombre *</label>
           {/* El atributo name coincide con la clave de formData usada en handleChange */}
           <input
             type="text"
+            id="medico-nombre"
             name="nombre"
             value={formData.nombre}
             onChange={handleChange}
@@ -98,9 +102,10 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
 
         {/* Grupo del campo Matrícula */}
         <div className="form-grupo">
-          <label>Matrícula *</label>
+          <label htmlFor="medico-matricula">Matrícula *</label>
           <input
             type="text"
+            id="medico-matricula"
             name="matricula"
             value={formData.matricula}
             onChange={handleChange}
@@ -113,9 +118,10 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
 
         {/* Grupo del campo Especialidad */}
         <div className="form-grupo">
-          <label>Especialidad *</label>
+          <label htmlFor="medico-especialidad">Especialidad *</label>
           <input
             type="text"
+            id="medico-especialidad"
             name="especialidad"
             value={formData.especialidad}
             onChange={handleChange}

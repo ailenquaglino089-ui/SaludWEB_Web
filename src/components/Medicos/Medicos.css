@@ -72,14 +72,18 @@
   transition: border-color 0.3s;
 }
 
-/* Estado focus del input de búsqueda */
-.input-busqueda:focus {
-  /* Quita el outline del navegador */
-  outline: none;
+/* Estado focus del input de búsqueda.
+   :focus-visible en lugar de :focus para no taparle el contorno a quien navega
+   con teclado: si no, esa persona se queda sin ninguna señal de dónde está. */
+.input-busqueda:focus-visible {
+  /* Contorno visible en el azul del módulo */
+  outline: 3px solid rgba(25, 122, 199, 0.55);
+  /* Margen entre el contorno y el borde para que no se lean pegados */
+  outline-offset: 1px;
   /* Borde en azul */
-  border-color: #2196F3;
+  border-color: var(--info);
   /* Halo azul suave alrededor del input */
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 122, 199, 0.1);
 }
 
 /* Tabla */
@@ -111,7 +115,7 @@
 /* Fila de encabezados de la tabla */
 .tabla thead {
   /* Fondo gris muy claro para diferenciar del cuerpo */
-  background: #f8f9fa;
+  background: var(--fondo);
   /* Línea gruesa inferior de separación */
   border-bottom: 2px solid #dee2e6;
 }
@@ -125,7 +129,7 @@
   /* Texto seminegrita */
   font-weight: 600;
   /* Color gris oscuro */
-  color: #495057;
+  color: var(--texto-medio);
   /* Tamaño del texto */
   font-size: 14px;
 }
@@ -141,7 +145,7 @@
 /* Fila de la tabla al pasar el mouse */
 .tabla tbody tr:hover {
   /* Resalta la fila con un fondo gris claro */
-  background-color: #f8f9fa;
+  background-color: var(--fondo);
 }
 
 /* Celda de datos de la tabla */
@@ -151,7 +155,7 @@
   /* Tamaño del dato */
   font-size: 14px;
   /* Color gris oscuro */
-  color: #495057;
+  color: var(--texto-medio);
 }
 
 /* Status badge */
@@ -178,6 +182,22 @@
   display: flex;
   /* Espacio entre botones */
   gap: 8px;
+  /* Centrado vertical del conjunto: sin esto el cartel y los botones quedan
+     pegados al borde de arriba de la celda y la fila se ve desalineada
+     respecto de las columnas de texto. */
+  align-items: center;
+  /* flex-wrap: wrap es lo que garantiza que el botón Editar siga siendo
+     accesible. La celda tiene un ancho que depende de la pantalla y del
+     contenido de las otras columnas, así que en una pantalla angosta el
+     cartel + los dos botones no entran. Sin wrap, el flex los mantiene en una
+     sola línea y el contenido se sale de la celda: el botón Editar queda
+     empujado más allá del borde de la tabla, invisible, sin scroll y sin
+     ningún aviso.
+
+     Con wrap, el cartel baja a una segunda línea dentro de la celda y los
+     botones quedan donde se los espera. Perder una línea de alto es un costo
+     visible; perder el único control de la fila, no. */
+  flex-wrap: wrap;
 }
 
 /* Botón pequeño de tabla */
@@ -191,7 +211,7 @@
 /* Botón de información (Editar) - azul */
 .btn-info {
   /* Fondo azul */
-  background: #2196F3;
+  background: var(--info);
   /* Texto blanco */
   color: white;
   /* Sin borde */
@@ -213,7 +233,7 @@
 /* Botón de peligro (Eliminar) - rojo */
 .btn-danger {
   /* Fondo rojo */
-  background: #f44336;
+  background: var(--error);
   /* Texto blanco */
   color: white;
   /* Sin borde */
@@ -240,7 +260,7 @@
   /* Relleno generoso para centrar el mensaje */
   padding: 60px 20px;
   /* Color gris */
-  color: #999;
+  color: var(--texto-suave);
   /* Tamaño del mensaje */
   font-size: 16px;
   /* Fondo blanco de la tarjeta */
@@ -306,16 +326,19 @@
   transition: border-color 0.3s;
 }
 
-/* Estado focus de los campos del formulario */
-.form-grupo input:focus,
-.form-grupo select:focus,
-.form-grupo textarea:focus {
-  /* Quita el outline del navegador */
-  outline: none;
+/* Estado focus de los campos del formulario.
+   :focus-visible para no borrar el contorno de quien navega con teclado. */
+.form-grupo input:focus-visible,
+.form-grupo select:focus-visible,
+.form-grupo textarea:focus-visible {
+  /* Contorno visible en el azul del módulo */
+  outline: 3px solid rgba(25, 122, 199, 0.55);
+  /* Margen entre el contorno y el borde */
+  outline-offset: 1px;
   /* Borde azul */
-  border-color: #2196F3;
+  border-color: var(--info);
   /* Halo azul suave */
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 122, 199, 0.1);
 }
 
 /* Checkbox dentro de los formularios */
@@ -341,7 +364,7 @@
 /* Campo con error de validación */
 .input-error {
   /* Borde rojo forzado (importante para ganarle al borde por defecto) */
-  border-color: #f44336 !important;
+  border-color: var(--error) !important;
   /* Fondo rojizo tenue para indicar el campo problemático */
   background-color: #ffebee;
 }
@@ -349,7 +372,7 @@
 /* Mensaje de error debajo del campo */
 .error-text {
   /* Texto rojo */
-  color: #f44336;
+  color: var(--error);
   /* Tamaño pequeño */
   font-size: 12px;
   /* Pequeño margen superior respecto al input */
@@ -453,7 +476,7 @@
     /* Texto seminegrita para diferenciar etiqueta de valor */
     font-weight: 600;
     /* Mismo gris de los encabezados */
-    color: #495057;
+    color: var(--texto-medio);
     /* La etiqueta se alinea a la izquierda */
     text-align: left;
     /* No deja que la etiqueta se comprima */

@@ -1,0 +1,307 @@
+/* ============================================================
+   Usuarios.css - Estilos de la pantalla de permisos
+   ------------------------------------------------------------
+   Contiene DOS familias: la estructura de la pantalla (contenedor,
+   filtros, tabla) y el desplegable de acciones. Viven en el mismo
+   archivo porque son la misma pantalla y comparten decisiones.
+
+   POR QUÉ ESTÁN REPETIDAS REGLAS QUE YA EXISTEN EN Medicos.css
+   ------------------------------------------------------------
+   Las reglas de .tabla, .form-grupo y .badge existen también en
+   Medicos.css. No se las importa de ahí a propósito:
+
+     - Medicos.css se carga porque ListaMedicos.jsx lo importa. Si
+       Usuarios dependiera de esas reglas sin importarlas, la pantalla
+       perdería su formato el día que alguien borre ese import de
+       ListaMedicos.jsx (o cambie el nombre de una clase), y nadie lo
+       vería venir. Es un acoplamiento accidental.
+     - Las versiones de acá son las que la pantalla realmente usa. Tener
+       una copia es mantenimiento, pero es mantenimiento honesto: el
+       compromiso es explícito, se rompe al instante y no se rompe en
+       silencio.
+
+   En los casos donde hay un token definido, los colores se escriben con
+   var() y no con hex. verificar_variables.php controla que toda variable
+   usada exista y ver_contraste.php controla el contraste.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   CONTENEDOR
+   ------------------------------------------------------------ */
+.usuarios-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Cabecera: título y subtítulo. No va en una tarjeta con sombra como la de
+   médicos porque acá no hay botón "Nuevo": la pantalla no crea usuarios,
+   solo los administra, y una tarjeta con un solo título se ve más vacía de
+   lo que es. */
+.usuarios-container .lista-header {
+  margin-bottom: 24px;
+}
+
+.usuarios-container .lista-header h1 {
+  margin: 0 0 6px;
+  font-size: var(--texto-xl);
+  color: var(--texto-medio);
+}
+
+.lista-subtitulo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+/* ------------------------------------------------------------
+   FILTROS
+   ------------------------------------------------------------
+   Los dos filtros en una fila. En pantallas angostas pasan a dos columnas,
+   porque apilar un buscador y un selector a 100% de ancho rompería la
+   lectura de la tabla que viene abajo. */
+.usuarios-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.usuarios-filtros .form-grupo {
+  flex: 1 1 220px;
+}
+
+/* Los campos de los filtros: mismo lenguaje visual que los del resto de la app
+   (focus-visible con color de marca, sin para quien navega con teclado). */
+.usuarios-filtros input,
+.usuarios-filtros select {
+  padding: 10px 12px;
+  font-size: var(--texto-sm);
+  font-family: inherit;
+  color: var(--texto-medio);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  width: 100%;
+}
+
+.usuarios-filtros input:focus-visible,
+.usuarios-filtros select:focus-visible {
+  outline: 3px solid var(--info);
+  outline-offset: 1px;
+  border-color: var(--info);
+}
+
+/* ------------------------------------------------------------
+   TABLA
+   ------------------------------------------------------------
+   Las reglas generales de tabla. Los valores copian a Medicos.css (ver la
+   explicación del encabezado) usando los tokens del proyecto. */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla thead {
+  background: var(--fondo);
+  border-bottom: 2px solid var(--borde);
+}
+
+.tabla th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+.tabla tbody tr {
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla tbody tr:hover {
+  background-color: var(--fondo);
+}
+
+.tabla td {
+  padding: 14px 16px;
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* ------------------------------------------------------------
+   BADGES DE ESTADO Y ROL
+   ------------------------------------------------------------ */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-activo {
+  background: var(--exito);
+}
+
+.badge-inactivo {
+  background: var(--error);
+}
+
+/* "(vos)" que acompaña el nombre de la cuenta propia. Color del rol
+   (administradora) y no un verde de exito: señala pertenencia, no estado. */
+.badge-propio {
+  color: var(--primario-fuerte);
+  font-size: var(--texto-xs);
+  font-weight: 500;
+}
+
+/* El rol como dato, en la columna ROL. La píldora azul. Vive en App.css
+   porque la usan también las tablas de médicos y pacientes (el cartel que
+   dice quién puede hacer la acción); acá se documenta la fila de usuarios. */
+.rol-pildora {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  color: var(--info-texto);
+  background: var(--info-fondo);
+  border-radius: var(--radio-full);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+   TEXTO DE AYUDA Y GUARDADO
+   ------------------------------------------------------------ */
+/* La nota de vinculación, bajo el desplegable. Es la explicación de por qué
+   el cambio de rol que se acaba de hacer no le da acceso a nada: sin esto,
+   un "Convertir en Médico" que no le permite a la persona operar se lee
+   como un error silencioso. */
+.texto-ayuda {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--texto-xs);
+  color: var(--texto-suave);
+}
+
+/* El reemplazo del botón mientras se guarda. Pequeño y sin espaciado porque
+   va dentro de una celda que ya es angosta. */
+.texto-guardando {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+/* ------------------------------------------------------------
+   PAGINACIÓN
+   ------------------------------------------------------------
+   La fila de paginación de esta pantalla. Reproduce la estructura de
+   Paginacion.css sin depender de que ese componente esté montado en otro
+   lugar. */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.paginacion button:disabled {
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   MENÚ DE ACCIONES POR USUARIO
+   ------------------------------------------------------------
+   El desplegable que abre el botón "Acciones ▾" de la tabla.
+
+   POR QUÉ NO ES UN <select> NATIVO
+   ---------------------------------
+   Un <select> del sistema abre una lista del navegador que este proyecto no
+   controla: no se le puede poner un ícono, no se le puede dar padding, y en
+   algunos sistemas la lista tapa el resto de la pantalla. Acá se necesita un
+   botón + un <ul>, porque el contenido son acciones con consecuencias y cada
+   una necesita poder estar deshabilitada con su explicación al lado.
+
+   EL CONTENEDOR ES position: relative POR CADA FILA
+   -------------------------------------------------
+   Es lo que hace que la lista quede anclada a su propio botón y no a la
+   primera fila de la tabla. Sin position: relative en .menu-acciones, el
+   <ul> se posicionaría respecto del contenedor de la tabla y las cinco listas
+   se abrirían en el mismo lugar, arriba de todo.
+   ============================================================ */
+.menu-acciones {
+  position: relative;
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------
+   LA LISTA
+   ------------------------------------------------------------ */
+.menu-acciones-lista {
+  /* absolute, y no fixed, para que la lista baje pegada al botón aunque la
+     página se desplace. */
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  /* min-width en vez de width: la lista se ajusta al texto de la acción más
+     larga ("Convertir en Administrador") sin que haya que escribir ese ancho
+     a mano y que se corte si mañana el texto es más largo. */
+  min-width: 230px;
+  z-index: 100;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  /* La sombra separa la lista de la tabla: sin ella, un <ul> blanco sobre
+     filas blancas se ve como un bloque de color plano y no como algo que
+     flota por encima del resto. */
+  box-shadow: var(--sombra);
+}
+
+/* ------------------------------------------------------------
+   CADA ACCIÓN
+   ------------------------------------------------------------ */
+.menu-acciones-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: var(--texto-sm);
+  text-align: left;
+  color: var(--texto-medio);
+  background: none;
+  border: none;
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+}
+
+/* El fondo se pone en hover y en :focus-visible, no en :focus a secas.
+   :focus se dispara también al hacer clic con el mouse, y en ese caso no
+   queda el botón enfocado: se vería un fondo que parece pegado al clic.
+   --primario-suave es un lavanda muy claro (#eef0fb). El texto del hover
+   pasa a --primario-fuerte (#4a5cba), que da contraste AA sobre ese fondo. */
+.menu-acciones-item:hover:not(:disabled),
+.menu-acciones-item:focus-visible {
+  background: var(--primario-suave);
+  color: var(--primario-fuerte);
+}
+
+/* La acción que corresponde al rol que la persona ya tiene.
+   No se oculta, y no se pone gris con opacity porque bajaría el contraste
+   del texto por debajo de lo que exige WCAG. El color de texto va directo y
+   el cursor deja de ser de mano. */
+.menu-acciones-item:disabled {
+  color: var(--texto-tenue);
+  cursor: not-allowed;
+}
+
+/* La explicación de por qué está deshabilitada va pegada a la acción y en un
+   tono más claro, para que se lea como una nota y no como parte del nombre de
+   la acción. */
+.menu-acciones-actual {
+  font-size: var(--texto-xs);
+  color: var(--texto-tenue);
+}
