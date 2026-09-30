@@ -1,152 +1,271 @@
+// ============================================================
+// App.jsx - Raíz de la SPA: router, contexto de sesión y tabla de rutas
+// ============================================================
+// Este archivo es el mapa de la aplicación. Decide qué pantalla se ve para
+// cada URL y qué pantallas exigen sesión. Todo lo demás cuelga de acá, así
+// que antes de tocarlo conviene tener en cuenta tres cosas:
+//
+//  1. QUÉ VIVE EN ESTE ARCHIVO Y QUÉ NO. Aquí no hay lógica de negocio, no
+//     hay llamadas a la API y no hay estado propio. Solo hay dos decisiones:
+//     dónde se monta el contexto de sesión y qué ruta abre qué componente.
+//     Si alguna vez aparece un useState con datos del dominio, es una señal
+//     de que ese estado le corresponde a la pantalla o a un provider
+//     dedicado, no a este archivo.
+//
+//  2. EL ORDEN DE LAS CAPAS. BrowserRouter envuelve a AuthProvider y este
+//     envuelve a AppContent. Es un orden obligatorio. ProtectedRoute consulta
+//     AuthContext, y AuthContext usa la redirección de React Router para
+//     mandar al login cuando la sesión no vale. Si se invirtiera, ProtectedRoute
+//     intentaría leer un contexto que todavía no existe y la app no montaría.
+//
+//  3. POR QUÉ HAY DOS FormAS DE PROTEGER UNA RUTA. (/login y /register)
+//     resuelven el caso con un ternario; el resto usa ProtectedRoute. La
+//     diferencia es de propósito: ProtectedRoute es para páginas que no
+//     tienen sentido sin sesión, mientras que login y register necesitan
+//     además expulsar a quien YA tiene sesión. Se explica al lado de cada
+//     ruta.
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-// Importa las herramientas de React Router: BrowserRouter (enrutador HTML5), Routes/Route (definen rutas) y Navigate (redirección declarativa)
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx';
-// Importa el Provider (provee la autenticación a toda la app) y el Context (para consumir el estado de sesión)
 import { useContext } from 'react';
-// Importa useContext, el hook de React para leer el valor de un Context (en este caso, AuthContext)
 
 import Navbar from './components/Navbar';
-// Barra de navegación que se muestra en todas las páginas de la aplicación
 import Login from './components/Auth/Login';
-// Componente de la pantalla de inicio de sesión (login desde frontend desacoplado)
 import Register from './components/Auth/Register';
-// Componente del formulario de registro de nuevos usuarios
 import Dashboard from './components/Dashboard/Dashboard';
-// Componente del panel principal que ve el usuario autenticado
 import ListaMedicos from './components/Medicos/ListaMedicos';
-// Componente que lista los médicos (operaciones CRUD sobre el recurso médicos)
 import ListaPacientes from './components/Pacientes/ListaPacientes';
-// Componente que lista los pacientes (operaciones CRUD sobre el recurso pacientes)
 import ListaPrescripciones from './components/Prescripciones/ListaPrescripciones';
-// Componente que lista las prescripciones (operaciones CRUD sobre el recurso prescripciones)
 import Configuracion from './components/Configuracion/Configuracion';
-// Componente de la pantalla de configuración de la cuenta
+import Usuarios from './components/Usuarios/Usuarios';
 import CatalogoTurnera from './components/Turnera/CatalogoTurnera';
-// Catálogo público de profesionales de la turnera
 import AgendaMedico from './components/Turnera/AgendaMedico';
-// Agenda y horarios libres de un profesional (pública)
 import ReservarTurno from './components/Turnera/ReservarTurno';
-// Confirmación del turno (exige sesión y ficha vinculada)
 import MisTurnos from './components/Turnera/MisTurnos';
-// Lista de los turnos propios, con polling y acciones de confirmar/cancelar
 import './App.css';
-// Importa los estilos globales de la aplicación
 
-// Componente protegido: solo accesible si está autenticado
+// ------------------------------------------------------------
+// ProtectedRoute: guardia de las páginas que exigen sesión
+// ------------------------------------------------------------
+// No es un chequeo de permisos: solo verifica que haya una sesión. El nivel de
+// acceso a un dato (que un paciente vea su propia ficha y no la de otro) lo
+// aplica el BACKEND, nunca el frontend. Este guarda existe para no mostrar
+// pantallas vacías o con errores a quien no tiene sesión, no para segurizar.
+//
+// Va en un componente aparte y no como un if dentro de AppContent porque cada
+// ruta lo necesita por separado, y repetir el mismo if ocho veces es la forma
+// más rápida de que una quede sin proteger el día de mañana.
 function ProtectedRoute({ children }) {
-  // ProtectedRoute actúa como "guardia de ruta": envuelve páginas que requieren sesión activa
   const { autenticado, cargando } = useContext(AuthContext);
-  // Lee del contexto si el usuario está autenticado (autenticado) y si la sesión aún se está verificando (cargando)
+
+  // El orden de los dos if de abajo no es intercambiable.
+  //
+  // Durante el primer render, cargando es true y autenticado todavía false,
+  // porque AuthContext todavía no consultó si el token guardado sigue vivo.
+  // Si el if de !autenticado estuviera primero, todas las rutas protegidas
+  // expulsarían al usuario al login durante esa verificación. Se vería el
+  // formulario de acceso parpadear en cada recarga para alguien que sí tiene
+  // sesión, y además se perdería la URL: ProtectedRoute no puede devolver a
+  // la persona a donde estaba, porque Navigate no guarda la ruta de origen.
+  //
+  // Por eso cargando se consulta PRIMERO y devuelve un estado que no decide
+  // nada. Es la respuesta correcta a "todavía no sé": no se asume nada y no
+  // se rebota a ninguna pantalla.
+  if (cargando) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  // Terminó la verificación y no hay sesión: ahora sí corresponde expulsar.
+  if (!autenticado) {
+    return <Navigate to="/login" />;
+  }
+
+  // Sesión válida: se renderiza la página que la ruta pidió.
+  return children;
+}
+
+// ------------------------------------------------------------
+// AdminRoute: ProtectedRoute + exigir rol de administrador
+// ------------------------------------------------------------
+// Existe ProtectedRoute aparte de esto, y no se agrega un `esAdmin` a
+// ProtectedRoute, por una razón concreta: las rutas protegidas son de dos
+// clases. Casi todas necesitan "tengas sesión". UNA necesita además "seas
+// administrador". Si el chequeo del rol estuviera dentro de ProtectedRoute,
+// cada ruta protegida tendría que decidir si lo exige, y el día que alguien
+// copie una ruta existente sin copiar ese detalle, se abre un acceso que
+// no debía.
+//
+// Con dos guards, el acceso queda explícito en la tabla de rutas:
+// <ProtectedRoute>  → con sesión alcanza
+// <AdminRoute>       → con sesión y siendo admin
+//
+// Y NO es la defensa. El backend responde 403 a un token que no sea admin
+// contra /api/usuarios, se escriba la URL que se escriba. Esto solo evita
+// mostrar una pantalla que va a fallar.
+function AdminRoute({ children }) {
+  // cargando viene de ProtectedRoute y se necesita acá también: mientras se
+  // verifica la sesión el usuario puede ser null, y sin esta guarda una
+  // recarga en /usuarios expulsaría a un administrador que sí tiene sesión.
+  const { usuario, autenticado, cargando } = useContext(AuthContext);
 
   if (cargando) {
-    // Mientras se verifica la sesión en el backend no se decide nada aún
     return (
-      // Retorna un indicador visual de carga para evitar "flashes" de pantallas no autorizadas
       <div className="loading-container">
-        {/* Contenedor del estado de carga con estilos centrados */}
         <div className="spinner"></div>
-        {/* Spinner animado: círculo giratorio que indica actividad */}
         <p>Cargando...</p>
-        {/* Texto de apoyo que acompaña al spinner */}
       </div>
     );
   }
 
   if (!autenticado) {
-    // Si terminó la carga y no hay sesión, se redirige al login
     return <Navigate to="/login" />;
-    // <Navigate> redirige automáticamente al formulario de login
+  }
+
+  // La comparación es con tipo_usuario y no con "rol" porque así se llama el
+  // campo en el contexto: viene de /api/auth/me y de la respuesta del login.
+  // El backend devuelve "rol" en el endpoint de usuarios, pero acá se lee
+  // el de sesión. Son dos nombres para el mismo dato, en dos contextos
+  // distintos, y conviene no mezclarlos.
+  if (usuario?.tipo_usuario !== 'admin') {
+    // No se manda al dashboard en silencio. Alguien que escribió la URL a
+    // mano tiene que entender que no tiene permiso, no creer que la ruta
+    // está mal. El aviso lo muestra la propia pantalla de Usuarios, que
+    // hace su propio chequeo; Navigate solo evita el intento de carga.
+    return <Navigate to="/dashboard" />;
   }
 
   return children;
-  // Si la sesión es válida, se renderizan los hijos (la página protegida solicitada)
 }
 
 function AppContent() {
-  // AppContent define la estructura y las rutas de la aplicación (usa el contexto de sesión)
+  // AppContent arma la estructura visual y la tabla de rutas.
   const { autenticado } = useContext(AuthContext);
-  // Obtiene el estado de autenticación para decidir redirecciones en /login, /register y la raíz
 
   return (
-    // Retorna la estructura visual principal de la SPA
     <div className="app">
-      {/* Contenedor principal de la aplicación (layout en columna) */}
+      {/* El Navbar va FUERA de <Routes> a propósito. Si estuviera adentro,
+          cambiar de pantalla lo volvería a montar y perdería el estado; acá
+          es una sola instancia que se mantiene durante toda la navegación. */}
       <Navbar />
-      {/* Barra de navegación superior, visible en todas las rutas */}
-      
+
       <main className="main-content">
-        {/* Zona principal de contenido donde se renderiza la ruta activa */}
         <Routes>
-          {/* Routes: define el conjunto de rutas; Route mapea una URL a un componente */}
-          {/* Rutas públicas */}
-          {/* Zona pública: estas rutas NO requieren estar autenticado */}
-          {/* Ruta de login: si ya está autenticado, saltarse el login e ir al dashboard; si no, mostrar Login */}
-          <Route 
-            path="/login" 
+          {/* ==========================================================
+              RUTAS PÚBLICAS
+              Las tres comparten la misma regla: si ya hay sesión, no tienen
+              sentido. Dejar el formulario de login visible para alguien que ya
+              entró hace que dude de si el clic de "salir" funcionó, y un
+              /register al alcance podría dejar crear un usuario duplicado.
+              Por eso se resuelven con un ternario y no con ProtectedRoute:
+             ProtectedRoute solo sabe expulsar, no sabe devolver al dashboard.
+              ========================================================== */}
+
+          <Route
+            path="/login"
             element={autenticado ? <Navigate to="/dashboard" /> : <Login />}
           />
-          {/* Ruta de registro: si ya está autenticado, saltarse el registro e ir al dashboard; si no, mostrar Register */}
-          <Route 
-            path="/register" 
+          <Route
+            path="/register"
             element={autenticado ? <Navigate to="/dashboard" /> : <Register />}
           />
 
-          {/* Rutas protegidas */}
-          {/* Zona protegida: cada ruta está envuelta en ProtectedRoute para exigir sesión */}
-          {/* Ruta del panel principal: se renderiza el Dashboard al visitar /dashboard */}
-          <Route 
-            path="/dashboard" 
+          {/* ==========================================================
+              RUTAS PROTEGIDAS
+              Todo lo que opera sobre datos del sistema o sobre la cuenta
+              del usuario va acá. Cada una envuelve su componente en
+              ProtectedRoute, y ese es el punto: el wrap es explícito y visible
+              en la tabla de rutas, para que al agregar una ruta nueva se vea
+              de entrada si va protegida o no.
+              ========================================================== */}
+
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
-                {/* ProtectedRoute valida sesión antes de permitir el acceso */}
                 <Dashboard />
-                {/* Si la sesión es válida, se muestra el panel principal */}
               </ProtectedRoute>
             }
           />
 
-          {/* Ruta de médicos: se renderiza ListaMedicos al visitar /medicos */}
-          <Route 
-            path="/medicos" 
+          <Route
+            path="/medicos"
             element={
               <ProtectedRoute>
-                {/* Se exige estar autenticado para acceder */}
                 <ListaMedicos />
-                {/* Lista de médicos (protegida) */}
               </ProtectedRoute>
             }
           />
 
-          {/* Ruta de pacientes: se renderiza ListaPacientes al visitar /pacientes */}
-          <Route 
-            path="/pacientes" 
+          <Route
+            path="/pacientes"
             element={
               <ProtectedRoute>
-                {/* Se exige estar autenticado para acceder */}
                 <ListaPacientes />
-                {/* Lista de pacientes (protegida) */}
               </ProtectedRoute>
             }
           />
 
-          {/* Ruta de prescripciones: se renderiza ListaPrescripciones al visitar /prescripciones */}
-          <Route 
-            path="/prescripciones" 
+          <Route
+            path="/prescripciones"
             element={
               <ProtectedRoute>
-                {/* Se exige estar autenticado para acceder */}
                 <ListaPrescripciones />
-                {/* Lista de prescripciones (protegida) */}
               </ProtectedRoute>
             }
           />
 
-          {/* Rutas de la turnera: el catálogo y la agenda son PÚBLICAS, a
-              propósito. La turnera existe para que alguien sin cuenta pueda
-              ver profesionales y horarios antes de decidir si le conviene
-              crear una; pedir login en este punto empujaría a la gente a un
-              formulario de registro antes de saber si el consultorio le
-              sirve. */}
+          {/* Gestión de roles. Es la única ruta que usa AdminRoute en vez de
+              ProtectedRoute, porque es la única que no alcanza con tener
+              sesión. El backend igual exige rol admin en los tres endpoints
+              de /api/usuarios; esto solo evita ofrecer una pantalla que
+              respondería 403. */}
+          <Route
+            path="/usuarios"
+            element={
+              <AdminRoute>
+                <Usuarios />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/configuracion"
+            element={
+              <ProtectedRoute>
+                <Configuracion />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ==========================================================
+              RUTAS DE LA TURNERA: aquí la protección es irregular a
+              propósito, y no por descuido.
+
+              El catálogo y la agenda son PÚBLICOS. La turnera existe para que
+              alguien sin cuenta pueda ver profesionales y horarios antes de
+              decidir si le conviene crear una. Pedir login en este punto
+              empujaría a la gente a un formulario de registro antes de saber
+              siquiera si el consultorio le sirve, que es la forma más rápida
+              de que se vaya.
+
+              "Mis turnos" sí exige sesión: no hay forma de mostrar los turnos
+              de alguien sin saber quién es.
+
+              La RESERVA, en cambio, va suelta a propósito. ReservarTurno ya
+              tiene sus propios tres estados: sin sesión ofrece registrarse o
+              entrar, con sesión pide reservar, y con sesión sin ficha vinculada
+              manda a vincularla. Si la ruta estuviera protegida, el primer
+              estado nunca se vería, porque ProtectedRoute redirigiría al login
+              antes de que el componente llegue a renderizarse. El resultado
+              sería expulsar a alguien que estaba mirando los horarios justo
+              cuando la siguiente pantalla tenía lo que necesitaba.
+
+              Si alguna vez se cambia esto, hay que cambiarlo junto con los
+              tres estados de ReservarTurno, no solo la ruta. */}
           <Route
             path="/turnera"
             element={<CatalogoTurnera />}
@@ -163,50 +282,21 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          {/* Esta ruta NO va dentro de ProtectedRoute, y la contradicción es
-              deliberada.
-
-              "Mis turnos" sí exige sesión: no existe una forma de mostrar los
-              turnos de alguien sin saber quién es. La reserva es distinto, y
-              meterla detrás de ProtectedRoute rompe el flujo entero.
-
-              ReservarTurno ya tiene sus propios tres estados: sin sesión
-              ofrece registrarse o entrar, con sesión pide reservar, y con
-              sesión sin ficha vinculada manda a vincularla. Con la ruta
-              protegida, el primer estado nunca se ve: ProtectedRoute
-              redirige al login antes de que el componente llegue a
-              renderizarse. El resultado es que alguien que estaba mirando
-              los horarios de qué médico quiere ser expulsado de la página sin
-              explicación, cuando en realidad la siguiente pantalla tenía
-              justamente lo que necesitaba.
-
-              Poner la protección acá adentro significaría que cualquiera que
-              empiece a escribir un nombre se queda con la página a medio
-              cargar. Es peor que el problema que estamos resolviendo. */}
           <Route
             path="/turnera/agenda/:idMedico/reservar"
             element={<ReservarTurno />}
           />
 
-          {/* Ruta de configuración: exige sesión porque opera sobre la cuenta */}
-          <Route
-            path="/configuracion"
-            element={
-              <ProtectedRoute>
-                <Configuracion />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Ruta por defecto */}
-          {/* Ruta raíz "/": si no coincide con ninguna, redirige según el estado de sesión */}
+          {/* Raíz: decides a dónde va quien entra por el dominio sin ruta.
+              No se deja en blanco para que una pantalla vacía no se confunda
+              con un error de carga. */}
           <Route path="/" element={<Navigate to={autenticado ? "/dashboard" : "/login"} />} />
-          {/* Si hay sesión va al dashboard; si no, al login. Así nunca queda una pantalla vacía */}
 
-          {/* 404 */}
-          {/* Cualquier URL que no exista (comodín "*") se lleva a la ruta por defecto */}
+          {/* Comodín: cualquier URL desconocida vuelve a la raíz. Con esto una
+              ruta vieja o mal escrita no deja la app en blanco, que es lo
+              que se ve cuando React Router no encuentra coincidencia y no hay
+              un "*" declarado. */}
           <Route path="*" element={<Navigate to="/" />} />
-          {/* Redirige las rutas inexistentes para evitar errores de pantalla en blanco */}
         </Routes>
       </main>
     </div>
@@ -214,15 +304,13 @@ function AppContent() {
 }
 
 export default function App() {
-  // Componente raíz exportado por defecto; es el que monta main.jsx
   return (
-    // Retorna el árbol de componentes de nivel superior
     <BrowserRouter>
-      {/* BrowserRouter: enrutador que sincroniza las rutas con la URL del navegador (SPA) */}
+      {/* BrowserRouter va primero porque AuthProvider puede necesitar
+          navegar (para el caso del 401) y no puede hacerlo si el router no
+          está montado arriba. */}
       <AuthProvider>
-        {/* AuthProvider: entrega el estado de autenticación y los métodos de login/registro/verificarSesion a todo el árbol */}
         <AppContent />
-        {/* AppContent consume el contexto de sesión para armar el navbar, las rutas públicas y las protegidas */}
       </AuthProvider>
     </BrowserRouter>
   );

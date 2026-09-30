@@ -886,3 +886,38 @@ a:hover {
   align-items: center;
   justify-content: center;
 }
+/* ============================================================
+   PÍLDORA DE ROL
+   ------------------------------------------------------------
+   El rol como dato, en la columna ROL de la tabla de Usuarios.
+
+   POR QUÉ ES AZUL
+   ---------------
+     - Verde y rojo ya significan activo e inactivo en toda la aplicación
+       (ver .status-badge en Medicos.css). Reusar esos colores para el rol
+       haría que alguien lea una píldora azul de "Médico" y un badge verde de
+       "Activo" como el mismo tipo de dato.
+     - El azul es el color de la marca (--info), así que se reconoce como
+       parte de la interfaz sin importar el módulo.
+     - El texto va en --info-texto sobre --info-fondo, que da 7.0:1 de
+       contraste.
+
+   El nombre del rol va SIEMPRE escrito al lado. El color solo no alcanza:
+   para distinguir un color de otro no le sirve al 8% de los hombres con
+   deficiencia de visión del color, y en una columna que decide quién puede
+   operar datos clínicos equivocarse no es un detalle menor.
+
+   La definición vive acá (App.css) porque SemanticoApp es el padre común de
+   todas las tablas del sistema; si mañana otra pantalla muestra un rol, la
+   píldora ya está disponible sin importar nada extra. */
+.rol-pildora {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  color: var(--info-texto);
+  background: var(--info-fondo);
+  border-radius: var(--radio-full);
+  white-space: nowrap;
+}
+

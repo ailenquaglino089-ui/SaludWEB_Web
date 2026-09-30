@@ -12,8 +12,6 @@ import { handleApiError, getDatos, getStatusBadge, getStatusColor } from '../../
 import './Medicos.css';
 // Importamos el componente de paginación reutilizable.
 import Paginacion from '../common/Paginacion';
-// Importamos el modal de confirmación (guía CRUD: eliminar con confirmación activa).
-import ConfirmarModal from '../common/ConfirmarModal';
 // Importamos las notificaciones flotantes (guía CRUD: feedback de éxito/error).
 import Toast from '../common/Toast';
 
@@ -43,8 +41,6 @@ export default function ListaMedicos() {
   const [porPagina, setPorPagina] = useState(10);  // 10 médicos por página
   const [total, setTotal] = useState(0);           // Total de médicos (para la paginación)
   const [totalPaginas, setTotalPaginas] = useState(1); // Total de páginas
-  // Estado del médico pendiente de eliminación (null = no hay ninguno): abre el modal.
-  const [paraEliminar, setParaEliminar] = useState(null);
   // Estado de la notificación flotante: { tipo: 'exito'|'error'|'info', texto }.
   const [notif, setNotif] = useState({ tipo: 'info', texto: '' });
 
@@ -107,34 +103,6 @@ export default function ListaMedicos() {
     setMedicoEditando(medico);
     // Mostramos el formulario en modo edición.
     setMostrarFormulario(true);
-  };
-
-  // Handler del botón "Eliminar": abre el modal de confirmación (no el confirm nativo).
-  const handleEliminarMedico = (medico) => {
-    // Guardamos el médico en el estado para que el modal describa qué se elimina.
-    setParaEliminar(medico);
-  };
-
-  // Confirmación del modal: ejecuta el DELETE con prevención de doble clic.
-  const confirmarEliminar = async () => {
-    try {
-      // DELETE a /api/medicos/{id} (el interceptor de client adjunta el token).
-      await client.delete(`/api/medicos/${paraEliminar.id}`);
-      // Con paginado conviene recargar la página actual: así el total y las
-      // páginas se recalculan con el dato real del backend (no con un filtro local).
-      await cargarMedicos();
-      // Cierra el modal de confirmación.
-      setParaEliminar(null);
-      // Limpia el error global y avisa con un toast de éxito.
-      setError(null);
-      mostrarNotif('exito', 'Médico eliminado correctamente.');
-    } catch (err) {
-      // El error queda visible (alert persistente) y el modal se mantiene abierto
-      // para que el usuario pueda reintentar (el botón se re-habilita).
-      setError(handleApiError(err));
-      // Se propaga para que el modal re-habilite el botón de confirmación.
-      throw err;
-    }
   };
 
   // Handler del guardado: recibe los datos provenientes de FormularioMedico.
@@ -266,20 +234,11 @@ export default function ListaMedicos() {
                     {/* RBAC: la edición de médicos es administrativa; solo admin ve "Editar".
                         Así un paciente (ni un médico) tiene expuesto el botón en la UI. */}
                     {esAdmin && (
-                      <button 
+                      <button
                         className="btn btn-sm btn-info"
                         onClick={() => handleEditarMedico(medico)}
                       >
                         ✏️ Editar
-                      </button>
-                    )}
-                    {/* RBAC: el botón Eliminar solo se muestra si el usuario es admin */}
-                    {esAdmin && (
-                      <button 
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleEliminarMedico(medico)}
-                      >
-                        🗑️ Eliminar
                       </button>
                     )}
                   </td>
@@ -299,17 +258,6 @@ export default function ListaMedicos() {
           />
         </>
       )}
-
-      {/* Modal de confirmación de eliminación (reemplaza al confirm() nativo).
-          Mensaje descriptivo: qué médico se elimina y que la acción no se puede deshacer. */}
-      <ConfirmarModal
-        abierto={paraEliminar !== null}
-        titulo="Eliminar médico"
-        mensaje={paraEliminar ? `¿Eliminar al médico "${paraEliminar.nombre}"? Esta acción no se puede deshacer.` : ''}
-        textoConfirmar="Eliminar"
-        onConfirmar={confirmarEliminar}
-        onCancelar={() => setParaEliminar(null)}
-      />
 
       {/* Notificación flotante centralizada (éxitos se ocultan solos, errores quedan). */}
       <Toast tipo={notif.tipo} texto={notif.texto} onCerrar={() => setNotif({ tipo: 'info', texto: '' })} />

@@ -182,6 +182,22 @@
   display: flex;
   /* Espacio entre botones */
   gap: 8px;
+  /* Centrado vertical del conjunto: sin esto el cartel y los botones quedan
+     pegados al borde de arriba de la celda y la fila se ve desalineada
+     respecto de las columnas de texto. */
+  align-items: center;
+  /* flex-wrap: wrap es lo que garantiza que el botón Editar siga siendo
+     accesible. La celda tiene un ancho que depende de la pantalla y del
+     contenido de las otras columnas, así que en una pantalla angosta el
+     cartel + los dos botones no entran. Sin wrap, el flex los mantiene en una
+     sola línea y el contenido se sale de la celda: el botón Editar queda
+     empujado más allá del borde de la tabla, invisible, sin scroll y sin
+     ningún aviso.
+
+     Con wrap, el cartel baja a una segunda línea dentro de la celda y los
+     botones quedan donde se los espera. Perder una línea de alto es un costo
+     visible; perder el único control de la fila, no. */
+  flex-wrap: wrap;
 }
 
 /* Botón pequeño de tabla */

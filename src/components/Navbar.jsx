@@ -64,8 +64,20 @@ const ENLACES_SEGUN_ROL = {
     { a: '/medicos', texto: 'Médicos' },
     { a: '/pacientes', texto: 'Pacientes' },
     { a: '/prescripciones', texto: 'Prescripciones' },
+    { a: '/usuarios', texto: 'Usuarios' },
     { a: '/configuracion', texto: 'Configuración' },
   ],
+  // "Usuarios" (la pantalla de permisos) es la ÚNICA entrada que el
+  // administrador tiene y el resto de los roles no. Va después de
+  // Prescripciones y antes de Configuración por una razón de uso, no de
+  // jerarquía: los tres primeros son los módulos de trabajo diario, este es
+  // una tarea de administración poco frecuente, y Configuración es el último
+  // lugar donde alguien busca algo.
+  //
+  // Ocultarlo para los demás roles no es la defensa. La defensa son los
+  // requireRol() del backend, y un token de médico contra /api/usuarios
+  // recibe 403 igual. Lo que hace el menú es no ofrecer un destino que va a
+  // ser rechazado, que es el mismo criterio que aplica al resto del archivo.
   medico: [
     { a: '/dashboard', texto: 'Dashboard' },
     { a: '/medicos', texto: 'Médicos' },

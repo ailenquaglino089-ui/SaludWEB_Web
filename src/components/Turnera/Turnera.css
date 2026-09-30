@@ -4,6 +4,32 @@
    Convención de este archivo: cada regla lleva arriba un comentario que
    explica QUÉ hace y POR QUÉ. No se comenta "esto es un margen de 20px"
    (eso se ve solo leyendo el número), sino la razón de la decisión.
+
+   EL MÓDULO Y SUS TRES PANTALLAS. La turnera tiene catálogo, agenda y
+   reserva. Las tres comparten la misma gramática visual porque son pasos
+   del mismo recorrido: la persona está eligiendo un profesional y un
+   horario. Por eso un turno se ve igual en las tres, y los colores de
+   estado (libre, confirmado, cancelado, pendiente, atendido) se
+   declaran como tokens --turno-*-fg / --turno-*-bg en tokens.css y no
+   como hex sueltos acá. Si un estado cambia de color, se cambia en el
+   token y no se buscan los cuatro usos en este archivo.
+
+   UN breakpoint, no varios. Hay un solo @media (max-width: 640px) al
+   final del archivo. La regla que se sigue es mobile-first donde importa
+   (anchos en %, fuentes relativas al viewport) y una sola corrección
+   concentrada para el resto. Agregar un segundo breakpoint por pantalla
+   concreta hace que se comporten distinto entre sí, y con tres
+   pantallas que comparten layout eso se paga caro.
+
+   LO QUE ESTÁ EN SUBA. En un subdirectorio los selectores de tipo se
+   mantienen (h1, p) porque las pantallas son propias del módulo. No
+   existen márgenes hacia los costados; los construye .turnera. Así el
+   contenido se puede meter en un modal o en una columna angosta sin
+   tener que deshacer el layout del módulo.
+
+   COLORES: todos los textos y superficies usan var(--token). Los hex que
+   quedan son bordes decorativos sin texto encima, donde el contraste no
+   aplica porque no hay nada que leer.
    ============================================================ */
 
 /* ------------------------------------------------------------
@@ -31,13 +57,13 @@
 .turnera-header h1 {
   /* Limpia el margen por defecto del h1 para controlar el espacio a mano */
   margin: 0 0 6px 0;
-  color: #333;
+  color: var(--texto);
   font-size: 30px;
 }
 
 .turnera-header p {
   margin: 0;
-  color: #666;
+  color: var(--texto-suave);
   font-size: 15px;
 }
 
@@ -71,7 +97,7 @@
   display: block;
   /* Un poco más chica que el texto normal */
   font-size: 13px;
-  color: #555;
+  color: var(--texto-medio);
   font-weight: 600;
   margin-bottom: 6px;
 }
@@ -90,7 +116,7 @@
   /* El box-sizing evita que el padding empuje el ancho total por encima
      del 100% y desborde el contenedor */
   box-sizing: border-box;
-  color: #333;
+  color: var(--texto);
 }
 
 .filtro-grupo input:focus-visible,
@@ -151,8 +177,8 @@
 }
 
 .btn-secundario {
-  background: #eef0f5;
-  color: #4a4a68;
+  background: var(--turno-horario-bg);
+  color: var(--turno-horario-fg);
   /* El borde separa el botón de un fondo del mismo tono */
   border: 1px solid #d5d9e4;
 }
@@ -209,7 +235,7 @@
 .medico-card h3 {
   margin: 0 0 4px 0;
   font-size: 17px;
-  color: #333;
+  color: var(--texto);
 }
 
 .medico-especialidad {
@@ -311,8 +337,8 @@
 
 .slot:disabled {
   /* Horario tomado o en el pasado */
-  background: #f2f2f2;
-  border-color: #ddd;
+  background: var(--fondo-tenue);
+  border-color: var(--borde);
   /* El tachado dice "esto ya no se puede", pero el horario tiene que seguir
      siendo legible: #aaa sobre #f2f2f2 daba 2.08:1, por debajo del 4.5:1 de
      WCAG AA. #6e6e6e llega a 4.55:1 y conserva el gris del disabled. */
@@ -336,21 +362,21 @@
 }
 
 .aviso-info {
-  background: #eef2ff;
+  background: var(--turno-libre-bg);
   border-color: var(--primario);
-  color: #3d3f7a;
+  color: var(--turno-libre-fg);
 }
 
 .aviso-exito {
-  background: #e8f6ed;
+  background: var(--turno-confirmado-bg);
   border-color: var(--confirmado);
-  color: #1d6b3c;
+  color: var(--turno-confirmado-fg);
 }
 
 .aviso-error {
-  background: #fdecec;
+  background: var(--turno-cancelado-bg);
   border-color: var(--cancelado);
-  color: #a03232;
+  color: var(--turno-cancelado-fg);
 }
 
 .aviso-texto {
@@ -375,7 +401,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #444;
+  color: var(--texto);
   margin-bottom: 6px;
 }
 
@@ -412,7 +438,7 @@
    Resumen del turno elegido
    ------------------------------------------------------------ */
 .resumen-turno {
-  background: #f8f9fc;
+  background: var(--fondo);
   border: 1px solid #e0e4ee;
   border-left: 4px solid var(--primario);
   border-radius: 8px;
@@ -442,13 +468,13 @@
 }
 
 .resumen-fila dt {
-  color: #666;
+  color: var(--texto-suave);
   font-weight: 600;
 }
 
 .resumen-fila dd {
   margin: 0;
-  color: #333;
+  color: var(--texto);
   text-align: right;
 }
 
@@ -480,7 +506,7 @@
 .turno-fecha {
   font-size: 17px;
   font-weight: 700;
-  color: #333;
+  color: var(--texto);
   margin: 0 0 4px 0;
 }
 
@@ -519,30 +545,30 @@
 }
 
 .estado-pendiente {
-  background: #fff4e0;
+  background: var(--turno-pendiente-bg);
   color: var(--aviso-texto);
   /* --aviso-texto vale #9d6410, que da 4.52:1 sobre este lavado.
      El valor anterior, #a86b12, daba 4.03:1 y quedaba fuera de AA. */
 }
 
 .estado-confirmada {
-  background: #e8f6ed;
-  color: #1d6b3c;
+  background: var(--turno-confirmado-bg);
+  color: var(--turno-confirmado-fg);
 }
 
 .estado-completada {
-  background: #e8f0fd;
-  color: #2c5aa0;
+  background: var(--turno-atendido-bg);
+  color: var(--turno-atendido-fg);
 }
 
 .estado-cancelada {
-  background: #fdecec;
-  color: #a03232;
+  background: var(--turno-cancelado-bg);
+  color: var(--turno-cancelado-fg);
 }
 
 .estado-ausente {
-  background: #f0f0f0;
-  color: #666;
+  background: var(--fondo-tenue);
+  color: var(--texto-suave);
 }
 
 /* ------------------------------------------------------------
@@ -624,7 +650,7 @@
   border-radius: 8px;
   border: 1px solid #d5d9e4;
   background: white;
-  color: #4a4a68;
+  color: var(--turno-horario-fg);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -728,7 +754,7 @@
    distinto: es un dato secundario para quien ve la agenda, y para el propio
    paciente es redundante (ya sabe su nombre). */
 .turno-paciente {
-  color: var(--gris-medio, #5b6472);
+  color: var(--texto-medio);
   font-size: 0.9em;
   margin: 2px 0 0;
 }
@@ -749,7 +775,7 @@
    porque acompaña a un título: si tuviera el mismo peso visual, competiría
    con el h1 en lugar de contextualizarlo. */
 .turnera-subtitulo {
-  color: var(--gris-medio, #5b6472);
+  color: var(--texto-medio);
   font-size: 0.95em;
   margin: 4px 0 0;
 }
@@ -757,7 +783,7 @@
 .agenda-dia {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid var(--gris-claro, #e4e8ee);
+  border-top: 1px solid var(--borde-tenue);
 }
 
 /* El título del día sí es un encabezado de nivel 2 y no un <p> en grande: de
@@ -774,8 +800,8 @@
    correcto. */
 .sin-dias,
 .sin-horarios {
-  color: var(--gris-medio, #5b6472);
-  background: var(--gris-claro, #f4f6f9);
+  color: var(--texto-medio);
+  background: var(--fondo);
   border-radius: 8px;
   padding: 14px;
   margin: 0;
@@ -817,7 +843,7 @@
 .config-seccion {
   margin-top: 28px;
   padding-top: 24px;
-  border-top: 1px solid var(--gris-claro, #e4e8ee);
+  border-top: 1px solid var(--borde-tenue);
 }
 
 .config-seccion h2 {
@@ -826,6 +852,6 @@
 }
 
 .config-seccion > p {
-  color: var(--gris-medio, #5b6472);
+  color: var(--texto-medio);
   margin: 0 0 16px;
 }
