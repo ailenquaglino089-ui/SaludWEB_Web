@@ -34,14 +34,42 @@
 // pantalla parpadea, se pierde la posición del scroll y en móvil se pierde el
 // historial de navegación. <Link> navega dentro de la aplicación sin que nada
 // de eso ocurra. Es el mismo motivo por el que existe el router.
+//
+// ESTA PANTALLA YA NO USA POLLING
+// ===============================
+// Antes esta pantalla refrescaba cada 5 segundos con usePolling. Ahora escucha
+// un canal de Server-Sent Events: el servidor avisa cuando un turno cambia y el
+// panel se recarga en ese momento.
+//
+// POR QUÉ SOLO ACÁ Y NO EN TODAS LAS PANTALLAS
+// El polling no estaba mal por sí mismo: la guía lo acepta cuando el retraso no
+// molesta. Acá sí molesta. Un panel que dice "42 turnos registrados" cuando ya
+// hay 45 no está desactualizado, está mintiendo: es un número que alguien puede
+// usar para decidir. En la agenda de un médico, en cambio, un retraso de 30
+// segundos es invisible para el usuario.
+//
+// Qué se ganó y qué se costó, con las dos partes:
+//
+//   Se ganó: 0 peticiones cuando no pasa nada. Antes, un panel abierto y quieto
+//   generaba 12 peticiones por minuto para leer siempre el mismo número.
+//
+//   Se costó: un proceso de PHP por panel abierto, y una conexión que hay que
+//   saber cerrar. Por eso el cierre del canal está en el hook y no acá, y por
+//   eso sigue existiendo el botón de recargar: si el canal se cae, el usuario
+//   tiene que poder pedir los datos a mano sin esperar la reconexión.
+//
+// LA REGLA QUE NO SE ROMPIÓ
+// El canal manda un AVISO ("esto cambió"), no los datos. Los números se siguen
+// pidiendo por REST. Si el canal trotara los datos dentro, haría falta mantener
+// una copia de las estadísticas en el servidor, y entonces habría dos fuentes
+// de verdad que pueden discrepar entre sí.
 // ============================================================
 
-import React, { useState, useCallback } from 'react';
-// useState: estadísticas, error y turnos.
-// useCallback: estabiliza las funciones que se le pasan al polling.
-// NO hace falta useEffect: usePolling ya ejecuta su tarea apenas se monta, así
-// que un efecto que llamara a la misma función dispararía DOS peticiones
-// idénticas en cada entrada al panel.
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+// useState: estadísticas, error, turnos.
+// useCallback: estabiliza las funciones que se le pasan al canal y al hook.
+// useEffect: carga inicial (UNA sola vez) y arranque del canal.
+// useRef: marca de "hay una recarga en curso".
 
 import { Link } from 'react-router-dom';
 // Link: navegación de la SPA.
@@ -51,10 +79,15 @@ import { useAuth } from '../../hooks/useAuth';
 
 import { obtenerEstadisticas, listarMisTurnos, mensajeDeError } from '../../api/turnera';
 // Importa SOLO las funciones de la API.
+//
+// IMPORTANTE: los DATOS siguen viniendo por REST. El canal de tiempo real no
+// manda las estadísticas ni los turnos: solo avisa que algo cambió. Esa es la
+// diferencia entre "notificar un cambio" y "mantener el estado sincronizado", y
+// es la razón por la que este módulo no duplica la información en una tabla
+// aparte: la tabla citas sigue siendo la única fuente de verdad.
 
-import { usePolling, useSegundosDesde } from '../../hooks/usePolling';
-// El panel también se actualiza solo: si otra persona reservó un turno, las
-// cifras del panel tienen que reflejarlo sin que haya que recargar.
+import useEventosRealtime from '../../hooks/useEventosRealtime';
+// Hook que abre el canal SSE y lo cierra solo al desmontar la pantalla.
 
 import { Cargando, Aviso } from '../Turnera/PiezasTurnera';
 // Piezas compartidas. No hay spinner propio: el del módulo de turnera ya está
@@ -118,6 +151,8 @@ export default function Dashboard() {
   const [estadisticas, setEstadisticas] = useState(null);
   const [error, setError] = useState(null);
   const [turnos, setTurnos] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [ultimaActualizacion, setUltimaActualizacion] = useState(null);
   // turnos arranca en null y no en []: la diferencia entre "todavía no se
   // consultó" y "se consultó y no tenés turnos" cambia lo que se muestra, y
   // con un array vacío inicial no se pueden distinguir.
@@ -131,6 +166,14 @@ export default function Dashboard() {
   // mantenerla en un solo lugar del código es la razón de no intentarlo y
   // manejar el 403 después.
 
+  // Marca de recarga en curso. Existe para que dos eventos que llegan juntos no
+  // disparen dos peticiones idénticas al mismo tiempo. Sin esto, si en un
+  // consultorio se reservan tres turnos en un segundo, el panel hace tres
+  // GET /api/estadisticas en paralelo y muestra el resultado de la más lenta,
+  // que puede ser el más viejo de los tres: la pantalla "se atrasa sola" sin
+  // motivo aparente.
+  const recargandoRef = useRef(false);
+
   /** Carga las estadísticas del consultorio. */
   const cargarEstadisticas = useCallback(async () => {
     if (!veEstadisticas) {
@@ -143,6 +186,11 @@ export default function Dashboard() {
       const datos = await obtenerEstadisticas();
       setEstadisticas(datos);
       setError(null);
+      setUltimaActualizacion(new Date());
+      // La marca de tiempo se actualiza en cada respuesta correcta, sin
+      // importar si vino del canal o de una recarga manual. El indicador
+      // "Actualizado hace N s" tiene que significar "hace cuánto que estos
+      // números son ciertos", y eso no depende de cómo llegaron.
       return datos;
     } catch (err) {
       setError(mensajeDeError(err, 'No se pudieron cargar las estadísticas'));
@@ -156,39 +204,111 @@ export default function Dashboard() {
       const resultado = await listarMisTurnos();
       setTurnos(resultado);
       setError(null);
+      setUltimaActualizacion(new Date());
       return resultado;
     } catch (err) {
-      // Acá sí se captura, y es a propósito: acá el error NO lo maneja el
-      // hook. usePolling solo guarda en su propio estado cuando se usa su
-      // 'error' para el componente, y en este panel el estado de error es
-      // compartido entre las dos ramas (estadísticas y turnos) para que haya un
-      // solo aviso en la pantalla y no dos, uno por sección.
+      // Acá sí se captura, y es a propósito: el error NO lo maneja el canal.
+      // El estado de error es compartido entre las dos ramas (estadísticas y
+      // turnos) para que haya un solo aviso en la pantalla y no dos, uno por
+      // sección.
       setError(mensajeDeError(err, 'No se pudieron cargar tus turnos'));
       return null;
     }
   }, []);
 
-  const { cargando, ultimaActualizacion } = usePolling(
-    veEstadisticas ? cargarEstadisticas : cargarTurnos,
-    {
-      clave: `dashboard-${rol}-${usuario?.id_usuario ?? 'anonimo'}`,
-      activo: Boolean(rol),
-    }
-  );
-  // Una sola instancia del polling para las dos ramas, en vez de dos hooks con
-  // carga condicional. Con dos hooks, la rama del paciente igual tendría que
-  // montar el suyo para poder llamarlo, y tener un hook montado que no hace
-  // nada es una fuente de confusión difícil de detectar después.
-  //
-  // activo en false mientras el rol sea undefined: antes de que AuthContext
-  // verifique el token no se sabe si las estadísticas van a estar permitidas,
-  // y adivinarlo produce la petición con 403 que esta pantalla evita.
-  //
-  // La clave incluye el rol y el id del usuario para que, al cambiar de sesión
-  // en el mismo dispositivo, los datos del usuario anterior no queden en
-  // pantalla hasta la primera respuesta nueva.
+  // Se elige la función de carga según el rol, una sola vez por render. Así el
+  // manejador de eventos no tiene que decidir qué recargar cada vez que llega
+  // algo.
+  const cargar = veEstadisticas ? cargarEstadisticas : cargarTurnos;
 
-  const segundos = useSegundosDesde(ultimaActualizacion);
+  /**
+   * Recarga los datos y se asegura de que no haya dos a la vez.
+   *
+   * @param {boolean} forzar true si hay que recargar aunque ya haya una en curso
+   */
+  const recargar = useCallback(async (forzar = false) => {
+    // Si ya hay una petición en vuelo y esta no es forzada, se descarta. El
+    // "forzar" existe para el botón manual: si el usuario aprieta "Actualizar"
+    // dos veces, las dos tienen que ejecutarse.
+    if (recargandoRef.current && !forzar) {
+      return;
+    }
+
+    recargandoRef.current = true;
+    setCargando(true);
+    // Se levanta el spinner solo si no hay datos previos. Si ya hay números en
+    // pantalla, conviene mantenerlos visibles mientras llegan los nuevos: una
+    // cifra que desaparece y vuelve a aparecer cada vez que alguien reserva un
+    // turno es máscansada que una cifra que cambia sola.
+
+    try {
+      await cargar();
+    } finally {
+      recargandoRef.current = false;
+      setCargando(false);
+      // finally: el flag se baja haya ido bien o mal. Si el flag se quedara
+      // levantado por un error, la pantalla quedaría bloqueada para siempre y
+      // no volvería a actualizarse nunca más.
+    }
+  }, [cargar]);
+
+  // ==================================================================
+  // El canal en vivo
+  // ==================================================================
+  // El canal se elige por rol con la misma lógica que los datos:
+  //   admin/médico → 'tablero'  (los indicadores cambian con cualquier turno)
+  //   paciente     → 'mis-turnos' (sus propios turnos)
+  //
+  // No se manda un canal "para todos": el backend traduce el nombre declarado
+  // al canal real usando el token, así que un paciente no podría abrir el
+  // tablero aunque quisiera, y un admin no vería la agenda ajena por error.
+  const canal = rol === 'admin' || rol === 'medico' ? 'tablero' : 'mis-turnos';
+
+  const manejarEvento = useCallback(() => {
+    // El PAYLOAD del evento no se usa para nada acá, y es a propósito.
+    //
+    // El evento trae el tipo y el id del turno que cambió. Con eso se podría
+    // intentar armar el número nuevo en el navegador ("si:before=42,
+    // after=43"), y sería un error grave: las estadísticas no son un contador
+    // simple. El ausentismo, la ocupación y el porcentaje de reservas online se
+    // calculan cruzando citas, horarios ofrecidos y cancelaciones. Sumar y
+    // restar en el cliente desincroniza esos cruces en la primera excepción
+    // (un turno cancelado el mismo día del rango, por ejemplo).
+    //
+    // La guía menciona "incrementar el contador en vez de recalcular" como
+    // ahorro de peticiones. Ese consejo es correcto para un contador de likes,
+    // donde el total es exactamente "cuántas filas hay". Acá los indicadores no
+    // cumplen esa condición, así que se recalcula por REST. La petición solo se
+    // hace cuando algo pasó de verdad, que es lo que importa.
+    recargar();
+  }, [recargar]);
+
+  const { estado: estadoCanal, reconectar } = useEventosRealtime(
+    canal,
+    manejarEvento,
+    Boolean(rol)
+    // El canal no se abre hasta que se sabe el rol. Antes de que AuthContext
+    // verifique el token, 'usuario' es undefined y no se sabe si este usuario
+    // tiene derecho al canal. Abrirlo y que el servidor responda 403 sería
+    // gastar una conexión para nada.
+  );
+
+  // ==================================================================
+  // Carga inicial
+  // ==================================================================
+  useEffect(() => {
+    // Se carga UNA vez, cuando ya se sabe el rol. Con el polling anterior esto
+    // no hacía falta porque el propio hook se encargaba; ahora la carga inicial
+    // es explícita y el canal solo se ocupa de los cambios posteriores.
+    if (!rol) {
+      return;
+    }
+
+    recargar(true);
+  }, [rol, recargar]);
+  // Depende de 'rol' y no de 'veEstadisticas' a propósito: si el usuario
+  // "admin" cambiara de rol dentro de la misma sesión, el useEffect se vuelve a
+  // disparar y trae los datos del rol nuevo, en vez de dejar los del anterior.
 
   // ==================================================================
   // Tarjetas: se arman según el rol
@@ -220,6 +340,56 @@ export default function Dashboard() {
             ? 'Panel de gestión del consultorio'
             : 'Gestioná tus turnos desde acá'}
         </p>
+
+        {/*
+        INDICADOR DEL CANAL EN VIVO
+
+        Este cartel es la parte visible del módulo de tiempo real, y hay que
+        entender por qué está: con el polling anterior, una pantalla que se
+        actualiza sola daba la sensación de estar "clavada". El usuario no
+        tenía forma de saber si lo que veía era de hace 3 segundos o de hace
+        medio minuto, y la duda permanente era "¿se está actualizando?".
+
+        Ahora el cartel dice la verdad sobre el canal:
+          - Verde   : conectado, los cambios llegan solos
+          - Ámbar   : reconectando (el servidor se cayó o hay corte de red)
+          - Rojo    : sin sesión o canal cerrado, con botón para reintentar
+
+        El botón de reconexión no es decorativo. Si el canal quedó caído y el
+        reconector automático no-logra limpiarlo (un proxy que dejó la conexión
+        colgada, por ejemplo), el usuario tiene que poder recuperar la pantalla
+        sin recargar la página entera y perder su sesión.
+        */}
+        <div className={`canal-estado canal-${estadoCanal}`} role="status">
+          <span className="canal-punto" aria-hidden="true" />
+          <span className="canal-texto">
+            {estadoCanal === 'conectado' && 'En vivo'}
+            {estadoCanal === 'conectando' && 'Conectando al canal...'}
+            {estadoCanal === 'reconectando' && 'Reconectando...'}
+            {(estadoCanal === 'cerrado' || estadoCanal === 'sin-sesion') && 'Sin canal en vivo'}
+            {estadoCanal === 'inactivo' && 'Preparando canal...'}
+          </span>
+
+          {(estadoCanal === 'cerrado' || estadoCanal === 'sin-sesion') && (
+            <button type="button" className="canal-boton" onClick={reconectar}>
+              Reintentar
+            </button>
+          )}
+        </div>
+
+        {/* Botón de recarga manual. Sobrevive al cambio a tiempo real a propósito:
+            cuando la conexión está bien no hace falta, y efectivamente no se
+            usa. Pero si el canal se cae y la reconexión automática tarda, el
+            usuario tiene que poder pedir los datos igual. Sacarlo sería quitar
+            una salida de emergencia justo cuando se la necesita. */}
+        <button
+          type="button"
+          className="dashboard-recargar"
+          onClick={() => recargar(true)}
+          disabled={cargando}
+        >
+          {cargando && ultimaActualizacion ? 'Actualizando...' : 'Actualizar'}
+        </button>
       </div>
 
       {error && <Aviso tipo="error" texto={error} />}
@@ -239,9 +409,14 @@ export default function Dashboard() {
             <h2>Indicadores del consultorio</h2>
             <p className="stats-actualizado">
               {ultimaActualizacion
-                ? `Actualizado hace ${segundos} s`
+                ? `Datos de las ${ultimaActualizacion.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
                 : 'Actualizando...'}
             </p>
+            {/* Antes acá decía "Actualizado hace N segundos", con un contador
+                que avanzaba solo. Se cambió por la hora exacta porque con el
+                canal el panel puede lleva horas sin actualizarse: si de verdad
+                no pasó nada, "hace 47 minutos" se lee como un fallo, cuando en
+                realidad es la prueba de que el sistema está tranquilo. */}
           </div>
 
           {cargando && !estadisticas ? (

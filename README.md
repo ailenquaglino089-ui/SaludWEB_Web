@@ -9,8 +9,10 @@ Frontend moderno construido con **React + Vite**. Consume la API REST del backen
 - **Módulos de gestión**: médicos, pacientes y prescripciones (la app respeta las mismas
   reglas que el backend: un paciente no puede crear médicos, solo los médicos recetan, etc.).
 - **Turnera (citas online)**: catálogo de especialidades → profesionales → reserva de turno;
-  mis turnos; agenda del profesional con *polling adaptativo* (en el backend se explica por
-  qué no se usó SSE/WebSocket).
+  mis turnos; agenda del profesional con *polling adaptativo*.
+- **Tiempo real en el panel**: los indicadores del consultorio se actualizan por
+  **Server-Sent Events** cuando alguien reserva o cancela un turno, sin polling y sin recargar.
+  Se ve el detalle en [Tiempo real](#tiempo-real-sin-polling).
 - **Roles y permisos en la UI**: cada usuario ve y hace solo lo que su rol permite
   (`admin | medico | paciente`), usando `tipo_usuario` de `/api/auth/me`.
 - **Manejo de errores de red**: aviso global **"Sin conexión"** cuando el navegador queda
@@ -58,10 +60,11 @@ SaludWEB_Web/
 ├── src/
 │   ├── api/
 │   │   ├── client.js        # cliente HTTP con JWT y manejo de red
-│   │   └── turnera.js       # cliente API del módulo turnera
+│   │   ├── turnera.js       # cliente API del módulo turnera
+│   │   └── realtime.js      # canal SSE: suscribirse, reconectar, cerrar
 │   ├── components/
 │   │   ├── Auth/            # Login y Registro
-│   │   ├── Dashboard/       # panel (muestra el rol propio)
+│   │   ├── Dashboard/       # panel en vivo por SSE (muestra el rol propio)
 │   │   ├── Medicos/         # listado/formulario/detalle
 │   │   ├── Pacientes/       # listado/formulario
 │   │   ├── Prescripciones/  # listado/formulario/cambio de estado
@@ -70,7 +73,7 @@ SaludWEB_Web/
 │   │   ├── Configuracion/   # panel de configuración
 │   │   ├── Navbar.jsx       # barra de navegación superior
 │   │   └── common/          # Toast, Paginacion, ConfirmarModal, AvisoOffline
-│   ├── hooks/               # useAuth, usePolling
+│   ├── hooks/               # useAuth, usePolling, useEventosRealtime
 │   ├── context/AuthContext.jsx
 │   ├── utils/crudHelpers.js
 │   ├── App.jsx              # componente raíz
@@ -78,6 +81,7 @@ SaludWEB_Web/
 │   └── main.jsx             # registra el SW solo en producción
 ├── index.html               # meta + theme-color de la marca
 ├── verificar_pwa.mjs        # verificación E2E de la PWA (Playwright)
+├── verificar_tiempo_real.mjs # verificación E2E del canal en vivo
 ├── package.json
 └── vite.config.js
 ```
@@ -90,15 +94,38 @@ En `src/api/client.js`, configura la URL del backend:
 const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 ```
 
+## Tiempo real (sin polling)
+
+El panel **no pregunta al backend cada cierto tiempo**: abre un canal con `EventSource` y
+espera a que le avisen que algo cambió.
+
+```
+src/api/realtime.js             → suscribirse, reconectar y cerrar el canal
+src/hooks/useEventosRealtime.js → estado del canal + eventos, sin dejar conexiones abiertas
+src/components/Dashboard/       → al recibir un aviso vuelve a pedir los datos por REST
+```
+
+El flujo completo es este:
+
+1. Alguien reserva o cancela un turno → el backend publica un aviso.
+2. El panel abierto recibe el aviso. **El aviso no lleva los datos**, solo dice "esto cambió".
+3. El panel vuelve a pedir `/api/estadisticas` por REST y repinta los números.
+
+El token viaja en la URL del canal porque `EventSource` no admite cabeceras personalizadas.
+El backend valida ese token y decide a qué canal puede acceder cada rol, de modo que un
+paciente nunca recibe avisos de otro.
+
 ## 🎨 Características
 
 - ✅ Autenticación con JWT (login/registro), misma API que la app móvil
 - ✅ CRUD de Médicos / Pacientes / Prescripciones con gating por rol
-- ✅ Turnera: especialidades → profesionales → reserva, mis turnos y agenda del médico
+- ✅ Turnera: especialidades → profissionais → reserva, mis turnos y agenda del médico
+- ✅ Panel en vivo por SSE: se actualiza solo al reservar o cancelar, sin polling
+- ✅ Indicador del estado del canal (conectado / reconectando / sin conexión)
 - ✅ Gestión de usuarios y roles (solo admin)
 - ✅ Cambio de estado de prescripciones y cancelación de turnos
 - ✅ Dashboard interactivo que muestra el rol propio
-- ✅ Avviso global "Sin conexión" (AvisoOffline)
+- ✅ Aviso global "Sin conexión" (AvisoOffline)
 - ✅ PWA instalable + arranque offline (sin tocar los datos de `/api`)
 - ✅ Validaciones de formularios y manejo de errores
 - ✅ Responsive design
@@ -110,7 +137,7 @@ const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
 - **Axios** - Cliente HTTP
 - **Vite** - Build tool
 - **React Context** - Gestión de estado (autenticación)
-- **Playwright** (dev) - Verificación E2E de la PWA
+- **Playwright** (dev) - Verificación E2E de la PWA y del canal en vivo
 
 ## 🔐 Autenticación
 
@@ -160,8 +187,20 @@ node verificar_pwa.mjs             # corre las 12 comprobaciones
 caché, aviso "sin conexión" visible y que **`/api` nunca salga del caché** (los datos
 clínicos no se sirven viejos). Resultado esperado: `Pasos OK: 12 / Fallos: 0`.
 
+### Verificar el canal en vivo (E2E)
+
+```bash
+npx vite --port 5173      # en una terminal
+node verificar_tiempo_real.mjs   # en otra
+```
+
+`verificar_tiempo_real.mjs` abre dos sesiones aisladas: una mira el panel y otra reserva un
+turno. Comprueba que los números cambian **sin recargar** y que, con la pantalla quieta, no se
+dispara ninguna petición a `/api/estadisticas` — que es la prueba de que el polling se fue.
+
 ## 📚 Más información
 
+- [Guía de tiempo real (por qué SSE y cómo está hecho)](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md)
 - [Backend README](../SaludWEB_Backend/README.md)
 - [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
 - [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
