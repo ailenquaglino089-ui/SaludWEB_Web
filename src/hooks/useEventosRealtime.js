@@ -55,35 +55,47 @@ export default function useEventosRealtime(canal, alRecibir, activo = true) {
   // rompe esa dependencia: el canal se abre UNA vez y el callback siempre
   // apunta a la versión más reciente.
   const refCallback = useRef(alRecibir);
+  // useRef(alRecibir): arranca apuntando al callback que vino en el primer
+  // render. El valor inicial no importa tanto porque el useEffect de abajo lo
+  // actualiza de inmediato; se inicializa igual para no tener null si el canal
+  // dispara algo antes de que corra ese efecto.
 
   useEffect(() => {
-    refCallback.current = alRecibir;
+    refCallback.current = alRecibir;   // se guarda la función nueva
   }, [alRecibir]);
   // Cada vez que el componente pasa una función nueva, se actualiza la
   // referencia. No abre ni cierra nada.
+  // El array de dependencias tiene alRecibir, pero no está el useRef: el ref no
+  // es un valor que React necesite re-evaluar, es un contenedor mutable.
 
-  // Similar para el canal: si cambia el canal (por ejemplo, el usuario pasa
-  // de "tablero" a "mi-agenda"), hay que reabrir la suscripción.
   const refCanal = useRef(canal);
   useEffect(() => {
-    refCanal.current = canal;
+    refCanal.current = canal;          // idem para el canal
   }, [canal]);
+  // Este ref no se usa para decidir si hay que reconectar (eso lo hace el array
+  // de dependencias del efecto grande, más abajo). Se mantiene para que el
+  // callback de eventos pueda consultar el canal vigente sin depender de él.
 
-  // Referencia al objeto de control del canal (el que trae cerrar() y
-  // reconectar()). Existe para que la función reconectar() de más abajo pueda
-  // llegar al canal abierto.
   const refControl = useRef(null);
 
-  // El callback que realmente usa el efecto. Es estable porque no depende de
-  // nada que cambie: siempre llama a la referencia, que apunta a lo último.
   const manejarEvento = useCallback((tipo, datos) => {
-    refCallback.current?.(tipo, datos);
-    setUltimoEvento({ tipo, datos, momento: Date.now() });
+    refCallback.current?.(tipo, datos);      // se delega al callback del componente
+    setUltimoEvento({ tipo, datos, momento: Date.now() });  // y se guarda para mostrarlo
   }, []);
+  // El ?. evita romper si el componente se desmontó entre la llegada del evento y
+  // esta línea: sin él, un evento que llega tarde intentaría llamar un callback
+  // ya montado y React advertiría sobre actualizar un componente desmontado.
+  // momento: Date.now() (y no new Date()) porque se compara con números para
+  // calcular "hace cuánto", no se formatea como fecha.
 
   const manejarEstado = useCallback((nuevoEstado) => {
     setEstado(nuevoEstado);
   }, []);
+  // Solo envuelve a setEstado. Existe como función aparte para que su identidad
+  // sea estable: si se definiera el setEstado directamente en el efecto, el
+  // efecto dependería de una función nueva en cada render y el canal se
+  // reabriría constantemente. Con useCallback([]) la referencia es la misma
+  // siempre.
 
   // --------------------------------------------------
   // La suscripción en sí
@@ -93,8 +105,8 @@ export default function useEventosRealtime(canal, alRecibir, activo = true) {
     // false), no se abre nada. Sirve para no gastar un canal del servidor en
     // una pantalla que está oculta o en una vista que todavía no cargó datos.
     if (!activo || !canal) {
-      setEstado('inactivo');
-      return undefined;
+      setEstado('inactivo');   // se pausa la suscripción hasta que se cumplan las condiciones
+      return undefined;        // no devuelve cleanup porque no hay nada abierto
     }
 
     const control = suscribirseAlCanal({
@@ -121,8 +133,10 @@ export default function useEventosRealtime(canal, alRecibir, activo = true) {
     // conexión sigue viva, recibiendo eventos y guardándolos en estado de un
     // componente que React ya no está pintando.
     return () => {
-      control.cerrar();
-      refControl.current = null;
+      control.cerrar();          // CIERRA el canal: la línea que evita la fuga de memoria
+      refControl.current = null; // y se suelta la referencia, para que un click
+                                 // en "reconectar" posterior no intente revivir un
+                                 // canal que el componente ya no quiere
     };
     // Dependencias: el canal, el flag activo y los dos manejadores (que son
     // estables). alRecibir NO entra a propósito, por lo que se explica arriba.
@@ -135,15 +149,15 @@ export default function useEventosRealtime(canal, alRecibir, activo = true) {
   // provocaría un re-render en cada apertura del canal, y los componentes que
   // reciben esta función a través de props se re-pintarían sin necesidad.
   const reconectar = useCallback(() => {
-    refControl.current?.reconectar();
+    refControl.current?.reconectar();  // el ?. cubre el caso "todavía no abrió el canal"
   }, []);
   // El array de dependencias vacío es correcto acá: la función no depende de
   // nada que cambie, solo del ref, que es estable por definición.
 
   return {
-    estado,
-    ultimoEvento,
-    reconectar,
+    estado,                       // 'conectando' | 'conectado' | ... : lo pinta el Dashboard
+    ultimoEvento,                 // el último evento recibido, o null
+    reconectar,                   // reconexión a pedido del usuario (botón "Reintentar")
     // Los tipos se re-exportan desde acá para que el componente que usa el
     // hook no tenga que importar de dos archivos distintos. Menos imports
     // significa menos chances de importar el tipo equivocado.

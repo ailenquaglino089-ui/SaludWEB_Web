@@ -216,6 +216,36 @@ La prueba elige sola la fecha y la hora: busca un día hábil dentro de la venta
 `/api/estadisticas` y un horario libre. Se puede forzar con `MEDICO_ID`, `FECHA_CITA`,
 `HORA_CITA`, `WEB_URL` y `API_URL`.
 
+### Ver el tiempo real funcionando, paso a paso
+
+Para verlo de verdad hacen falta **dos ventanas del navegador**, porque el efecto es "el panel
+de A se actualiza porque B reservó":
+
+1. **Levantar MySQL y Apache** desde el Control Panel de XAMPP.
+2. **En una terminal, levantar el frontend**:
+   ```bash
+   cd SaludWEB_Web
+   npm install      # solo la primera vez
+   npm run dev
+   ```
+   Queda en `http://127.0.0.1:5173`.
+3. **Iniciar sesión como admin** en `http://127.0.0.1:5173/login`.
+4. **Abrir el panel** (`/dashboard`). Arriba tiene que decir **"En vivo"** en verde.
+   Si dice "Conectando..." o "Sin canal en vivo", el canal no llegó: recargá con F5.
+5. **En una ventana de incógnito (o en otro navegador), iniciar sesión como paciente** y
+   reservar un turno desde la turnera.
+6. **Volver a la ventana del admin**: el número de "Turnos registrados" tiene que cambiar
+   solo, sin recargar la página.
+7. **Comprobar que no hay polling**: con el panel del admin quieto durante 12 segundos, el
+   contador de peticiones a `/api/estadisticas` tiene que quedar en cero.
+
+> Si en el paso 4 no aparece "En vivo", el problema casi siempre es que el backend no está
+> levantado o que la sesión venció. El botón de recarga manual que aparece al lado
+> reconecta el canal sin cargar toda la página.
+
+> Para la versión exacta que se midió (9/9, 541 ms), ver
+> [la guía del módulo en el backend](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md).
+
 ## 📚 Más información
 
 - [Guía de tiempo real (por qué SSE y cómo está hecho)](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md)

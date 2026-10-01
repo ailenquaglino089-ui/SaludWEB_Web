@@ -22,10 +22,10 @@ const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_Sal
 // llega igual y se pierde en silencio, sin ningún error visible. Tener la
 // lista escrita en ambos lados hace que ese desajuste se note al leer.
 export const TIPOS_EVENTO = {
-  CITA_CREADA: 'cita_creada',
-  CITA_ESTADO: 'cita_estado',
-  CITA_CANCELADA: 'cita_cancelada',
-  CITA_ELIMINADA: 'cita_eliminada',
+  CITA_CREADA: 'cita_creada',      // se reservó un turno nuevo
+  CITA_ESTADO: 'cita_estado',      // cambió el estado (asistido, ausente, vencido...)
+  CITA_CANCELADA: 'cita_cancelada',// el paciente o el médico canceló
+  CITA_ELIMINADA: 'cita_eliminada',// un admin borró el registro
 };
 // Objeto en lugar de array suelta: se accede por nombre (TIPOS_EVENTO.CITA_CREADA)
 // y no por posición. Con un array, un error de orden al agregar un elemento
@@ -34,6 +34,8 @@ export const TIPOS_EVENTO = {
 
 const LISTA_TIPOS = Object.values(TIPOS_EVENTO);
 // Se convierte en lista una sola vez, para poder recorrerla al suscribirse.
+// Object.values sobre un objeto de constantes: no hay duplicados ni desalineación
+// por índice, que es justo el error que sí ocurriría con un array suelto.
 
 // ============================================================
 // CONSTRUCCIÓN DE LA URL DEL CANAL
@@ -52,7 +54,11 @@ function urlDelCanal(canal, token) {
   // de "agenda:10", por ejemplo) rompa la URL. Armar la query a mano es la
   // causa clásica de que "funcione con tablero pero no con agenda:10".
   const params = new URLSearchParams({ canal, token });
-  return `${API_URL}/api/eventos?${params.toString()}`;
+  // canal y token van como pares con nombre, no concatenados. URLSearchParams
+  // además escapa los caracteres: el ':' de "agenda:10" viaja como %3A y el
+  // backend lo recibe intacto. Pegar '&' a mano es donde aparecen los fallos
+  // intermitentes que solo se ven con ciertos canales.
+  return `${API_URL}/api/eventos?${params.toString()}`;  // se entrega al EventSource
 }
 
 /**
@@ -104,7 +110,7 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
   // --------------------------------------------------
   // Validación: no hay sesión, no se intenta abrir nada
   // --------------------------------------------------
-  const token = tokenActual();
+  const token = tokenActual();    // lee el JWT actual
 
   if (!token) {
     // Sin token no se abre el canal. Ni se intenta: el servidor respondería
@@ -112,7 +118,7 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
     // "no autorizado", e intentaría reconectar en bucle. Cortar acá es más
     // claro y no genera tráfico inútil.
     alCambiarEstado?.('sin-sesion');
-    return { cerrar: () => {}, reconectar: () => {} };
+    return { cerrar: () => {}, reconectar: () => {} };  // stub: evita null checks
   }
 
   // Estado inicial: se informa que se está conectando para que la interfaz
@@ -130,11 +136,11 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
   // porque entonces no hay forma de quitar la referencia y la conexión queda
   // viva para siempre. Esta es una fuga de memoria silenciosa: consume
   // memoria del navegador sin mostrar ningún error.
-  const alAbrir = () => {
-    intentos = 0;
-    // Se reinicia el contador de reintentos: si la conexión volvió, el
+  // Se reinicia el contador de reintentos: si la conexión volvió, el
     // problema anterior (si lo había) ya se resolvió.
-    alCambiarEstado?.('conectado');
+    const alAbrir = () => {
+    intentos = 0;                 // se reinicia el contador de reintentos
+    alCambiarEstado?.('conectado');  // la interfaz pasa a "En vivo"
   };
 
   const alMensaje = (evento) => {
@@ -142,7 +148,7 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
     // id, así que no se tocan. Solo se registran los ids reales, que son los
     // que sirven para no perder eventos al reconectar.
     if (evento.lastEventId) {
-      ultimoId = evento.lastEventId;
+      ultimoId = evento.lastEventId;   // solo los eventos reales traen id
     }
 
     // El `data` del protocolo SSE siempre es texto. Hay que convertirlo a
@@ -150,17 +156,17 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
     // un JSON con un formato distinto al esperado, el componente recibe
     // undefined y falla en un lugar lejano con un error que no señala el
     // origen. Convertir acá concentra el problema en un solo archivo.
+    // Si el JSON vino malformado, se entrega un objeto con el tipo y nada
+    // más. Es preferible que el componente reciba un evento sin contenido a
+    // que reciba undefined y se rompa entero.
     let datos = {};
     try {
-      datos = JSON.parse(evento.data);
+      datos = JSON.parse(evento.data);   // texto JSON -> objeto utilizable
     } catch (e) {
-      // Si el JSON vino malformado, se entrega un objeto con el tipo y nada
-      // más. Es preferible que el componente reciba un evento sin contenido a
-      // que reciba undefined y se rompa entero.
       datos = { tipo: evento.type, error: 'El evento llegó con un formato inválido' };
     }
 
-    alRecibir?.(evento.type, datos);
+    alRecibir?.(evento.type, datos);   // se lo pasa al componente
   };
 
   const alErrorDeRed = () => {
@@ -176,10 +182,10 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
       return;
     }
 
-    alCambiarEstado?.('reconectando');
+    alCambiarEstado?.('reconectando');   // la interfaz avisa antes de esperar
 
     if (source) {
-      source.close();
+      source.close();   // se toma control del momento de la reconexión
       source = null;
     }
 
@@ -190,11 +196,13 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
     // conexión TCP y un proceso de PHP que queda en el servidor). Con tope, el
     // costo es acotado y, cuando el servidor vuelve, la reconexión ocurre en
     // menos de 30 segundos.
-    intentos++;
+    intentos++;   // este es el número de reintento actual (1 el primero)
     const espera = Math.min(30000, 1000 * Math.pow(2, intentos - 1));
+    // 1000 * 2^(n-1) da 1000, 2000, 4000, 8000... El -1 hace que el primer
+    // reintento espere 1 s y no 2 s. Math.min lo topa en 30 s.
 
     temporizador = setTimeout(() => {
-      if (!cerrada) {
+      if (!cerrada) {   // si se cerró mientras esperábamos, no se reabre
         abrir();
       }
     }, espera);
@@ -209,37 +217,26 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
    * se puede hacer sin una rareza de JavaScript; con una declaración de
    * función es directo y se lee normal.
    */
-  function abrir() {
-    source = new EventSource(urlDelCanal(canal, token));
+function abrir() {
+    source = new EventSource(urlDelCanal(canal, token));  // abre la conexión
 
-    // Eventos de control del canal (conectado, reconectar). Son mensajes de
-    // estado de la conexión, no hechos del consultorio: seatacan por tipo y
-    // no por nombre.
     ['conectado', 'reconectar'].forEach((tipo) => {
       source.addEventListener(tipo, (evento) => {
-        // "conectado" se procesa como un evento más para que el componente
-        // pueda reaccionar (por ejemplo, recargar los datos al reconectar, que
-        // es justo cuando puede haber cambios perdidos).
-        alMensaje(evento);
+        alMensaje(evento);   // "conectado" se procesa como un evento más
       });
     });
 
-    // Los eventos reales del módulo. Se suscriben uno por uno y no con
-    // addEventListener('message'), porque el protocolo permite nombrar cada
-    // evento y el event listener genérico solo escucha los que vienen SIN
-    // nombre. Como el backend sí los nombra, un listener genérico no los vería:
-    // es un detalle del protocolo que hace pasar código sin errores
-    // que nunca recibe nada.
     LISTA_TIPOS.forEach((tipo) => {
-      source.addEventListener(tipo, alMensaje);
+      source.addEventListener(tipo, alMensaje);  // los 4 eventos del módulo
     });
 
-    source.onopen = alAbrir;
-    source.onerror = alErrorDeRed;
+    source.onopen = alAbrir;    // se abrió la conexión TCP
+    source.onerror = alErrorDeRed;  // se cortó o falló
   }
 
   abrir();
-  // Arranca la conexión.
+  // Arranca la conexión de inmediato: suscribirse y esperar a que otro lo llame
+  // significaría que el panel arranca sin escuchar y se pierde el primer evento.
 
   /**
    * Cierra el canal y deja de reintentar.
@@ -252,7 +249,7 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
     cerrada = true;
 
     if (temporizador) {
-      clearTimeout(temporizador);
+      clearTimeout(temporizador);  // cancela el reintento pendiente
       temporizador = null;
     }
 
@@ -261,19 +258,19 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
       // se cierra el canal, pero las referencias a los handlers quedan
       // apuntando al componente que ya se desmontó.
       LISTA_TIPOS.forEach((tipo) => {
-        source.removeEventListener(tipo, alMensaje);
+        source.removeEventListener(tipo, alMensaje);   // 4 eventos del módulo
       });
       ['conectado', 'reconectar'].forEach((tipo) => {
-        source.removeEventListener(tipo, alMensaje);
+        source.removeEventListener(tipo, alMensaje);   // 2 eventos de control
       });
 
-      source.onopen = null;
+      source.onopen = null;      // se sueltan los dos handlers
       source.onerror = null;
-      source.close();
+      source.close();            // y recién ahora se cierra la conexión
       source = null;
     }
 
-    alCambiarEstado?.('cerrado');
+    alCambiarEstado?.('cerrado');   // la interfaz muestra "sin canal"
   }
 
   /**
@@ -281,22 +278,24 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
    */
   function reconectar() {
     if (cerrada) {
-      return;
+      return;   // el componente ya no quiere el canal: no se resucita
     }
     if (temporizador) {
-      clearTimeout(temporizador);
+      clearTimeout(temporizador);   // se salta la espera creciente
       temporizador = null;
     }
-    intentos = 0;
+    intentos = 0;   // reinicia el contador: es una acción del usuario, no un fallo
     if (source) {
-      source.close();
+      source.close();   // cierra el canal viejo
       source = null;
     }
-    abrir();
+    abrir();           // y abre uno nuevo al instante
   }
 
   return { cerrar, reconectar, ultimoId: () => ultimoId };
-}
+  // ultimoId se devuelve como función y no como valor para que el componente
+  // pueda leerlo cuando quiera sin capturar el valor del momento de la apertura.
+}  // <- fin de suscribirseAlCanal
 
 /**
  * Consulta el estado del módulo en el backend.
@@ -309,6 +308,6 @@ export function suscribirseAlCanal({ canal, alRecibir, alCambiarEstado }) {
 export async function estadoDelModulo() {
   // Va por Axios y no por EventSource porque es una petición normal que
   // termina: el diagnóstico es un GET común.
-  const r = await client.get('/api/eventos/estado');
-  return r.data.data;
+  const r = await client.get('/api/eventos/estado');   // GET normal por Axios
+  return r.data.data;   // se desenvuelve la envoltura {ok, data} de la API
 }
