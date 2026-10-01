@@ -42,7 +42,135 @@
   font-size: 16px;
 }
 
-/* Grid de tarjetas */
+/* ============================================================
+   INDICADOR DEL CANAL EN VIVO
+   ============================================================
+   Los estilos del módulo "Primera funcionalidad en tiempo real".
+   El cartel tiene que comunicar el estado de la conexión de un vistazo, sin
+   obligar a leer texto: el punto de color es el que se percibe, y la palabra
+   está para quien no distingue los colores. */
+.canal-estado {
+  /* Se muestra en línea y centrado, como el resto del encabezado */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Chiquito, para que ocupe poco y no compita con el saludo */
+  margin-top: 14px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  /* Se usa una fuente de sistema: el cartel cambia de texto pero no necesita
+     cargar ninguna tipografía */
+  font-family: inherit;
+  /* Borde del color del estado; el fondo se define en cada variante */
+  border: 1px solid transparent;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  /* La transición es suave a propósito: si el cartel saltara de verde a rojo
+     de golpe, el usuario no se entera de que algo pasó. Con la transición se
+     ve el cambio. */
+}
+
+/* El puntito de estado */
+.canal-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  /* El fondo lo define la variante del contenedor */
+  background: currentColor;
+  /* currentColor: el punto toma el color del texto, así cada variante solo
+     tiene que definir un color y no dos (fondo del punto y del texto). */
+  flex-shrink: 0;
+}
+
+/* Conectado: el sistema está en vivo */
+.canal-conectado {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+/* Conectando: todavía no, pero va */
+.canal-conectando {
+  color: #a16207;
+  background: #fefce8;
+  border-color: #fde68a;
+}
+
+/* Reconectando: se cayó y se está reintentando */
+.canal-reconectando {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+/* Sin canal: hay que avisar, porque los datos ya no se actualizan solos */
+.canal-cerrado,
+.canal-sin-sesion {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* Inactivo: ni siquiera se intentó abrir */
+.canal-inactivo {
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+/* Botón de reintento del canal */
+.canal-boton {
+  margin-left: 4px;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Efecto de "pulsado" al apretar */
+.canal-boton:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* El foco con teclado tiene que verse: si el botón solo se puede usar con
+   mouse, deja de ser accesible. */
+.canal-boton:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Botón de recarga manual del panel */
+.dashboard-recargar {
+  display: block;
+  margin: 12px auto 0;
+  padding: 7px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Estilo cuando está deshabilitado (recargando) */
+.dashboard-recargar:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Foco con teclado del botón de recarga */
+.dashboard-recargar:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Grid de tarjetas */
 .dashboard-grid {
   /* Usamos CSS Grid para las tarjetas */
   display: grid;
