@@ -44,15 +44,114 @@ import { chromium } from 'playwright';
 // tiene que editarse.
 const WEB = process.env.WEB_URL || 'http://127.0.0.1:5173';
 
+// URL del backend. Es distinta de WEB a propósito: el frontend habla con el
+// backend por el proxy de Vite, pero esta prueba llama la API directamente, así
+// que necesita la dirección real. Si se usara WEB, la creación del turno
+// pasaría por el proxy y una reconfiguración del proxy rompería la prueba sin
+// que se note por qué.
+const API = process.env.API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
+
+// Datos del turno que se reserva en la prueba.
+//
+// SOLO SE PUEDE FIJAR LA FECHA SI ESTÁ DENTRO DEL RANGO DE LAS ESTADÍSTICAS
+// ------------------------------------------------------------------------
+// Esta es la restricción que costó una corrida entera de la prueba, así que
+// queda escrita grande: el indicador que observa el navegador B es
+// "Turnos registrados", y sale de GET /api/estadisticas, que por defecto cuenta
+// lo que hay entre hace 30 días y HOY.
+//
+// Si la prueba reserva para una fecha futura (por ejemplo "el lunes que viene"),
+// la cita se crea, el evento se publica, el canal lo recibe, el panel recarga
+// los datos... y el número NO cambia, porque esa cita cae fuera del rango que el
+// informe cuenta. El síntoma es "el tiempo real no funciona" cuando el problema
+// era que la prueba miraba el número equivocado.
+//
+// Por eso la fecha NO es fija: se busca el último día hábil que el profesional
+// atienda, dentro de la ventana del informe. Si se corre en fin de semana, retrocede
+// hasta el viernes.
+//
+// Se puede forzar con variables de entorno si la base local es otra:
+//   MEDICO_ID=7 FECHA_CITA=2026-10-06 HORA_CITA=09:30 node verificar_tiempo_real.mjs
+const MEDICO = Number(process.env.MEDICO_ID || 10);
+
+const FECHA_FIJADA = process.env.FECHA_CITA || '';
+const HORA_FIJADA = process.env.HORA_CITA || '';
+
+/**
+ * Devuelve una fecha (YYYY-MM-DD) que cae dentro de la ventana de las
+ * estadísticas y en un día que el profesional atiende.
+ *
+ * Recorre hacia atrás desde hoy, saltando fines de semana, hasta encontrar un
+ * día que el backend confirme con `atiende_ese_dia`. No se usa "hoy" a secas
+ * porque un domingo el profesional no atiende y la reserva rebotaría con 409.
+ *
+ * @returns {Promise<string>} Fecha en formato YYYY-MM-DD
+ */
+async function elegirFechaValida() {
+  if (FECHA_FIJADA) {
+    return FECHA_FIJADA;
+  }
+
+  for (let diasAtras = 0; diasAtras <= 7; diasAtras++) {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() - diasAtras);
+    const iso = fecha.toISOString().slice(0, 10);
+
+    const r = await fetch(`${API}/api/citas/disponibilidad?id_medico=${MEDICO}&fecha=${iso}`);
+    if (!r.ok) {
+      continue;
+    }
+
+    const cuerpo = await r.json();
+    if (cuerpo?.data?.atiende_ese_dia) {
+      return iso;
+    }
+  }
+
+  // Si ninguno de los últimos 7 días sirve (agenda vacía en la base), se
+  // devuelve hoy y deja que el backend diga por qué no pudo reservarse: es más
+  // claro que inventar una fecha y fallar con un 409 que no explica nada.
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Devuelve la primera hora libre del día que el backend indique.
+ *
+ * Se pregunta al backend en lugar de hardcodear una hora porque los horarios
+ * ocupados cambian con cada corrida. Elegir uno ya reservado haría fallar la
+ * reserva con 409 y, peor, haría creer que el canal está roto.
+ *
+ * @param {string} fecha Fecha en formato YYYY-MM-DD
+ * @returns {Promise<string|null>} Hora (HH:MM) o null si no hay ninguna libre
+ */
+async function elegirHoraLibre(fecha) {
+  if (HORA_FIJADA) {
+    return HORA_FIJADA;
+  }
+
+  const r = await fetch(`${API}/api/citas/disponibilidad?id_medico=${MEDICO}&fecha=${fecha}`);
+  const cuerpo = await r.json();
+  const libre = cuerpo?.data?.slots?.find((slot) => slot.disponible);
+
+  return libre ? libre.hora : null;
+}
+
 // Cuentas de la prueba.
 //
 // SON DOS USUARIOS DIFERENTES A PROPÓSITO. Lo tentador sería usar el admin en los dos
-// navegadores para: la prueba pasaría aunque el canalfiltrara datos entre usuarios, que es justo el fallo que las reglas de autorización del canal existen para evitar. Con un admin y un médico, además se verifica que el canal 'tablero' los atiende a los dos: el evento tiene que llegar a quien tiene permiso.
+// navegadores para que la prueba pase rápido, pero así la prueba NO detectaría el fallo
+// que las reglas de autorización del canal existen para evitar: que el canal filtre
+// datos entre usuarios. Con un paciente y un admin se verifica además que el canal
+// 'tablero' los atiende a los dos, y que el evento tiene que llegar a quien tiene permiso.
+//
+// Las contraseñas son las de las cuentas de demostración que crea el backend
+// (`sembrar_datos_demo.php`). Si la base local usa otras, se pueden sobreescribir con
+// las variables de entorno PACIENTE_PASSWORD y ADMIN_PASSWORD.
 const CUENTAS = {
   // El que RESERVA el turno.
-  escritor: { email: 'paciente@prueba.com', password: '123456' },
+  escritor: { email: 'paciente@prueba.com', password: process.env.PACIENTE_PASSWORD || 'paciente123' },
   // El que solo observa: su panel tiene que cambiar solo.
-  observador: { email: 'admin@salud.com', password: 'admin123' },
+  observador: { email: 'admin@salud.com', password: process.env.ADMIN_PASSWORD || 'admin123' },
 };
 
 // ============================================================
@@ -184,27 +283,64 @@ try {
   // lo que se está midiendo es la PROPAGACIÓN del evento, no la validación del
   // formulario: si el formulario tuviera un error, la prueba mediría ese error
   // y no el tiempo real.
-  const turno = await ctxA.request.post(`${process.env.API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend'}/api/citas`, {
-    data: { id_medico: 10, fecha: '2026-10-05', hora: '10:00' },
+  // Se busca una fecha y una hora que el backend acepte. Ver el comentario de
+  // FECHA_FIJADA arriba: la fecha tiene que caer dentro de la ventana que cuenta
+  // /api/estadisticas, o el indicador que se observa no se va a mover.
+  const FECHA = await elegirFechaValida();
+  const HORA = await elegirHoraLibre(FECHA);
+
+  if (!HORA) {
+    prueba(false, 'El navegador A puede reservar un turno',
+      `No hay horarios libres el ${FECHA} para el médico ${MEDICO}. ` +
+      'Ocupá uno desde la turnera o cambiá FECHA_CITA/HORA_CITA.');
+    throw new Error('Sin horario libre no hay evento que medir');
+  }
+
+  const turno = await ctxA.request.post(`${API}/api/citas`, {
+    data: { id_medico: MEDICO, fecha: FECHA, hora: HORA },
     headers: { Authorization: `Bearer ${tokenA}` },
   });
 
   if (!turno.ok()) {
     const cuerpoError = await turno.text();
     prueba(false, 'El navegador A puede reservar un turno',
-      `HTTP ${turno.status()}: ${cuerpoError.slice(0, 200)}`);
+      `HTTP ${turno.status()}: ${cuerpoError.slice(0, 200)}\n` +
+      `        Si es 409, el horario ${FECHA} ${HORA} se acaba de ocupar: ` +
+      'volvé a correr la prueba.');
     throw new Error('Sin turno no hay evento que medir');
   }
 
+  // Se guarda el id para BORRAR el turno al final.
+  //
+  // Sin esta limpieza la prueba solo puede correr una vez: el backend rechaza
+  // con 409 un horario ya reservado, así que la segunda ejecución fallaría en
+  // este paso y no llegaría a medir nada. Una prueba que hay que ejecutar una
+  // sola vez es una prueba que nadie va a volver a correr.
+  const turnoCreado = (await turno.json()).data;
+  const idTurnoCreado = turnoCreado?.id_cita ?? turnoCreado?.id;
+
   prueba(true, 'El navegador A reserva un turno',
-    'La escritura en la base disparó el evento');
+    `Turno #${idTurnoCreado} el ${FECHA} a las ${HORA} (se borra al terminar)`);
 
   // --------------------------------------------------------
   // 4. LA MEDICIÓN: cuánto tarda el navegador B en enterarse
   // --------------------------------------------------------
   // Se lee el número de "Turnos registrados" ANTES de que llegue el evento, y
   // después se espera a que cambie.
-  const numeroAntes = await paginaB.textContent('.stat-box:first-child .stat-value');
+  //
+  // POR QUÉ NO SE USA '.stat-box:first-child'
+  // ------------------------------------------
+  // `:first-child` significa "primer hijo de su padre", NO "primino que matche".
+  // En el Dashboard el primer hijo de `.dashboard-stats` es el encabezado
+  // ("Indicadores del consultorio"), y las cajas de números vienen después. Por
+  // eso `.stat-box:first-child` no matchea NADA y la prueba se cuelga esperando
+  // un elemento que jamás aparece.
+  //
+  // Con `.stat-box .stat-value` el selector trae las cuatro cajas y el DOM
+  // devuelve la primera, que es "Turnos registrados" porque ese Indicador es el
+  // primero que se pinta. El orden se apoya en el JSX, así que el comentario
+  // queda pegado al selector para que quien lo cambie avise.
+  const numeroAntes = await paginaB.locator('.stat-box .stat-value').first().textContent();
   const instanteEvento = Date.now();
 
   let latenciaMs = null;
@@ -214,9 +350,13 @@ try {
     // generoso a propósito: si el evento no llegara, hay que saber que no
     // llegó, y un timeout corto convertiría "tardó 3 segundos" en "falló",
     // que es información distinta.
+    //
+    // OJO: dentro de waitForFunction el código corre en la página, con el DOM
+    // nativo. Los pseudo-selectores propios de Playwright (`:text-is`, `:has()`)
+    // NO funcionan acá, por eso se usa querySelector y no locator.
     await paginaB.waitForFunction(
       (valorAnterior) => {
-        const caja = document.querySelector('.stat-box:first-child .stat-value');
+        const caja = document.querySelector('.stat-box .stat-value');
         return caja && caja.textContent !== valorAnterior;
       },
       numeroAntes,
@@ -228,7 +368,7 @@ try {
     // Se deja latenciaMs en null: la prueba de abajo va a marcar el fallo.
   }
 
-  const numeroDespues = await paginaB.textContent('.stat-box:first-child .stat-value');
+  const numeroDespues = await paginaB.locator('.stat-box .stat-value').first().textContent();
 
   if (latenciaMs === null) {
     prueba(false, 'El navegador B ve el cambio SIN recargar',
@@ -304,6 +444,31 @@ try {
   await paginaB.close();
   prueba(true, 'El canal se cierra al salir del panel',
     'La limpieza del hook se ejecutó al desmontar el componente');
+
+  // --------------------------------------------------------
+  // 8. Se borra el turno que creó la prueba
+  // --------------------------------------------------------
+  // Va al final y no en un `finally`, a propósito: si la prueba se rompe en el
+  // medio, el turno queda y el siguiente intento recibe 409, con un mensaje que
+  // sí dice qué hacer. Borrar en un `finally` sería más prolijo, pero dejaría el
+  // turno sin borrar justo en el caso donde más hace falta limpiar (prueba
+  // rota) y esconde el síntoma en vez de mostrarlo.
+  if (idTurnoCreado) {
+    // El borrado de citas lo hace SOLO admin en esta API: el paciente que
+    // reservó no tiene permiso para eliminar su propio turno (recién verificado:
+    // con el token del paciente devuelve 403). Por eso el borrado usa el token
+    // del observador, que es admin, y no el del escritor.
+    const tokenAdmin = await iniciarSesion(ctxA, CUENTAS.observador);
+    const borrar = await ctxA.request.delete(`${API}/api/citas/${idTurnoCreado}`, {
+      headers: { Authorization: `Bearer ${tokenAdmin}` },
+    });
+
+    prueba(borrar.ok(), 'La prueba borra el turno que creó',
+      borrar.ok()
+        ? `Turno #${idTurnoCreado} liberado, la base queda como estaba`
+        : `No se pudo borrar el turno #${idTurnoCreado} (HTTP ${borrar.status()}): ` +
+          'quedó reservado y la próxima corrida va a fallar con 409');
+  }
 
   await ctxA.close();
   await ctxB.close();

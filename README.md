@@ -195,8 +195,26 @@ node verificar_tiempo_real.mjs   # en otra
 ```
 
 `verificar_tiempo_real.mjs` abre dos sesiones aisladas: una mira el panel y otra reserva un
-turno. Comprueba que los números cambian **sin recargar** y que, con la pantalla quieta, no se
-dispara ninguna petición a `/api/estadisticas` — que es la prueba de que el polling se fue.
+turno. Comprueba 9 cosas:
+
+1. Las dos sesiones inician sesión.
+2. El panel del observador queda "En vivo".
+3. El paciente reserva un turno y eso dispara el evento.
+4. **El panel cambia solo, sin recargar**: el contador pasa de "1" a "2" en ~540 ms.
+5. La latencia está dentro de lo esperado.
+6. El canal sigue conectado después del evento (no se cae al entregar el primero).
+7. **Con la pantalla quieta no se hace ninguna petición** a `/api/estadisticas` en 12 s: esa
+   es la prueba de que el polling se fue de verdad.
+8. El canal se cierra al salir del panel (sin procesos colgados en el servidor).
+9. La prueba borra el turno que creó, así que se puede correr las veces que haga falta.
+
+> El paso 7 es el importante. Los pasos 1 a 6 pasarían igual con el polling puesto: un panel
+> que refresca cada 5 s también mostraría el número nuevo. Lo que distingue el tiempo real
+> es que **no consulta cuando no tiene nada nuevo**.
+
+La prueba elige sola la fecha y la hora: busca un día hábil dentro de la ventana que cuenta
+`/api/estadisticas` y un horario libre. Se puede forzar con `MEDICO_ID`, `FECHA_CITA`,
+`HORA_CITA`, `WEB_URL` y `API_URL`.
 
 ## 📚 Más información
 
