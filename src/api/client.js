@@ -9,10 +9,33 @@ import * as logger from '../utils/logger.js';
 // error de red se seguía con un console.error suelto que se perdía al recargar
 // la página y no decía a qué petición correspondía.
 
-// URL base de la API: configurable por VITE_API_URL (ver .env.example)
-// con fallback al entorno local de XAMPP.
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
-// Constante con la URL base de la API: toma de la variable de entorno VITE_API_URL (si está definida) o usa la URL local de XAMPP (fallback)
+// URL base de la API: configurable por VITE_API_URL (ver .env.example).
+//
+// POR QUÉ NO ES SIEMPRE LA MISMA DIRECCIÓN
+// -----------------------------------------
+// La SPA se sirve de dos maneras y en cada una la API está a una distancia
+// distinta, así que la URL base no puede ser una constante fija:
+//
+//   - DESARROLLO (npm run dev, http://localhost:5173): la API NO está en el
+//     mismo origen. Está en el Apache de XAMPP. El proxy '/api' de vite.config.js
+//     existe justamente para eso. Con una URL base VACÍA, axios resuelve cada
+//     llamada contra el origen de la página -> '/api/auth/login' -> la resuelve
+//     el proxy de Vite. La petición nunca sale del navegador hacia otro
+//     servidor, así que no hay CORS ni preflight que pueda rechazarla.
+//
+//     Con la URL absoluta de XAMPP, en cambio, el navegador la trata como
+//     petición CRUZADA: manda un preflight OPTIONS y, si el backend no
+//     autoriza ese encabezado, la rechaza antes de llegar al login. El
+//     síntoma es un "Error al iniciar sesión" sin ninguna pista en la UI.
+//
+//   - PRODUCCIÓN (build servido por Apache desde SaludWEB_Web/): acá el proxy
+//     de Vite NO existe, y public/.htaccess bloquea '^api/' a propósito con un
+//     403. Por eso la URL tiene que ser la ABSOLUTA del backend, que vive en
+//     otra carpeta. Ahí sí hay CORS, y lo resuelve la whitelist de orígenes
+//     del backend.
+const API_URL =
+  import.meta.env?.VITE_API_URL ||
+  (import.meta.env?.DEV ? '' : 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend');
 
 // Crear instancia de Axios
 const client = axios.create({
@@ -122,15 +145,39 @@ client.interceptors.response.use(
 
     // Si es 401, limpiar token y redirigir a login
     if (error.response?.status === 401) {
-      // Si el backend responde con estado HTTP 401 (no autorizado / sesión expirada o inválida)...
-      logger.warn('sesión no válida: se limpia el token local', { url: error.config?.url });
+      // Un 401 tiene dos causas MUY distintas, y distinguirlas es lo que evita
+      // que el login se trague su propio mensaje de error:
+      //
+      //   a) La sesión que había expirado o era inválida. Acá sí corresponde
+      //      limpiar el token y mandar a /login.
+      //   b) El POST de /api/auth/login rechazado por contraseña o email
+      //      incorrectos. NO hay sesión que expirar: el usuario está justamente
+      //      tratando de iniciarla. Si se lo tratara como (a), el
+      //      `window.location.href` de abajo recargaría la página a mitad del
+      //      envío y el formulario perdería el mensaje "Error al iniciar
+      //      sesión" que Login.jsx ya había escrito en pantalla. El usuario
+      //      vería la página de login_clean como si nada, y sin pista de por
+      //      qué el botón no lo dejó entrar.
+      //
+      // La condición mira si había un token guardado, no la URL: así el
+      // criterio es "¿existe una sesión que perder?" y no una lista de
+      // endpoints que hay que recordar actualizar cada vez que se agrega uno.
+      const habiaSesion = Boolean(localStorage.getItem('token'));
 
-      localStorage.removeItem('token');
-      // ...se elimina el token del localStorage: se invalida la sesión local del navegador
-      localStorage.removeItem('usuario');
-      // ...también se eliminan los datos del usuario guardados (sesión completamente limpia)
-      window.location.href = '/login';
-      // Se redirige el navegador completa al login (recarga de página) para que el usuario vuelva a autenticarse
+      if (!habiaSesion) {
+        // Caso (b): se deja propagar el error para que la pantalla lo muestre.
+        logger.warn('credenciales rechazadas en el inicio de sesión', { url: error.config?.url });
+      } else {
+        // Si el backend responde con estado HTTP 401 (no autorizado / sesión expirada o inválida)...
+        logger.warn('sesión no válida: se limpia el token local', { url: error.config?.url });
+
+        localStorage.removeItem('token');
+        // ...se elimina el token del localStorage: se invalida la sesión local del navegador
+        localStorage.removeItem('usuario');
+        // ...también se eliminan los datos del usuario guardados (sesión completamente limpia)
+        window.location.href = '/login';
+        // Se redirige el navegador completa al login (recarga de página) para que el usuario vuelva a autenticarse
+      }
     } else if (!error.response) {
       // Un error SIN respuesta tiene una sola causa: la petición salió y nunca
       // volvió (server caído, cortado el WiFi, timeout de 15s). Que no haya

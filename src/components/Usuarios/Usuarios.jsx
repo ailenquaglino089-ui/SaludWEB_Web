@@ -57,6 +57,41 @@ const ROLES_FALLBACK = [
   { valor: 'admin', etiqueta: 'Administrador' },
 ];
 
+// Palabra que se muestra por cada valor del ENUM. El endpoint devuelve los
+// valores crudos ("admin"), que es lo que se guarda y lo que se manda en el
+// PATCH, pero en pantalla hay que mostrar una palabra.
+const ETIQUETAS_ROL = {
+  paciente: 'Paciente',
+  medico: 'Médico',
+  admin: 'Administrador',
+};
+
+// Normaliza un rol a la forma { valor, etiqueta } que usan TODOS los
+// consumidores de esta pantalla (el <select>, etiquetaDeRol y MenuAcciones).
+//
+// POR QUÉ HACE FALTA NORMALIZAR Y NO LEERLO DIRECTO
+// /api/usuarios/roles devuelve un array de strings: ["paciente","medico","admin"].
+// Si se adoptara tal cual, `rol.valor` y `rol.etiqueta` serían undefined en los
+// tres casos, y de ahí salían dos síntomas:
+//
+//   1. Las tres <option> They'd get key={undefined}, es decir la MISMA key
+//      repetida, y React avisaba "Each child in a list should have a unique key".
+//      Las opciones se listaban igual, pero el selector quedaba sin identidad
+//      para React.
+//   2. `etiquetaDeRol` no encontraba nunca coincidencia, así que cada fila
+//      mostraba el valor crudo en vez de la palabra.
+//
+// Aceptar las dos formas (string u objeto) deja el código correcto también si
+// el endpoint pasa a devolver objetos, en vez de romperse en silencio.
+function normalizarRol(rol) {
+  const valor = typeof rol === 'string' ? rol : rol?.valor;
+
+  return {
+    valor,
+    etiqueta: (typeof rol === 'object' && rol?.etiqueta) || ETIQUETAS_ROL[valor] || valor,
+  };
+}
+
 // Cuánto se espera antes de buscar mientras se escribe.
 //
 // 400ms es el punto donde la espera se deja de notar y las peticiones se
@@ -121,7 +156,10 @@ export default function Usuarios() {
         // respuesta con la forma correcta pero vacía dejaría el filtro sin
         // opciones, que es exactamente lo que el fallback evita.
         if (!cancelado && Array.isArray(recibidos) && recibidos.length > 0) {
-          setRoles(recibidos);
+          // Se normalizan y se descartan los que vengan sin valor: un rol sin
+          // valor no se puede seleccionar ni etiquetar, y dejarlo pasar
+          // reintroduciría la key repetida que se acaba de corregir.
+          setRoles(recibidos.map(normalizarRol).filter((r) => Boolean(r.valor)));
         }
       })
       .catch(() => {
