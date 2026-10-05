@@ -1,6 +1,14 @@
 import axios from 'axios';
 // Importa Axios, la librería HTTP cliente que usamos para consumir la API del backend (módulo "El navegador como cliente de una API")
 
+import { actual as correlationId } from '../utils/correlationId.js';
+// Importa el identificador de correlación del navegador (módulo "Trazabilidad")
+
+import * as logger from '../utils/logger.js';
+// Importa el logger del navegador (módulo "Logging"). Antes de este cambio, un
+// error de red se seguía con un console.error suelto que se perdía al recargar
+// la página y no decía a qué petición correspondía.
+
 // URL base de la API: configurable por VITE_API_URL (ver .env.example)
 // con fallback al entorno local de XAMPP.
 const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
@@ -17,6 +25,10 @@ const client = axios.create({
     // Cabeceras por defecto que se enviarán en cada request
     'Content-Type': 'application/json',
     // Indica que el cuerpo de las peticiones viaja en formato JSON
+    'X-Correlation-Id': correlationId(),
+    // Identificador de la petición. El backend lo copia en todas sus líneas de
+    // log, así que con este dato un error reportado por el usuario se localiza
+    // con una búsqueda en lugar de preguntarle "¿qué estabas haciendo?".
   },
 });
 
@@ -57,11 +69,28 @@ client.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
       // ...lo inyecta como encabezado "Authorization" con el esquema "Bearer <token>": es la firma de "Login desde Frontend Desacoplado"
     }
+
+    // El id de correlación se reescribe en cada petición, y no solo una vez al
+    // crear la instancia: si el usuario cierra sesión y entra como otro
+    // usuario en la misma pestaña, cada sesión tiene que quedar separada en los
+    // logs, y con el id fijo de la creación quedarían mezcladas.
+    config.headers['X-Correlation-Id'] = correlationId();
+
     return config;
     // Devuelve la configuración (posiblemente modificada) para que Axios ejecute la petición
   },
-  (error) => Promise.reject(error)
-  // Si falla la preparación de la petición (antes de enviarse), rechaza la promesa para que el error llegue al consumidor
+  (error) => {
+    // Si falla la preparación de la petición (antes de enviarse), se registra
+    // y se rechaza la promesa para que el error llegue al consumidor sin que el
+    // interceptor se lo quede en el camino.
+    logger.error('fallo al preparar la petición', {
+      metodo: error.config?.method,
+      url: error.config?.url,
+      motivo: error.message,
+    });
+
+    return Promise.reject(error);
+  }
 );
 
 // Interceptor: manejar errores globales
@@ -77,9 +106,25 @@ client.interceptors.response.use(
   },
   (error) => {
     // callback que recibe el error de la respuesta HTTP
+    // Se registra el fallo ANTES de reaccionar, para que quede la evidencia
+    // aunque la redirección se lleve la página entera. El logger redacta el
+    // token y los datos personales del contexto, así que se puede pasar el
+    // error completo sin filtrar nada sensible.
+    logger.error('fallo en la petición a la API', {
+      metodo: error.config?.method,
+      url: error.config?.url,
+      estado: error.response?.status ?? null,
+      motivo: error.message,
+      // El cuerpo del error del backend (que ya viene sin secretos) ayuda a
+      // entender el rechazo sin tener que reproducirlo.
+      respuesta: error.response?.data,
+    });
+
     // Si es 401, limpiar token y redirigir a login
     if (error.response?.status === 401) {
       // Si el backend responde con estado HTTP 401 (no autorizado / sesión expirada o inválida)...
+      logger.warn('sesión no válida: se limpia el token local', { url: error.config?.url });
+
       localStorage.removeItem('token');
       // ...se elimina el token del localStorage: se invalida la sesión local del navegador
       localStorage.removeItem('usuario');
@@ -92,6 +137,12 @@ client.interceptors.response.use(
       // llegado ni un error HTTP es la señal de "estamos sin conexión", y el
       // cartel global lo tiene que mostrar. Los errores CON respuesta no
       // entran acá: son decisiones del servidor, no problemas de red.
+      logger.warn('la petición no llegó al servidor', {
+        metodo: error.config?.method,
+        url: error.config?.url,
+        motivo: error.message,
+      });
+
       avisarSinConexion();
     }
     return Promise.reject(error);

@@ -252,3 +252,51 @@ de A se actualiza porque B reservó":
 - [Backend README](../SaludWEB_Backend/README.md)
 - [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
 - [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
+
+## Calidad del software
+
+Aplicacion de "Calidad Profesional del Software": logging estructurado, identificador de
+correlacion de punta a punta con el backend y pruebas unitarias del codigo propio. El detalle
+completo esta en **`CALIDAD_PROFESIONAL_SOFTWARE.md`**.
+
+### Archivos nuevos
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/utils/correlationId.js` | Genera y conserva el `X-Correlation-Id` de la sesion. |
+| `src/utils/logger.js` | Logs en JSON con niveles, redaccion de secretos y correlacion. |
+| `src/utils/logger.test.js` | 17 pruebas del logger. |
+| `src/utils/correlationId.test.js` | 15 pruebas del identificador de correlacion. |
+
+`src/api/client.js` ahora envia el identificador en cada peticion y registra los fallos con
+metodo, ruta, estado y motivo, antes de reaccionar a ellos.
+
+### Correr las pruebas
+
+```bash
+npm test            # 32 pruebas con el runner nativo de Node (sin dependencias nuevas)
+npm run test:watch  # en modo vigilancia
+```
+
+No hace falta levantar el backend ni la base de datos: las pruebas cubren el logger y el
+identificador de correlacion, que son los dos modulos que se pueden verificar de forma aislada.
+Las verificaciones E2E con Playwright siguen aparte (`verificar_pwa.mjs`,
+`verificar_tiempo_real.mjs`).
+
+### Correlacion con el backend
+
+1. `client.js` manda `X-Correlation-Id` en cada peticion.
+2. El backend lo copia en todas sus lineas de log.
+3. Los errores del navegador se registran con ese mismo identificador.
+
+Un error reportado por el usuario se localiza buscando el identificador en los logs del
+servidor, en lugar de depender de la memoria de quien lo reporta.
+
+### Reglas fijadas
+
+- Ningun secreto en la consola: la redaccion vive en el logger, no en los componentes, para que
+  no se pueda olvidar. El token viaja en `config.headers.authorization` de un error de axios y
+  la redaccion es recursiva justamente por eso.
+- Los datos personales (email, DNI, telefono, nombre) se enmascaran dejando cuatro caracteres.
+- El destino del log se pasa por parametro: asi las pruebas pueden comprobar que un token NO se
+  escribe.
