@@ -16,26 +16,27 @@ import * as logger from '../utils/logger.js';
 // La SPA se sirve de dos maneras y en cada una la API está a una distancia
 // distinta, así que la URL base no puede ser una constante fija:
 //
-//   - DESARROLLO (npm run dev, http://localhost:5173): la API NO está en el
-//     mismo origen. Está en el Apache de XAMPP. El proxy '/api' de vite.config.js
-//     existe justamente para eso. Con una URL base VACÍA, axios resuelve cada
-//     llamada contra el origen de la página -> '/api/auth/login' -> la resuelve
-//     el proxy de Vite. La petición nunca sale del navegador hacia otro
-//     servidor, así que no hay CORS ni preflight que pueda rechazarla.
+//   - DESARROLLO (npm run dev, http://127.0.0.1:5173): la API NO está en el
+//     mismo origen. Corre aparte, en el servidor nativo de PHP
+//     (composer run dev, http://127.0.0.1:8000). El proxy '/api' de
+//     vite.config.js existe justamente para eso. Con una URL base VACÍA,
+//     axios resuelve cada llamada contra el origen de la página ->
+//     '/api/auth/login' -> la resuelve el proxy de Vite. La petición nunca sale
+//     del navegador hacia otro servidor, así que no hay CORS ni preflight que
+//     pueda rechazarla.
 //
-//     Con la URL absoluta de XAMPP, en cambio, el navegador la trata como
+//     Con la URL absoluta del backend, en cambio, el navegador la trata como
 //     petición CRUZADA: manda un preflight OPTIONS y, si el backend no
 //     autoriza ese encabezado, la rechaza antes de llegar al login. El
 //     síntoma es un "Error al iniciar sesión" sin ninguna pista en la UI.
 //
-//   - PRODUCCIÓN (build servido por Apache desde SaludWEB_Web/): acá el proxy
-//     de Vite NO existe, y public/.htaccess bloquea '^api/' a propósito con un
-//     403. Por eso la URL tiene que ser la ABSOLUTA del backend, que vive en
-//     otra carpeta. Ahí sí hay CORS, y lo resuelve la whitelist de orígenes
-//     del backend.
+//   - PRODUCCIÓN (build servido como archivos estáticos): acá el proxy de Vite
+//     NO existe, así que la URL tiene que ser la ABSOLUTA del backend, que
+//     corre en otro origen. Ahí sí hay CORS, y lo resuelve la whitelist de
+//     orígenes del backend.
 const API_URL =
   import.meta.env?.VITE_API_URL ||
-  (import.meta.env?.DEV ? '' : 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend');
+  (import.meta.env?.DEV ? '' : 'http://127.0.0.1:8000');
 
 // Crear instancia de Axios
 const client = axios.create({

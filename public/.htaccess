@@ -8,7 +8,7 @@
 # dentro de JavaScript.
 #
 # Sin este archivo, si alguien abre directamente
-# http://localhost/Workspace_SaludWEB/SaludWEB_Web/turnera/mis-turnos
+# https://mi-servidor/saludweb/turnera/mis-turnos
 # (o refresca la página con F5 estando en esa ruta, o abre el enlace en
 # una pestaña nueva), Apache busca un archivo llamado "turnera" en disco,
 # no lo encuentra y devuelve un error 404.

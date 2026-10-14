@@ -9,8 +9,11 @@
 
 declare(strict_types=1);
 
-$raiz = 'C:\\xampp\\htdocs\\Workspace_SaludWEB\\SaludWEB_Web\\src';
-$tokensPath = $raiz . '\\tokens.css';
+// La ruta sale de __DIR__ y no de una ruta absoluta fija: con
+// 'C:\proyectos\...' el script solo andaba en la máquina donde se
+// escribió, porque dependía de esa carpeta exacta.
+$raiz = __DIR__ . '/src';
+$tokensPath = $raiz . '/tokens.css';
 
 // 1) Variables definidas, incluyendo las de la parte :root de tokens.css.
 $definidas = [];
