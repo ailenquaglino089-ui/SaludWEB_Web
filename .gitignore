@@ -4,3 +4,11 @@
 # Logs de desarrollo (salida de vite/npm)
 /*.log
 dev-server.log
+
+# Variables de entorno: el .env real es de cada máquina y no se
+# sube. Lo que se versiona es .env.example (sin valores reales).
+# Patrón estándar de Vite: .env, .env.local y los locales por modo
+# (.env.development.local, .env.production.local, ...).
+.env
+.env.local
+.env.*.local

@@ -31,7 +31,7 @@
 import { chromium } from 'playwright';
 
 // URL de la SPA. Es la del `vite preview` por defecto. Puede pasarse otra
-// (p.ej. el despliegue real en XAMPP) como primer argumento: la prueba debe
+// (p.ej. un despliegue en otro host) como primer argumento: la prueba debe
 // correr contra un build ya servido, no contra el dev server de Vite.
 const url = process.argv[2] || 'http://127.0.0.1:4173';
 

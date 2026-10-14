@@ -7,7 +7,9 @@
 
 declare(strict_types=1);
 
-$tokensPath = 'C:\\xampp\\htdocs\\Workspace_SaludWEB\\SaludWEB_Web\\src\\tokens.css';
+// __DIR__ en vez de una ruta absoluta fija: el script corre desde
+// cualquier clonación y en cualquier equipo, no solo en el original.
+$tokensPath = __DIR__ . '/src/tokens.css';
 $lineas = file($tokensPath, FILE_IGNORE_NEW_LINES);
 
 function hexACanales(string $hex): array

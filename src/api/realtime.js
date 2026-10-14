@@ -3,12 +3,16 @@ import client from './client';
 // URL base del backend: el canal no se abre con Axios, se abre con EventSource,
 // porque Axios espera una respuesta completa y este stream nunca termina.
 
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
-// Misma resolución de URL que usa client.js: variable de entorno primero,
-// XAMPP local como alternativa. Si el canal usara una URL distinta a la del
-// resto de la API, en un entorno de desarrollo con dos direcciones distintas
-// el canal apuntaría a un servidor que no existe y el error sería
-// desconcertante.
+const API_URL = client.defaults.baseURL;
+// Se LEE de la instancia de Axios en vez de volver a resolver la URL con un
+// segundo '||' propio. Motivo: en desarrollo la URL base es VACÍA a propósito
+// (para que las llamadas pasen por el proxy '/api' de Vite y no haya CORS),
+// y una copia de esa regla escrita dos veces es una copia que algún día
+// queda desactualizada. Leyéndola de acá, el canal y el resto de la API no
+// pueden quedar apuntando a servidores distintos: es la misma constante por
+// construcción. Con baseURL vacío, la URL del EventSource queda '/api/eventos?...',
+// que es una ruta relativa al origen de la página y funciona igual que una
+// absoluta.
 
 // ============================================================
 // TIPOS DE EVENTO

@@ -15,7 +15,7 @@ import './App.css'
 // (además ./sw.js es un archivo del build, está en public/).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   // Registro con ruta relativa: la app puede servirse desde un subdirectorio
-  // (p.ej. dentro de XAMPP/htdocs) y el alcance del SW queda en ese directorio.
+  // (p.ej. /saludweb/) y el alcance del SW queda en ese directorio.
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch((error) => {
       // La app funciona igual sin el SW; el fallo solo deja de dar PWA/offline.

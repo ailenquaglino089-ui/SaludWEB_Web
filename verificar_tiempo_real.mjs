@@ -29,7 +29,7 @@
 // junto a una ventana de incógnito.
 //
 // CÓMO SE EJECUTA
-//   1. Con el backend y la web levantados (XAMPP + Vite)
+//   1. Con el backend (composer run dev) y la web (Vite) levantados
 //   2. npx playwright install chromium     (una sola vez, si no está)
 //   3. node verificar_tiempo_real.mjs
 //
@@ -49,7 +49,7 @@ const WEB = process.env.WEB_URL || 'http://127.0.0.1:5173';
 // que necesita la dirección real. Si se usara WEB, la creación del turno
 // pasaría por el proxy y una reconfiguración del proxy rompería la prueba sin
 // que se note por qué.
-const API = process.env.API_URL || 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
+const API = process.env.API_URL || 'http://127.0.0.1:8000';
 
 // Datos del turno que se reserva en la prueba.
 //
@@ -218,7 +218,7 @@ async function iniciarSesion(contexto, cuenta) {
 // ============================================================
 console.log('\n=== Prueba de tiempo real: dos navegadores simultáneos ===\n');
 console.log(`Web: ${WEB}`);
-console.log('Este script necesita el backend (XAMPP) y la web (Vite) levantados.\n');
+console.log('Este script necesita el backend (composer run dev) y la web (Vite) levantados.\n');
 
 const navegador = await chromium.launch({
   headless: true,
