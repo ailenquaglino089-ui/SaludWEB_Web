@@ -40,6 +40,25 @@ npm run dev
 # http://localhost:5173
 ```
 
+> El backend tiene que estar corriendo en `http://127.0.0.1:8000` (en
+> `SaludWEB_Backend`: `composer run dev`). El proxy de Vite ya apunta ahí por
+> defecto, así que no hace falta configurar nada.
+
+### Variables de entorno (opcional)
+
+```bash
+copy .env.example .env
+```
+
+Vite levanta solo el `.env` de la raíz y solo expone al código las variables que
+arrancan con `VITE_`. **Sin `.env` todo funciona igual**: los defaults del código ya
+apuntan al backend nativo en `http://127.0.0.1:8000`. Crearlo hace falta solo cuando
+el backend corre en otra dirección (otro puerto u otra máquina). Detalle completo en
+[Configuración API](#-configuración-api).
+
+> El `.env` real no se sube al repo (`.gitignore`); lo que se versiona es `.env.example`.
+> Nunca pongas secretos acá: `VITE_*` se embeben en el JavaScript que baja el navegador.
+
 ### Build para producción
 
 ```bash
@@ -88,10 +107,48 @@ SaludWEB_Web/
 
 ## 🔧 Configuración API
 
-En `src/api/client.js`, configura la URL del backend:
+La URL del backend **no se edita en el código**: sale de las variables de entorno
+que Vite levanta desde los archivos `.env` de la raíz.
+
+```bash
+copy .env.example .env
+```
+
+| Variable | Dónde la lee | Qué hace |
+|---|---|---|
+| `VITE_PROXY_TARGET` | `vite.config.js` | A dónde reenvía el dev server todo lo que empiece con `/api`. Solo existe en `npm run dev`. |
+| `VITE_API_URL` | `src/api/client.js` | URL base de axios. En **dev** conviene vacía (para que mande el proxy y no haya CORS); en **producción** es la URL absoluta del backend. |
+
+Si no hay `.env`, ambos toman los mismos valores que siempre estuvieron escritos en
+el código, así que crear el archivo es opcional:
 
 ```javascript
-const API_URL = 'http://localhost/Workspace_SaludWEB/SaludWEB_Backend';
+// src/api/client.js
+const API_URL =
+  import.meta.env?.VITE_API_URL ||
+  (import.meta.env?.DEV ? '' : 'http://127.0.0.1:8000');
+```
+
+**Tipos de despliegue y qué poner en cada uno**
+
+| Cómo corrés | Backend | `VITE_API_URL` | `VITE_PROXY_TARGET` |
+|---|---|---|---|
+| `npm run dev` | `composer run dev` en `127.0.0.1:8000` | *(vacía)* | `http://127.0.0.1:8000` |
+| `npm run build` en otro host/puerto | backend en otra dirección | `http://127.0.0.1:8000` | *(no existe)* |
+
+Dos detalles que ya están resueltos y conviene no reabrir:
+
+- En **desarrollo** `VITE_API_URL` queda vacía a propósito: así las llamadas salen como
+  `/api/...` relativas, las toma el proxy de Vite y no hay CORS ni preflight. Si en dev
+  pusieras la URL absoluta, el navegador mandaría un `OPTIONS` previo que puede ser
+  rechazado y el login fallaría sin ningún mensaje visible.
+- En **producción** no hay proxy de Vite: el `dist/` se sirve como archivos estáticos y
+  `API_URL` tiene que ser absoluta.
+
+Para verificar desde la consola, sin mirar el código:
+
+```javascript
+import.meta.env.VITE_API_URL
 ```
 
 ## Tiempo real (sin polling)
@@ -159,7 +216,10 @@ const { usuario, login, logout, registro } = useAuth();
 | Paciente | `paciente@prueba.com` | `paciente123` |
 | Administradora | `admin@salud.com` | (contraseña personal, no está en el repo) |
 
-> Las fichas de demo se regeneran con `php sembrar_datos_demo.php` en el backend.
+> Estas cuentas existen si migraste la base MySQL vieja. **En un clon nuevo no hay
+> ninguna**: creá tu cuenta con la pantalla de **Registro** (`/register`).
+> Las fichas de demo se regeneran con `php sembrar_datos_demo.php` en el backend, pero ese
+> script no crea usuarios ni contraseñas.
 
 ## PWA y arranque offline
 
@@ -221,8 +281,12 @@ La prueba elige sola la fecha y la hora: busca un día hábil dentro de la venta
 Para verlo de verdad hacen falta **dos ventanas del navegador**, porque el efecto es "el panel
 de A se actualiza porque B reservó":
 
-1. **Levantar MySQL y Apache** desde el Control Panel de XAMPP.
-2. **En una terminal, levantar el frontend**:
+1. **Levantar el backend** en una terminal (servidor nativo de PHP, sin base de datos aparte):
+   ```bash
+   cd SaludWEB_Backend
+   composer run dev      # queda en http://127.0.0.1:8000
+   ```
+2. **En otra terminal, levantar el frontend**:
    ```bash
    cd SaludWEB_Web
    npm install      # solo la primera vez
@@ -243,6 +307,12 @@ de A se actualiza porque B reservó":
 > levantado o que la sesión venció. El botón de recarga manual que aparece al lado
 > reconecta el canal sin cargar toda la página.
 
+> **Limitación del servidor nativo:** `php -S` atiende **una petición a la vez** (y en
+> Windows no admite varios workers). Mientras el canal SSE queda abierto, las demás
+> peticiones esperan, así que esta demo de dos ventanas necesita un servidor con varios
+> workers (nginx + PHP-FPM, u otro). El CRUD, la turnera y las suites REST andan perfecto
+> con `composer run dev`.
+
 > Para la versión exacta que se midió (9/9, 541 ms), ver
 > [la guía del módulo en el backend](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md).
 
@@ -252,6 +322,8 @@ de A se actualiza porque B reservó":
 - [Backend README](../SaludWEB_Backend/README.md)
 - [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
 - [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
+- [Revisar y probar el proyecto: de checklist a evidencia](REVISAR_Y_PROBAR_EL_PROYECTO.md)
+  (los cinco entregables de evidencia están en `QA/`)
 
 ## Calidad del software
 
