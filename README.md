@@ -318,6 +318,7 @@ de A se actualiza porque B reservó":
 
 ## 📚 Más información
 
+- [Guía de código (archivo por archivo)](GUIA_DE_CODIGO.md)
 - [Guía de tiempo real (por qué SSE y cómo está hecho)](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md)
 - [Backend README](../SaludWEB_Backend/README.md)
 - [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
