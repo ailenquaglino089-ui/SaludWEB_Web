@@ -1,0 +1,372 @@
+# Guía de código — Web · Dashboard, Médicos, Pacientes y Prescripciones
+
+> Recorrido línea por línea de los componentes de gestión.
+> Índice general en ../GUIA_DE_CODIGO.md
+
+## `src/components/Dashboard/Dashboard.jsx` (519 líneas)
+- **Rol:** Panel de entrada tras iniciar sesión. Elige su contenido según el rol: admin y médico ven indicadores de gestión del consultorio; el paciente ve sus próximos turnos. Escucha un canal SSE que avisa de cambios y recarga los datos por REST.
+- **Recorrido línea por línea:**
+  - L1–L3: banner de comentario que nombra la pantalla "Dashboard".
+  - L4–L20: comentario que explica por qué hay dos versiones según el rol (el endpoint `/api/estadisticas` devuelve 403 a los pacientes).
+  - L22–L36: comentario sobre los enlaces que se adaptan al rol y sobre el cambio de `<a href>` por `<Link>`.
+  - L38–L65: comentario sobre que la pantalla ya no usa polling, explicación del canal SSE, costo/ganancia y la regla de "el canal avisa, no manda datos".
+  - L66: cierre del bloque de comentarios con la línea de iguales.
+  - L68: import de React y los hooks `useState`, `useCallback`, `useEffect`, `useRef`.
+  - L69–L72: comentario que justifica cada hook importado.
+  - L74: import de `Link` desde `react-router-dom`.
+  - L75: comentario sobre la navegación de la SPA.
+  - L77: import de `useAuth` desde el hook de autenticación.
+  - L78: comentario sobre el uso del rol.
+  - L80: import de `obtenerEstadisticas`, `listarMisTurnos` y `mensajeDeError` desde la API de turnera.
+  - L81–L87: comentario que aclara que los datos vienen por REST y no por el canal.
+  - L89: import de `useEventosRealtime`.
+  - L90: comentario sobre el hook que abre y cierra el canal.
+  - L92: import de `Cargando` y `Aviso` desde `PiezasTurnera`.
+  - L93–L94: comentario sobre las piezas compartidas.
+  - L96: import del CSS `Dashboard.css`.
+  - L97: comentario del estilo.
+  - L99: JSDoc de la función `Tarjeta`.
+  - L100–L113: componente `Tarjeta({ icono, titulo, texto, enlace, textoEnlace })`; renderiza la tarjeta con ícono `aria-hidden`, título, texto y un `Link` de acceso.
+  - L115: JSDoc de `Indicador`.
+  - L116–L124: componente `Indicador({ valor, etiqueta, detalle })`; pinta el valor, la etiqueta y el detalle opcional.
+  - L126–L136: JSDoc de `periodoDe`, explicando por qué se muestra el rango que calcula el backend.
+  - L137–L146: función `periodoDe(estadisticas)`; lee `rango.desde` y `rango.hasta` y devuelve el texto del período o cadena vacía.
+  - L148: `export default function Dashboard()`.
+  - L149: obtiene `usuario` de `useAuth`.
+  - L151–L158: estados `estadisticas`, `error`, `turnos` (arranca en null), `cargando`, `ultimaActualizacion` y comentario sobre por qué `turnos` no inicia en `[]`.
+  - L160–L167: deriva `rol` y `veEstadisticas` (`admin` o `medico`) con el comentario de que un paciente no entra.
+  - L169–L175: `recargandoRef` con comentario que evita peticiones duplicadas ante eventos simultáneos.
+  - L177: JSDoc de `cargarEstadisticas`.
+  - L178–L199: `cargarEstadisticas` (useCallback); corta con `{ sinPermiso: true }` si no corresponde, pide estadísticas, actualiza estado/error/marca de tiempo, y captura errores con `mensajeDeError`.
+  - L201: JSDoc de `cargarTurnos`.
+  - L202–L217: `cargarTurnos` (useCallback); lista los turnos del paciente, comparte el estado de error y captura errores.
+  - L219–L222: elige `cargar` según el rol y comentario explicativo.
+  - L224–L228: JSDoc de `recargar` con el parámetro `forzar`.
+  - L229–L253: `recargar` (useCallback); evita dos recargas simultáneas salvo `forzar`, levanta `cargando`, ejecuta `cargar()` y baja el flag en `finally`.
+  - L255–L265: sección "El canal en vivo": comentario y cálculo de `canal` ('tablero' o 'mis-turnos') según el rol.
+  - L267–L284: `manejarEvento` (useCallback); comentario que explica por qué NO se usa el payload y solo se llama a `recargar()`.
+  - L286–L294: `useEventosRealtime(canal, manejarEvento, Boolean(rol))` con el comentario de por qué no se abre hasta conocer el rol.
+  - L296–L298: sección "Carga inicial" y arranque del `useEffect`.
+  - L299–L308: `useEffect` de carga inicial; sale si no hay `rol`, si no llama `recargar(true)`.
+  - L309–L311: comentario sobre por qué depende de `rol` y no de `veEstadisticas`.
+  - L313–L329: sección de armado de `tarjetas` según `veEstadisticas` (cuatro de gestión o tres del paciente) con comentario.
+  - L331–L333: `return` y apertura del contenedor `div.dashboard` y de `div.dashboard-header`.
+  - L334: `h1` de saludo con el nombre del usuario.
+  - L335–L337: comentario sobre el saludo personalizado.
+  - L338–L342: párrafo que describe la pantalla según el rol.
+  - L344–L362: comentario extenso del indicador del canal en vivo (colores y botón de reconexión).
+  - L363–L378: `div.canal-estado` con el punto, el texto según `estadoCanal` y el botón "Reintentar" cuando está cerrado o sin sesión.
+  - L380–L392: comentario y botón de recarga manual `dashboard-recargar` (deshabilitado mientras carga).
+  - L393: cierre de `div.dashboard-header`.
+  - L395: aviso de error condicional con `Aviso`.
+  - L397–L401: `div.dashboard-grid` que mapea `tarjetas` a componentes `Tarjeta`.
+  - L403–L405: comentario de la sección de estadísticas (solo admin y médico).
+  - L406–L420: `section.dashboard-stats` (con `aria-busy`) y encabezado con título y hora exacta de última actualización; comentario sobre el cambio de "hace N segundos" a hora exacta (L415–L419).
+  - L421: línea en blanco entre el encabezado y el cuerpo.
+  - L422–L424: condicional que muestra `Cargando` mientras carga sin datos.
+  - L425–L470: bloque con los cuatro `Indicador` (demanda, ocupación, ausentismo, reservas online) desarmando la respuesta anidada con `??`.
+  - L471–L472: cierre de la sección de estadísticas.
+  - L474–L477: comentario y condicional de la sección "Turnos del paciente".
+  - L478–L479: apertura de `section.dashboard-stats` y título "Mis próximos turnos".
+  - L481–L482: condicional que muestra `Cargando` mientras busca turnos.
+  - L483–L498: lista de hasta tres turnos (`slice(0, 3)`) con fecha, hora, médico y badge de estado.
+  - L499–L511: rama "sin turnos" con comentario que distingue "no tenés turnos" de "no pude averiguarlo".
+  - L512–L515: comentario sobre mostrar solo los tres primeros.
+  - L516: cierre de la sección "Turnos del paciente".
+  - L517–L519: cierre del contenedor y de la función.
+- **Se conecta con:** `useAuth` (rol), `api/turnera` (`obtenerEstadisticas`, `listarMisTurnos`, `mensajeDeError`), `hooks/useEventosRealtime` (SSE), `Turnera/PiezasTurnera` (`Cargando`, `Aviso`), `react-router-dom` (`Link`) y `Dashboard.css`.
+
+## `src/components/Dashboard/Dashboard.css` (490 líneas)
+- **Rol:** Hoja de estilos del panel. Define el contenedor, la cabecera, el cartel del canal en vivo, las tarjetas, las estadísticas, los próximos turnos y las reglas responsive.
+- **Recorrido línea por línea:**
+  - L1–L3: banner "DASHBOARD - Estilos CSS".
+  - L5–L13: `.dashboard`: contenedor principal, padding, ancho máximo 1200px y centrado.
+  - L15–L21: `.dashboard-header`: cabecera centrada con margen inferior.
+  - L23–L33: `.dashboard-header h1`: título grande, gris y en negrita.
+  - L35–L43: `.dashboard-header p`: subtítulo con margen, gris y 16px.
+  - L45–L71: banner del indicador del canal y `.canal-estado`: pastilla en línea con gap, transición de color y borde transparente.
+  - L73–L83: `.canal-punto`: punto de 8px redondo que usa `currentColor`.
+  - L85–L90: `.canal-conectado`: verde.
+  - L92–L97: `.canal-conectando`: ámbar.
+  - L99–L104: `.canal-reconectando`: ámbar más fuerte.
+  - L106–L112: `.canal-cerrado, .canal-sin-sesion`: rojo.
+  - L114–L119: `.canal-inactivo`: gris.
+  - L121–L132: `.canal-boton`: botón de reintento de la pastilla.
+  - L134–L137: `.canal-boton:hover`: fondo apenas oscurecido.
+  - L139–L144: `.canal-boton:focus-visible`: contorno azul accesible.
+  - L146–L158: `.dashboard-recargar`: botón de recarga manual.
+  - L160–L164: `.dashboard-recargar:disabled`: opacidad y cursor por defecto.
+  - L166–L170: `.dashboard-recargar:focus-visible`: contorno azul.
+  - L172–L183: comentario de la grilla y `.dashboard-grid`: CSS Grid auto-fit con mínimo 280px.
+  - L185–L201: `.dashboard-card`: tarjeta blanca con borde, radio grande y cursor puntero.
+  - L203–L211: `.dashboard-card:hover`: borde primario, sombra y elevación.
+  - L213–L219: `.card-icon`: ícono grande.
+  - L221–L231: `.dashboard-card h3`: título de la tarjeta.
+  - L233–L241: `.dashboard-card p`: texto descriptivo.
+  - L243–L257: `.card-link`: enlace "Ver X".
+  - L259–L263: `.card-link:hover`: cambia al color secundario.
+  - L265–L275: `.dashboard-stats`: grid de indicadores auto-fit mínimo 200px.
+  - L277–L289: `.stat-box`: caja con degradado de marca.
+  - L291–L299: `.stat-value`: número grande.
+  - L301–L309: `.stat-label`: etiqueta debajo del número.
+  - L311–L320: comentario y `.dashboard-info`: sección "Sobre SaludWEB".
+  - L322–L330: `.dashboard-info h2`: título de la sección informativa.
+  - L332–L340: `.dashboard-info p`: párrafos con interlineado cómodo.
+  - L342–L348: `.dashboard-info ul`: lista con sangría.
+  - L350–L356: `.dashboard-info li`: ítems de la lista.
+  - L358–L385: `@media (max-width: 768px)`: apila contenedor, título, tarjetas y estadísticas.
+  - L386–L393: banner "AGREGADO AL RECONVERTIR EL PANEL".
+  - L395–L409: comentario y `.stats-encabezado`: fila título/fecha.
+  - L411–L414: `.stats-encabezado h2`: título del encabezado.
+  - L416–L422: `.stats-actualizado`: tono atenuado para la fecha.
+  - L424–L435: comentario y `.stat-detalle`: línea chica de aclaración.
+  - L437–L447: comentario y `.proximos-turnos`: lista vertical de turnos.
+  - L449–L460: `.proximo-turno`: fila tipo tarjeta con wrap.
+  - L462–L468: `.proximo-fecha`: fecha en seminegrita.
+  - L470–L476: `.proximo-medico`: nombre que ocupa el espacio sobrante.
+  - L478–L485: `.sin-turnos`: mensaje de lista vacía.
+  - L487–L490: `.sin-turnos a`: enlace primario.
+- **Se conecta con:** `Dashboard.jsx` (clases `dashboard`, `canal-estado`, `dashboard-grid`, `stat-box`, `proximo-turno`, etc.) y variables globales `--borde`, `--primario`, `--secundario`, `--degradado-marca`, `--fondo`.
+
+## `src/components/Medicos/FormularioMedico.jsx` (163 líneas)
+- **Rol:** Formulario de alta y edición de médicos. Recibe `medico` (o null), `onGuardar` y `onCancelar`; valida nombre, matrícula y especialidad.
+- **Recorrido línea por línea:**
+  - L1–L2: import de React y hooks `useState`, `useEffect`.
+  - L3–L4: import del CSS `Medicos.css`.
+  - L6–L8: comentario de props y `export default function FormularioMedico({ medico, onGuardar, onCancelar })`.
+  - L9–L15: estado `formData` con `nombre`, `matricula`, `especialidad` y `activo` por defecto.
+  - L17–L18: estado `errores`.
+  - L20–L26: `useEffect` que precarga `formData` cuando llega `medico` (modo edición).
+  - L28–L44: función `validar`: arma `newErrores`, valida los tres campos obligatorios, guarda errores y devuelve si no hay claves.
+  - L46–L61: `handleChange` genérico: desestructura `name`, `value`, `type`, `checked`, actualiza `formData` y limpia el error del campo.
+  - L63–L71: `handleSubmit`: evita el submit por defecto y, si `validar()` pasa, invoca `onGuardar(formData)`.
+  - L73–L80: apertura del `return`, contenedor `lista-container` y cabecera con título dinámico (editar/nuevo).
+  - L82–L101: `<form>` y grupo del campo Nombre con `label`, `input` controlado y error condicional.
+  - L103–L117: grupo del campo Matrícula con placeholder y error.
+  - L119–L133: grupo del campo Especialidad con placeholder y error.
+  - L135–L147: grupo del checkbox "Médico activo".
+  - L149–L159: acciones con botón submit "Guardar" y botón "Cancelar" que llama a `onCancelar`.
+  - L160–L163: cierre de `form`, `div` y componente.
+- **Se conecta con:** `ListaMedicos` (le pasa props) y `Medicos.css`. Usa los helpers de error de campo (`input-error`, `error-text`).
+
+## `src/components/Medicos/ListaMedicos.jsx` (266 líneas)
+- **Rol:** Lista CRUD de médicos con búsqueda debounceada, paginado backend, badges de estado, RBAC para admin y notificaciones flotantes.
+- **Recorrido línea por línea:**
+  - L1–L16: imports (React/hooks, `client`, `FormularioMedico`, `useAuth`, helpers CRUD, CSS, `Paginacion`, `Toast`).
+  - L18–L19: comentario y `export default function ListaMedicos()`.
+  - L20–L23: obtiene `usuario` y deriva `esAdmin`.
+  - L24–L45: estados `medicos`, `cargando`, `error`, `mostrarFormulario`, `medicoEditando`, `busqueda`, `busquedaAplicada`, paginado (`pagina`, `porPagina`, `total`, `totalPaginas`) y `notif`.
+  - L47–L48: helper `mostrarNotif`.
+  - L50–L58: `useEffect` de debounce de 400 ms sobre `busqueda`.
+  - L60–L64: `useEffect` que recarga al cambiar `pagina`, `porPagina` o `busquedaAplicada`.
+  - L66–L90: `cargarMedicos`: activa spinner, GET `/api/medicos` con paginado/búsqueda, `getDatos`, guarda items/total/páginas, limpia error y apaga spinner en `finally`.
+  - L92–L98: `handleNuevoMedico`: limpia edición y muestra formulario.
+  - L100–L106: `handleEditarMedico`: guarda el médico y muestra formulario.
+  - L108–L136: `handleGuardarMedico`: PUT o POST según edición, recarga, notifica éxito, oculta formulario y limpia edición/error; captura errores con `handleApiError`.
+  - L138–L139: nota de que el filtrado se resuelve en el backend.
+  - L141–L158: si `mostrarFormulario && esAdmin`, renderiza `FormularioMedico` con sus props y callbacks.
+  - L160–L172: `return` del contenedor y cabecera con título y botón "Nuevo Médico" (solo admin).
+  - L174–L175: alerta de error condicional.
+  - L177–L187: barra de búsqueda controlada.
+  - L189–L200: estados cargando (spinner) y lista vacía.
+  - L201–L249: tabla con encabezados, filas por médico (nombre, matrícula, especialidad, badge de estado y botón Editar solo admin).
+  - L251–L259: componente `Paginacion` y cierre del fragmento.
+  - L260: cierre del condicional de tres estados.
+  - L262–L266: `Toast` y cierre de contenedor/componente.
+- **Se conecta con:** `api/client`, `FormularioMedico`, `useAuth`, `utils/crudHelpers` (`handleApiError`, `getDatos`, `getStatusBadge`, `getStatusColor`), `common/Paginacion`, `common/Toast` y `Medicos.css`.
+
+## `src/components/Medicos/Medicos.css` (523 líneas)
+- **Rol:** Hoja de estilos compartida por los módulos de listas y formularios (Médicos, y reutilizada por Pacientes). Define contenedores, cabeceras, buscador, tabla, badges, botones, formularios, validación y responsive.
+- **Recorrido línea por línea:**
+  - L1–L13: `.lista-container`: contenedor de listas con ancho máximo, fondo claro y altura mínima.
+  - L15–L33: `.lista-header`: cabecera flexible con título y botón.
+  - L35–L43: `.lista-header h1`: título de la cabecera.
+  - L45–L51: `.lista-header .btn-primary`: botón primario de la cabecera.
+  - L53–L57: `.lista-filtro`: margen de la barra de búsqueda.
+  - L59–L73: `.input-busqueda`: input de búsqueda al 100%.
+  - L75–L87: `.input-busqueda:focus-visible`: contorno, borde y halo azul accesibles.
+  - L89–L105: comentario y `.tabla-container`: tarjeta blanca con scroll horizontal.
+  - L107–L113: `.tabla`: ancho 100% y bordes unificados.
+  - L115–L121: `.tabla thead`: fondo claro y línea inferior.
+  - L123–L135: `.tabla th`: celdas de encabezado.
+  - L137–L143: `.tabla tbody tr`: separación y transición de fondo.
+  - L145–L149: `.tabla tbody tr:hover`: resalta la fila.
+  - L151–L159: `.tabla td`: celdas de datos.
+  - L161–L176: comentario y `.status-badge`: píldora de estado con texto blanco.
+  - L178–L201: comentario y `.acciones`: contenedor flex de botones con `flex-wrap` explicado.
+  - L203–L209: `.btn-sm`: botón compacto de tabla.
+  - L211–L225: `.btn-info`: botón azul (Editar).
+  - L227–L231: `.btn-info:hover`: azul más oscuro.
+  - L233–L247: `.btn-danger`: botón rojo (Eliminar).
+  - L249–L253: `.btn-danger:hover`: rojo más oscuro.
+  - L255–L270: `.lista-vacia`: mensaje de lista vacía.
+  - L272–L287: `.formulario`: tarjeta del formulario.
+  - L289–L297: `.form-grupo`: agrupación vertical de campo.
+  - L299–L309: `.form-grupo label`: etiqueta del campo.
+  - L311–L327: `.form-grupo input, select, textarea`: estilos de campos.
+  - L329–L342: `:focus-visible` de los campos del formulario.
+  - L344–L352: `.form-grupo input[type="checkbox"]`: checkbox natural.
+  - L354–L362: `.form-grupo label input[type="checkbox"]`: label flexible del checkbox.
+  - L364–L370: `.input-error`: campo con error.
+  - L372–L380: `.error-text`: mensaje de error del campo.
+  - L382–L393: `.form-acciones`: fila de botones Guardar/Cancelar.
+  - L395–L403: `.form-acciones .btn`: botones amplios.
+  - L405–L523: `@media (max-width: 768px)`: cabecera apilada, tablas convertidas en tarjetas apiladas con `data-label`, botones a lo ancho y formularios compactos.
+- **Se conecta con:** `FormularioMedico.jsx`, `ListaMedicos.jsx` y, vía `@import`, `Pacientes.css`. Usa variables globales `--fondo`, `--info`, `--error`, `--texto-medio`, `--texto-suave`.
+
+## `src/components/Pacientes/FormularioPaciente.jsx` (211 líneas)
+- **Rol:** Formulario de alta y edición de pacientes. Carga obras sociales para el selector, valida nombre y DNI, y arma un payload limpio al guardar.
+- **Recorrido línea por línea:**
+  - L1–L8: imports (React/hooks, `client`, `getDatos`, CSS `Pacientes.css`).
+  - L10–L12: comentario de props y `export default function FormularioPaciente({ paciente, onGuardar, onCancelar })`.
+  - L13–L19: estado `formData` con `nombre`, `dni`, `id_obra_social` y `activo`.
+  - L21–L26: estados `obrasSociales`, `errores` y `cargando`.
+  - L28–L31: `useEffect` de montaje que llama `cargarObrasSociales` una sola vez.
+  - L33–L47: `useEffect` que precarga `formData` al cambiar `paciente`, usando `||` y `??` según el caso.
+  - L49–L63: `cargarObrasSociales`: GET `/api/obras-sociales`, guarda con `getDatos`, registra error en consola y apaga el spinner.
+  - L65–L79: `validar`: valida nombre y DNI, persiste errores y devuelve si es válido.
+  - L81–L96: `handleChange` genérico que actualiza `formData` y limpia el error del campo.
+  - L98–L111: `handleSubmit`: previene el submit y, si valida, llama `onGuardar` con payload limpio (`id_obra_social` en null si está vacío).
+  - L113–L116: render de carga con spinner.
+  - L118–L125: `return` con contenedor y cabecera de título dinámico.
+  - L127–L145: `<form>` y grupo Nombre Completo.
+  - L147–L161: grupo DNI con placeholder y error.
+  - L163–L181: grupo Obra Social con `select` y opciones mapeadas de `obrasSociales`.
+  - L183–L195: grupo del checkbox "Paciente activo".
+  - L197–L207: acciones con botones Guardar y Cancelar.
+  - L208–L211: cierre de `form`, `div` y componente.
+- **Se conecta con:** `ListaPacientes` (props), `api/client`, `utils/crudHelpers` (`getDatos`) y `Pacientes.css`.
+
+## `src/components/Pacientes/ListaPacientes.jsx` (266 líneas)
+- **Rol:** Lista CRUD de pacientes con paginado y búsqueda backend, badges de estado y notificaciones. A diferencia de médicos, el botón Editar está visible para todos los roles logueados.
+- **Recorrido línea por línea:**
+  - L1–L16: imports (React/hooks, `client`, `FormularioPaciente`, `useAuth`, helpers CRUD, CSS, `Paginacion`, `Toast`).
+  - L18–L19: comentario y `export default function ListaPacientes()`.
+  - L20–L23: obtiene `usuario` y deriva `esAdmin`.
+  - L24–L45: estados `pacientes`, `cargando`, `error`, `mostrarFormulario`, `pacienteEditando`, `busqueda`, `busquedaAplicada`, paginado y `notif`.
+  - L47–L48: helper `mostrarNotif`.
+  - L50–L58: `useEffect` de debounce de 400 ms.
+  - L60–L64: `useEffect` que recarga al cambiar página, tamaño o búsqueda aplicada.
+  - L66–L90: `cargarPacientes`: GET `/api/pacientes` paginado, guarda items/total/páginas y maneja error/spinner.
+  - L92–L98: `handleNuevoPaciente`.
+  - L100–L106: `handleEditarPaciente`.
+  - L108–L136: `handleGuardarPaciente`: PUT o POST, recarga, notifica, oculta formulario y limpia estado; captura errores.
+  - L138–L139: nota de que el filtrado es del backend.
+  - L141–L156: si `mostrarFormulario`, renderiza `FormularioPaciente`.
+  - L158–L168: contenedor y cabecera con título y botón "Nuevo Paciente".
+  - L170–L171: alerta de error condicional.
+  - L173–L183: barra de búsqueda.
+  - L185–L196: estados cargando y lista vacía.
+  - L197–L247: tabla con columnas Nombre, DNI, Obra Social, Estado (badge) y Acciones (botón Editar para todos).
+  - L249–L257: `Paginacion` y cierre del fragmento.
+  - L258: cierre del condicional de tres estados.
+  - L260–L266: comentario duplicado del Toast y `Toast` con cierre de contenedor/componente (L261–L262 repiten el comentario del Toast).
+- **Se conecta con:** `api/client`, `FormularioPaciente`, `useAuth`, `utils/crudHelpers`, `common/Paginacion`, `common/Toast` y `Pacientes.css`.
+
+## `src/components/Pacientes/Pacientes.css` (4 líneas)
+- **Rol:** Hoja de estilos del módulo Pacientes. No define reglas propias: reutiliza todo el CSS de Médicos.
+- **Recorrido línea por línea:**
+  - L1–L3: comentario que explica que reutiliza las clases comunes de `Medicos.css`.
+  - L4: `@import '../Medicos/Medicos.css';` que trae los estilos compartidos.
+- **Se conecta con:** `Medicos.css` (a través del `@import`) y los componentes `FormularioPaciente.jsx` / `ListaPacientes.jsx`.
+
+## `src/components/Prescripciones/ChangeStateForm.jsx` (114 líneas)
+- **Rol:** Formulario intermedio para cambiar el estado de una prescripción. Muestra los datos de la prescripción y deja elegir el estado destino. No conoce la API: recibe `onGuardar` y `onCancelar`.
+- **Recorrido línea por línea:**
+  - L1–L12: banner y comentario que explican el flujo Explorar–Confirmar–Guardar y por qué es un `<form>`.
+  - L13: import de React y `useState`.
+  - L14: import de `Prescripciones.css`.
+  - L16–L22: comentario de props y `export default function ChangeStateForm({ prescripcion, onGuardar, onCancelar })`.
+  - L23–L34: estado `nuevoEstado` inicializado en el estado actual, con comentario sobre la fragilidad conocida del catálogo de estados.
+  - L36–L54: `handleSubmit`: previene el submit; si el estado cambió llama `onGuardar(nuevoEstado)`, si no `onCancelar()`, con comentario de la decisión.
+  - L56–L60: contenedor y cabecera con título.
+  - L62–L73: `<form>` y `div.form-info` con los datos de la prescripción (medicamentos con guarda `|| []`, paciente, médico y estado actual).
+  - L75–L98: grupo del selector "Nuevo Estado" con `label`/`id` emparejados y las cuatro opciones con los códigos que espera el backend.
+  - L100–L111: acciones con botón submit "Cambiar Estado" y botón "Cancelar" (con `type="button"` obligatorio).
+  - L112–L114: cierre de `form`, `div` y componente.
+- **Se conecta con:** `ListaPrescripciones` (props y callbacks) y `Prescripciones.css`.
+
+## `src/components/Prescripciones/FormularioPrescripcion.jsx` (342 líneas)
+- **Rol:** Formulario de alta y edición de prescripciones. Carga pacientes y médicos en paralelo, maneja una lista dinámica de medicamentos, valida y arma un payload limpio.
+- **Recorrido línea por línea:**
+  - L1–L8: imports (React/hooks, `client`, `getDatos`, CSS `Prescripciones.css`).
+  - L10–L12: comentario de props y `export default function FormularioPrescripcion({ prescripcion, onGuardar, onCancelar })`.
+  - L13–L21: estado `formData` con `id_paciente`, `id_medico`, `medicamentos` (una fila vacía), `indicaciones`, `fecha_vencimiento` y `estado`.
+  - L23–L30: estados `pacientes`, `medicos`, `errores` y `cargando`.
+  - L32–L35: `useEffect` de montaje que llama `cargarDatos`.
+  - L37–L55: `useEffect` que precarga `formData` desde `prescripcion`, normalizando medicamentos y aplicando valores por defecto.
+  - L57–L78: `cargarDatos`: `Promise.all` de pacientes y médicos, guarda con `getDatos`, registra error y apaga spinner.
+  - L80–L98: `validar`: exige paciente, médico y al menos un medicamento con nombre (con `some`), persiste errores y devuelve validez.
+  - L100–L114: `handleChange` genérico para campos simples.
+  - L116–L131: `handleMedicamentoChange(index, campo, value)`: mapea la lista y actualiza solo la fila indicada; limpia el error de medicamentos.
+  - L133–L140: `agregarMedicamento`: agrega una fila vacía al final.
+  - L142–L149: `quitarMedicamento(index)`: filtra la fila por índice.
+  - L151–L168: `handleSubmit`: valida y llama `onGuardar` con payload limpio (medicamentos sin nombre filtrados y `fecha_vencimiento` en null si está vacía).
+  - L170–L173: render de carga con spinner.
+  - L175–L182: contenedor y cabecera de título dinámico.
+  - L184–L209: `<form>` y grupo del selector de Paciente con opciones mapeadas.
+  - L211–L231: grupo del selector de Médico con opciones mapeadas.
+  - L233–L274: grupo `role="group"` de medicamentos: label accesible, filas con nombre, dosis y botón de quitar (solo si hay más de una fila) y error condicional.
+  - L276–L281: botón "Agregar medicamento".
+  - L283–L295: grupo de Indicaciones (`textarea`).
+  - L297–L308: grupo de Fecha de Vencimiento (`input type="date"`).
+  - L310–L326: grupo del selector de Estado con las cuatro opciones.
+  - L328–L338: acciones con botones Guardar y Cancelar.
+  - L339–L342: cierre de `form`, `div` y componente.
+- **Se conecta con:** `ListaPrescripciones` (props), `api/client`, `utils/crudHelpers` (`getDatos`) y `Prescripciones.css`.
+
+## `src/components/Prescripciones/ListaPrescripciones.jsx` (408 líneas)
+- **Rol:** Lista CRUD de prescripciones con búsqueda y filtro por estado, paginado backend, cambio de estado, eliminación con modal de confirmación y notificaciones. Aplica RBAC: solo médico receta, solo admin elimina.
+- **Recorrido línea por línea:**
+  - L1–L20: imports (React/hooks, `client`, `FormularioPrescripcion`, `ChangeStateForm`, `useAuth`, helpers CRUD, CSS, `Paginacion`, `ConfirmarModal`, `Toast`).
+  - L22–L23: comentario y `export default function ListaPrescripciones()`.
+  - L24–L32: obtiene `usuario` y deriva `esAdmin`, `esMedico` y `puedeRecetar` con la regla de negocio.
+  - L33–L62: estados de lista, carga, error, formulario, edición, cambio de estado, búsqueda, paginado, `filtroEstado`, `paraEliminar` y `notif`.
+  - L64–L65: helper `mostrarNotif`.
+  - L67–L75: `useEffect` de debounce de 400 ms.
+  - L77–L82: `useEffect` que recarga al cambiar página, tamaño, búsqueda aplicada o filtro de estado.
+  - L84–L110: `cargarPrescripciones`: GET `/api/prescripciones` con paginado, búsqueda y estado; guarda items/total/páginas y maneja error/spinner.
+  - L112–L118: `handleNuevaPrescripcion`.
+  - L120–L126: `handleEditarPrescripcion`.
+  - L128–L134: `handleCambiarEstado`.
+  - L136–L140: `handleEliminarPrescripcion` (abre el modal).
+  - L142–L162: `confirmarEliminar`: DELETE, recarga, cierra modal, limpia error y notifica; en error deja el modal abierto y re-lanza.
+  - L164–L192: `handleGuardarPrescripcion`: PUT o POST, recarga, notifica, oculta formulario y limpia estado; captura errores.
+  - L194–L216: `handleGuardarCambioEstado`: PATCH `/api/prescripciones/{id}/estado`, recarga, notifica el nuevo estado y limpia el formulario.
+  - L218–L220: nota de que la búsqueda y los filtros son del backend.
+  - L222–L238: si `mostrarFormulario && puedeRecetar`, renderiza `FormularioPrescripcion`.
+  - L240–L255: si `mostrarCambioEstado && prescripcionParaCambioEstado`, renderiza `ChangeStateForm`.
+  - L257–L269: contenedor y cabecera con título y botón "Nueva Prescripción" (solo quien puede recetar).
+  - L271–L272: alerta de error condicional.
+  - L274–L297: barra de filtros (búsqueda + select de estado con opciones).
+  - L299–L310: estados cargando y lista vacía.
+  - L311–L380: tabla con Medicamentos formateados, Paciente, Médico, Fecha de Emisión (`formatDate`), Estado (badge), y acciones Editar (según rol), Cambiar Estado (todos) y Eliminar (solo admin).
+  - L382–L391: `Paginacion` y cierre del fragmento/condicional.
+  - L393–L402: `ConfirmarModal` con mensaje descriptivo y callbacks.
+  - L404–L408: `Toast` y cierre de contenedor/componente.
+- **Se conecta con:** `api/client`, `FormularioPrescripcion`, `ChangeStateForm`, `useAuth`, `utils/crudHelpers` (`handleApiError`, `getDatos`, `getStatusBadge`, `getStatusColor`, `formatDate`), `common/Paginacion`, `common/ConfirmarModal`, `common/Toast` y `Prescripciones.css`.
+
+## `src/components/Prescripciones/Prescripciones.css` (154 líneas)
+- **Rol:** Estilos propios del módulo Prescripciones. Reutiliza `Medicos.css` y agrega la barra de filtros, la caja informativa del cambio de estado y el botón de advertencia.
+- **Recorrido línea por línea:**
+  - L1–L4: comentario del módulo e `@import '../Medicos/Medicos.css'`.
+  - L6: comentario "Estilos adicionales específicos para Prescripciones".
+  - L8–L18: `.lista-filtros`: fila flexible de filtros con wrap.
+  - L20–L37: `.input-busqueda, .select-filtro`: estilos compartidos de los filtros.
+  - L39–L43: `.select-filtro`: ancho mínimo propio.
+  - L45–L57: `:focus-visible` de los filtros.
+  - L59–L72: comentario y `.form-info`: caja informativa con barra lateral azul.
+  - L74–L82: `.form-info p`: líneas de datos.
+  - L84–L88: `.form-info strong`: etiquetas en negrita.
+  - L90–L106: `.estado-actual`: badge del estado actual.
+  - L108–L127: comentario y `.btn-warning`: botón "Cambiar Estado".
+  - L129–L137: `.btn-warning:hover` con comentario sobre el contraste.
+  - L139–L154: `@media (max-width: 768px)`: filtros apilados al 100%.
+- **Se conecta con:** `ChangeStateForm.jsx`, `FormularioPrescripcion.jsx` y `ListaPrescripciones.jsx`; reutiliza `Medicos.css` y variables globales `--fondo`, `--info`, `--texto-medio`, `--aviso`.
+---
+
+## Resumen final
+
+- **Ruta creada:** `C:\xampp\htdocs\Workspace_SaludWEB\SaludWEB_Web\GUIA_CODIGO\04_components_negocio.md`
+- **Cantidad de archivos documentados:** 12 de 12.
+- **Archivos que quedaron afuera:** ninguno. Se documentaron todos los de la lista, con rangos de líneas contiguos y sin huecos hasta la última línea de cada archivo.

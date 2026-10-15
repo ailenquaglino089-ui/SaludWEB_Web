@@ -18,6 +18,16 @@ para qué está, con qué se conecta y por dónde empezar a leerlo.
 - Si es la primera vez que ves el proyecto, andá directo a "Orden de lectura
   recomendado" al final.
 
+## Detalle línea por línea (por carpeta)
+
+El recorrido **línea por línea** de cada archivo está separado por carpeta en la carpeta [`GUIA_CODIGO/`](./GUIA_CODIGO/):
+
+- [`01_raiz_public.md`](./GUIA_CODIGO/01_raiz_public.md) — configuración de la raíz y `public/` (`index.html`, manifest, service worker, íconos).
+- [`02_nucleo_api.md`](./GUIA_CODIGO/02_nucleo_api.md) — el núcleo de la SPA: `main.jsx`, `App.jsx`, `api/`, `context/`, `hooks/` y `utils/`.
+- [`03_components_auth_common.md`](./GUIA_CODIGO/03_components_auth_common.md) — componentes de auth, comunes, Configuración y Navbar.
+- [`04_components_negocio.md`](./GUIA_CODIGO/04_components_negocio.md) — componentes de negocio: Dashboard, Médicos, Pacientes y Prescripciones.
+- [`05_components_turnera_usuarios.md`](./GUIA_CODIGO/05_components_turnera_usuarios.md) — la Turnera y la gestión de Usuarios.
+
 ## Arquitectura y flujo
 
 SaludWEB Web es una SPA de React 18 + Vite que consume una API REST en
