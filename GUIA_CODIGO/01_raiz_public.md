@@ -1,0 +1,627 @@
+# Guía de código — Web · Raíz y public/
+
+> Recorrido línea por línea de configuración, verificadores y assets de la PWA.
+> Índice general en ../GUIA_DE_CODIGO.md
+
+## `index.html` (35 líneas)
+- **Rol:** HTML de entrada de la SPA. Es lo único que Vite sirve tal cual en la raíz; define el `#root` donde React monta toda la app y declara los metadatos mínimos de la PWA (manifest, íconos, theme-color, viewport).
+- **Recorrido línea por línea:**
+  - L1: `<!doctype html>` — declara el documento como HTML5.
+  - L2: comentario que explica el DOCTYPE moderno.
+  - L3: `<html lang="es">` — raíz del documento con idioma español.
+  - L4: comentario sobre `lang` y su valor para accesibilidad/SEO.
+  - L5: `<head>` — apertura de la sección de metadatos.
+  - L6: comentario que describe el `<head>`.
+  - L7: `<meta charset="UTF-8" />` — codificación de caracteres.
+  - L8: comentario sobre UTF-8 y las tildes del español.
+  - L9: `<meta name="theme-color" content="#4a5cba" />` — color de barra/frame de la PWA.
+  - L10: comentario sobre theme-color en móviles.
+  - L11: `<link rel="icon" type="image/svg+xml" href="/vite.svg" />` — favicon por defecto de Vite.
+  - L12: comentario del favicon.
+  - L13: `<link rel="manifest" href="./manifest.webmanifest" />` — enlace al manifest de la PWA.
+  - L14–L15: comentario que explica para qué sirve el manifest.
+  - L16: `<link rel="apple-touch-icon" href="./apple-touch-icon.png" />` — ícono para iOS.
+  - L17: comentario del apple-touch-icon.
+  - L18: `<meta name="mobile-web-app-capable" content="yes" />` — permite abrir la app instalada sin barra.
+  - L19: `<meta name="apple-mobile-web-app-capable" content="yes" />` — equivalente para iOS.
+  - L20–L21: comentario sobre ambas metas.
+  - L22: `<meta name="apple-mobile-web-app-status-bar-style" content="default" />` — estilo de la barra de estado en iOS.
+  - L23: `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` — viewport responsive.
+  - L24: comentario del viewport.
+  - L25: `<title>SaludWEB - Sistema de Gestión de Salud</title>` — título de la pestaña.
+  - L26: comentario del `<title>`.
+  - L27: `</head>` — cierra los metadatos.
+  - L28: `<body>` — apertura del contenido visible.
+  - L29: comentario del `<body>`.
+  - L30: `<div id="root"></div>` — contenedor donde React monta la app.
+  - L31: comentario de `#root`.
+  - L32: `<script type="module" src="/src/main.jsx"></script>` — punto de entrada de la app.
+  - L33: comentario del script de arranque.
+  - L34: `</body>` — cierra el cuerpo.
+  - L35: `</html>` — cierra el documento.
+- **Se conecta con:** `src/main.jsx` (módulo que arranca React), `public/manifest.webmanifest` y `public/apple-touch-icon.png`.
+
+## `package.json` (24 líneas)
+- **Rol:** manifiesto npm del frontend. Declara identidad del paquete, scripts de dev/build/preview/test y las dependencias de runtime y de desarrollo.
+- **Recorrido línea por línea:**
+  - L1: `{` — apertura del objeto raíz.
+  - L2: `"name": "saludweb-frontend"` — nombre del paquete.
+  - L3: `"version": "1.0.0"` — versión semántica.
+  - L4: `"description"` — descripción de la SPA para Programación IV.
+  - L5: `"type": "module"` — hace que los `.js` del proyecto se traten como ESM.
+  - L6: `"scripts": {` — apertura del bloque de comandos.
+  - L7: `"dev": "vite"` — levanta el dev server.
+  - L8: `"build": "vite build"` — genera el build de producción en `dist/`.
+  - L9: `"preview": "vite preview"` — sirve el build para probarlo.
+  - L10: `"test"` — corre los tests de `logger` y `correlationId` con el runner nativo de Node.
+  - L11: `"test:watch"` — igual que `test` pero en modo watch.
+  - L12: `},` — cierra el bloque de scripts.
+  - L13: `"dependencies": {` — dependencias de producción.
+  - L14: `"axios": "^1.5.0"` — cliente HTTP usado en `src/api`.
+  - L15: `"react": "^18.2.0"` — librería de UI.
+  - L16: `"react-dom": "^18.2.0"` — renderizador de React para el DOM.
+  - L17: `"react-router-dom": "^6.15.0"` — router de la SPA.
+  - L18: `},` — cierra dependencias.
+  - L19: `"devDependencies": {` — dependencias solo de desarrollo.
+  - L20: `"@vitejs/plugin-react": "^4.1.0"` — plugin de React para Vite.
+  - L21: `"playwright": "^1.63.0"` — navegador para los verificadores E2E `.mjs`.
+  - L22: `"vite": "^4.5.0"` — bundler y dev server.
+  - L23: `}` — cierra devDependencies.
+  - L24: `}` — cierra el objeto raíz.
+- **Se conecta con:** `vite.config.js`, `verificar_pwa.mjs`, `verificar_tiempo_real.mjs` (usan Playwright) y los tests de `src/utils/`.
+
+## `vite.config.js` (78 líneas)
+- **Rol:** configuración del bundler. Define `base` según el comando (build relativo, dev absoluto), registra el plugin de React, fija el puerto/host del dev server y el proxy `/api` hacia el backend.
+- **Recorrido línea por línea:**
+  - L1: `import { defineConfig, loadEnv } from 'vite'` — trae el helper de configuración y el lector de `.env`.
+  - L2–L3: comentarios sobre `defineConfig` y `loadEnv`.
+  - L4: `import react from '@vitejs/plugin-react'` — plugin de React.
+  - L5: comentario del plugin de React (JSX y Fast Refresh).
+  - L6: línea en blanco.
+  - L7–L13: comentario que explica por qué `defineConfig` recibe `command` y `mode`.
+  - L14: `export default defineConfig(({ command, mode }) => {` — configuración como función.
+  - L15–L21: comentario que justifica llamar `loadEnv` a mano y usar el prefijo `VITE_`.
+  - L22: `const env = loadEnv(mode, process.cwd(), 'VITE_')` — lee las variables con prefijo `VITE_`.
+  - L23: línea en blanco.
+  - L24–L31: comentario sobre el destino del proxy y `VITE_PROXY_TARGET`.
+  - L32–L33: `const proxyTarget = env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000'` — destino del proxy, con backend nativo por defecto.
+  - L34: línea en blanco.
+  - L35: `return {` — apertura del objeto de configuración.
+  - L36–L45: comentario que explica `base './'` en build vs `/` en dev.
+  - L46: `base: command === 'build' ? './' : '/',` — base según el comando.
+  - L47: `plugins: [react()],` — registra el plugin de React.
+  - L48: comentario del plugin.
+  - L49: `server: {` — bloque del dev server.
+  - L50: comentario del bloque server.
+  - L51: `port: 5173,` — puerto fijo del dev server.
+  - L52–L61: comentario sobre puerto y por qué se ata a IPv4.
+  - L62: `host: '127.0.0.1',` — escucha solo en IPv4.
+  - L63: `proxy: {` — apertura del proxy.
+  - L64: comentario del proxy y CORS.
+  - L65: `'/api': {` — regla para todo lo que empieza con `/api`.
+  - L66: comentario de la clave `/api`.
+  - L67: `target: proxyTarget,` — servidor de destino real.
+  - L68–L69: comentario del target.
+  - L70: `changeOrigin: true,` — reescribe el Host al del backend.
+  - L71: comentario de changeOrigin.
+  - L72: `rewrite: (path) => path.replace(/^\/api/, '/api'),` — mantiene el prefijo `/api`.
+  - L73: comentario del rewrite.
+  - L74: `},` — cierra la regla `/api`.
+  - L75: `},` — cierra el proxy.
+  - L76: `},` — cierra el bloque server.
+  - L77: `}` — cierra el objeto de configuración.
+  - L78: `})` — cierra la función de `defineConfig`.
+- **Se conecta con:** `package.json` (scripts), las variables de `.env` (`VITE_*`) y el backend en `http://127.0.0.1:8000`.
+
+## `proponer_contraste.php` (199 líneas)
+- **Rol:** script CLI que calcula el ajuste mínimo de luminosidad de cada color que no alcanza WCAG 2.1 AA (ratio 4.5). Trabaja en HSL para bajar/subir solo la L, preservando matiz y saturación, y propone un hex nuevo por caso.
+- **Recorrido línea por línea:**
+  - L1: `<?php` — apertura del script.
+  - L2–L13: docblock del script (propósito, por qué HSL y no restar a los canales, uso).
+  - L14: línea en blanco.
+  - L15: `declare(strict_types=1);` — tipado estricto.
+  - L16: línea en blanco.
+  - L17: `const OBJETIVO = 4.5;` — ratio WCAG AA a alcanzar.
+  - L18: línea en blanco.
+  - L19–L22: docblock de `canalLineal`.
+  - L23–L26: `function canalLineal(float $canal): float` — deshace la curva sRGB sobre un canal.
+  - L27: línea en blanco.
+  - L28–L37: `function luminancia(string $hex): float` — calcula la luminancia relativa WCAG; L30–L31 comentario sobre no dividir por 255 dos veces.
+  - L38: línea en blanco.
+  - L39–L45: `function contraste(string $a, string $b): float` — ratio entre dos luminancias.
+  - L46: línea en blanco.
+  - L47–L60: `function aRgb(string $hex): array` — de hex a array RGB normalizado 0..1; L51–L53 expande el hex de 3 dígitos.
+  - L61: línea en blanco.
+  - L62–L70: `function aHex(array $rgb): string` — de RGB 0..1 a hex, con clamp 0..1.
+  - L71: línea en blanco.
+  - L72–L93: `function rgbAHsl(array $rgb): array` — conversión RGB→HSL; L80–L82 gris (d=0), L84 saturación, L86–L90 matiz por canal dominante.
+  - L94: línea en blanco.
+  - L95–L115: `function hslARgb(float $h, float $s, float $l): array` — HSL→RGB; L97–L99 gris, L101–L102 q y p, L104–L112 función interna `$f`, L114 retorno.
+  - L116: línea en blanco.
+  - L117–L121: docblock de `ajustarLuminosidad`.
+  - L122–L143: `function ajustarLuminosidad(string $color, string $fondo, float $objetivo): array`; L126–L132 bucle bajando L en pasos de 0.002, L134–L140 bucle subiendo L, L142 retorno `imposible`.
+  - L144: línea en blanco.
+  - L145: comentario del array `$casos` (color, fondo, etiqueta, sentido).
+  - L146–L162: `$casos` — 15 casos con hex, fondo, dónde y si se ajusta el texto o el fondo.
+  - L163: línea en blanco.
+  - L164: `printf(...)` — encabezado de la tabla.
+  - L165: `echo str_repeat('-', 92) . "\n";` — línea separadora.
+  - L166: línea en blanco.
+  - L167: `$propuestos = [];` — acumulador de resultados.
+  - L168: línea en blanco.
+  - L169–L197: `foreach ($casos ...)`; L170–L172 comentario texto vs fondo, L173–L177 elige el par de ajuste, L179–L184 calcula antes/después, L186–L194 imprime la fila, L196 guarda el ajustado.
+  - L198: línea en blanco.
+  - L199: `echo "\n";` — salto final.
+- **Se conecta con:** `ver_contraste.php` (audita los valores ya volcados a `src/tokens.css`). Es una herramienta manual, no se importa.
+
+## `ver_contraste.php` (139 líneas)
+- **Rol:** script CLI que audita los comentarios de contraste de `src/tokens.css`. Extrae el ratio afirmado en cada comentario, recalcula el ratio real con el hex del token y reporta discrepancias, tokens ausentes o ratios por debajo de AA.
+- **Recorrido línea por línea:**
+  - L1: `<?php` — apertura del script.
+  - L2–L6: comentario del propósito (un comentario de contraste equivocado es peor que ninguno).
+  - L7: línea en blanco.
+  - L8: `declare(strict_types=1);` — tipado estricto.
+  - L9: línea en blanco.
+  - L10–L11: comentario sobre usar `__DIR__`.
+  - L12: `$tokensPath = __DIR__ . '/src/tokens.css';` — ruta del archivo a auditar.
+  - L13: `$lineas = file($tokensPath, FILE_IGNORE_NEW_LINES);` — lee el archivo sin `\n`.
+  - L14: línea en blanco.
+  - L15–L22: `function hexACanales(string $hex): array` — hex a canales 0..255; L18–L20 expande hex de 3 dígitos.
+  - L23: línea en blanco.
+  - L24–L33: `function luminance(string $hex): float` — luminancia WCAG; L26 pesos, L27–L31 suma ponderada.
+  - L34: línea en blanco.
+  - L35–L40: `function contraste(string $a, string $b): float` — ratio entre dos luminancias.
+  - L41: línea en blanco.
+  - L42–L45: comentario sobre leer el ratio del propio archivo y no fijarlo en el script.
+  - L46: `$declarado = [];` — acumulador de ratios declarados.
+  - L47–L61: `$fondoDe` — mapa token→fondo contra el que se mide cada uno.
+  - L62: línea en blanco.
+  - L63–L66: comentario sobre cómo se recorre el archivo asociando hex y primer ratio.
+  - L67–L69: inicializa `$actual`, `$hex`, `$ratio`.
+  - L70–L83: `foreach ($lineas as $l)`; L71–L79 detecta declaración de token y cierra el anterior, L80–L82 captura el ratio del bloque de comentario.
+  - L84–L86: cierre del último token pendiente al terminar el archivo.
+  - L87: línea en blanco.
+  - L88–L89: comentario de `$reales` (valor real declarado).
+  - L90–L97: segundo `foreach` que arma `$reales` con el hex real de cada token.
+  - L98: línea en blanco.
+  - L99: `printf(...)` — encabezado de la tabla.
+  - L100: `echo str_repeat('-', 88), "\n";` — separador.
+  - L101: línea en blanco.
+  - L102: `$problemas = 0;` — contador de problemas.
+  - L103–L136: `foreach ($declarado ...)`; L104 calcula el ratio real, L107 compara con el afirmado (tolerancia 0.02), L108 verifica que el token exista con ese valor, L110–L121 arma los mensajes de problema, L123–L125 suma al contador, L127–L135 imprime la fila.
+  - L137: línea en blanco.
+  - L138: `echo "\n", str_repeat('-', 88), "\n";` — cierre de tabla.
+  - L139: `printf(...)` — resumen con tokens auditados y con problemas.
+- **Se conecta con:** `src/tokens.css` (fuente de verdad de los hex y ratios) y, conceptualmente, con `proponer_contraste.php`.
+
+## `verificar_variables.php` (117 líneas)
+- **Rol:** linter CLI que detecta usos de `var(--x)` en el CSS sin que exista `--x` declarada en `tokens.css`. Distingue los usos con valor de reserva (no rompen) de los que sí rompen la declaración. Sale con código 1 si hay variables rotas.
+- **Recorrido línea por línea:**
+  - L1: `<?php` — apertura del script.
+  - L2–L8: comentario del problema que resuelve (var inexistente descarta la declaración en silencio).
+  - L9: línea en blanco.
+  - L10: `declare(strict_types=1);` — tipado estricto.
+  - L11: línea en blanco.
+  - L12–L14: comentario sobre por qué la ruta sale de `__DIR__`.
+  - L15: `$raiz = __DIR__ . '/src';` — directorio a recorrer.
+  - L16: `$tokensPath = $raiz . '/tokens.css';` — archivo de variables definidas.
+  - L17: línea en blanco.
+  - L18: comentario del paso 1.
+  - L19: `$definidas = [];` — inicializa el mapa.
+  - L20: `$contenido = file_get_contents($tokensPath);` — lee tokens.css.
+  - L21–L24: si no se pudo leer, escribe en STDERR y sale con 1.
+  - L25: `preg_match_all('/(--[\w-]+)\s*:/', ...)` — captura todos los nombres de variable.
+  - L26: `$definidas = array_fill_keys($m[1], true);` — los convierte en set.
+  - L27: línea en blanco.
+  - L28: comentario del paso 2 (usos en todos los `.css`).
+  - L29: `$usadas = [];` — acumulador de usos.
+  - L30: `new RecursiveIteratorIterator(new RecursiveDirectoryIterator($raiz))` — recorre el árbol.
+  - L31–L75: `foreach ($archivos as $archivo)`; L32–L34 salta lo que no sea `.css`, L35–L39 lee el archivo o continúa; L41–L45 borra comentarios antes de buscar; L47–L50 busca `var(--x)` y parte en líneas; L52–L74 registra cada uso con archivo, línea y si tiene reserva.
+  - L76: línea en blanco.
+  - L77: `ksort($usadas);` — ordena las variables alfabéticamente.
+  - L78: línea en blanco.
+  - L79: `$roto = 0;` — contador de variables rotas.
+  - L80: `$conReserva = 0;` — contador de usos con reserva.
+  - L81: línea en blanco.
+  - L82: `echo "VARIABLES USADAS SIN DEFINIR\n";` — título.
+  - L83: `echo str_repeat('-', 74), "\n";` — separador.
+  - L84: línea en blanco.
+  - L85–L111: `foreach ($usadas ...)`; L86–L88 salta las definidas; L92–L98 detecta si todas las apariciones tienen reserva; L100–L104 reporta las que tienen reserva como OK; L106–L110 reporta las rotas con su detalle.
+  - L112: línea en blanco.
+  - L113: separador de cierre.
+  - L114: resumen de variables distintas usadas y definidas.
+  - L115: resumen de usos con reserva y variables rotas.
+  - L116: línea en blanco.
+  - L117: `exit($roto > 0 ? 1 : 0);` — código de salida para CI.
+- **Se conecta con:** `src/tokens.css` y todos los `.css` de `src/`. Complementa a `ver_contraste.php`.
+
+## `verificar_pwa.mjs` (215 líneas)
+- **Rol:** verificador E2E de la PWA. Con Playwright/Chromium comprueba, contra un build servido con `vite preview`, que el manifest es válido, el service worker queda activo, la app arranca offline, el aviso de conexión aparece y desparece, y que `/api` nunca se sirve desde caché.
+- **Recorrido línea por línea:**
+  - L1–L26: encabezado con el propósito y los pasos de uso (install, playwright install, build, preview, node).
+  - L27: línea en blanco.
+  - L28–L30: comentario sobre por qué Chromium y los contextos seguros.
+  - L31: `import { chromium } from 'playwright';` — trae el navegador.
+  - L32: línea en blanco.
+  - L33–L35: comentario sobre la URL (la de `vite preview`).
+  - L36: `const url = process.argv[2] || 'http://127.0.0.1:4173';` — URL objetivo, configurable por argumento.
+  - L37: línea en blanco.
+  - L38: comentario de los contadores.
+  - L39: `let ok = 0;` — pasos exitosos.
+  - L40: `let fallos = 0;` — pasos fallidos.
+  - L41: línea en blanco.
+  - L42: comentario de `paso()`.
+  - L43–L52: `function paso(bien, descripcion, detalle = '')` — imprime `[OK]`/`[FALLA]` y acumula.
+  - L53: línea en blanco.
+  - L54–L56: comentario de `enPagina`.
+  - L57: `const enPagina = (pagina, js) => pagina.evaluate(js);` — evaluar en la página.
+  - L58: línea en blanco.
+  - L59–L60: comentario del `try`.
+  - L61: `try {` — apertura del bloque principal.
+  - L62–L63: comentario sobre headless.
+  - L64: `const navegador = await chromium.launch({ headless: true });` — abre Chromium sin ventana.
+  - L65–L66: comentario del contexto aislado.
+  - L67: `const contexto = await navegador.newContext();` — contexto limpio.
+  - L68: línea en blanco.
+  - L69–L71: banner de la sección 1.
+  - L72: `console.log(...)` — encabezado de carga inicial.
+  - L73: línea en blanco.
+  - L74: `const pagina = await contexto.newPage();` — nueva pestaña.
+  - L75–L77: comentario de los errores acumulados.
+  - L78: `const erroresPagina = [];` — buffer de errores.
+  - L79: `pagina.on('pageerror', ...)` — acumula excepciones JS.
+  - L80–L91: handler `requestfailed`; L81–L87 comentario de por qué se excluye `/api`, L88–L90 acumula solo fallos que no son de `/api`.
+  - L92: línea en blanco.
+  - L93: comentario de la primera navegación.
+  - L94: `await pagina.goto(url, { waitUntil: 'networkidle', timeout: 30000 });` — primera carga.
+  - L95: `await pagina.waitForTimeout(500);` — pequeña espera.
+  - L96: `paso(...)` — comprueba que `#root` tenga contenido.
+  - L97: línea en blanco.
+  - L98: comentario del `<link rel="manifest">`.
+  - L99–L101: `const hayManifest = await enPagina(...)` — busca el link del manifest.
+  - L102: `paso(...)` — verifica que exista el link.
+  - L103: línea en blanco.
+  - L104: comentario del manifest resoluble.
+  - L105–L112: `const manifest = await enPagina(...)` — hace fetch del manifest y devuelve JSON o null.
+  - L113: `paso(...)` — verifica que haya nombre.
+  - L114: `const iconos = manifest?.icons ?? [];` — íconos del manifest.
+  - L115–L116: `paso(...)` — verifica íconos 192x192 y 512x512.
+  - L117–L118: `paso(...)` — verifica theme_color y display standalone.
+  - L119: línea en blanco.
+  - L120–L121: comentario del SW activo.
+  - L122–L125: `const swActivo = await enPagina(...)` — espera `navigator.serviceWorker.ready`.
+  - L126: `paso(...)` — verifica SW activo.
+  - L127: línea en blanco.
+  - L128–L130: banner de la sección 2.
+  - L131: `console.log(...)` — encabezado de recarga en línea.
+  - L132: línea en blanco.
+  - L133: `await pagina.reload(...)` — recarga la página.
+  - L134: `await pagina.waitForTimeout(500);` — espera.
+  - L135–L136: comentario de `controller`.
+  - L137: `const controla = await enPagina(...)` — comprueba si el SW controla.
+  - L138: `paso(...)` — verifica control de navegación.
+  - L139: línea en blanco.
+  - L140–L142: banner de la sección 3.
+  - L143: `console.log(...)` — encabezado de apagado de red.
+  - L144: línea en blanco.
+  - L145–L146: comentario del corte de red por pestaña.
+  - L147: `await contexto.setOffline(true);` — corta la red del contexto.
+  - L148: línea en blanco.
+  - L149–L151: comentario de la recarga offline.
+  - L152: `await pagina.reload(...).catch(() => {});` — recarga offline, ignora error.
+  - L153: `await pagina.waitForTimeout(800);` — espera.
+  - L154: línea en blanco.
+  - L155: comentario del DOM montado.
+  - L156: `paso(...)` — verifica que la app abra sin red.
+  - L157: línea en blanco.
+  - L158–L160: comentario del aviso de conexión.
+  - L161: `const aviso = await pagina.locator('.aviso-conexion').count();` — cuenta el cartel.
+  - L162: `paso(...)` — verifica que el aviso aparezca.
+  - L163: línea en blanco.
+  - L164–L167: comentario de que `/api` no se cachea.
+  - L168–L175: `const apiFueraDeCaché = await enPagina(...)` — `fetch('/api/medicos')` debe fallar offline.
+  - L176: `paso(...)` — verifica que `/api` no venga del caché.
+  - L177: línea en blanco.
+  - L178–L180: banner de la sección 4.
+  - L181: `console.log(...)` — encabezado de vuelta de la red.
+  - L182: línea en blanco.
+  - L183: `await contexto.setOffline(false);` — restaura la red.
+  - L184–L185: comentario del evento online.
+  - L186: `await pagina.waitForTimeout(1500);` — espera la reacción.
+  - L187: `const oculto = await pagina.locator('.aviso-conexion').count();` — cuenta el aviso.
+  - L188: `paso(...)` — verifica que el aviso desaparezca.
+  - L189: línea en blanco.
+  - L190–L191: comentario de los errores acumulados.
+  - L192–L193: `paso(...)` — verifica que no haya errores JS ni peticiones fallidas.
+  - L194: línea en blanco.
+  - L195: comentario del cierre ordenado.
+  - L196: `await navegador.close();` — cierra el navegador.
+  - L197: `} catch (e) {` — captura fallos de infraestructura.
+  - L198–L199: comentario del fallo de infraestructura.
+  - L200: `fallos++;` — suma un fallo.
+  - L201: `console.log('[FALLA] ...')` — reporte.
+  - L202–L204: si es `ERR_CONNECTION_REFUSED`, sugiere levantar `vite preview`.
+  - L205: `}` — cierra el catch.
+  - L206: línea en blanco.
+  - L207–L209: banner de resultado.
+  - L210: `console.log('\n--- Resultado ---');` — título.
+  - L211: imprime pasos OK.
+  - L212: imprime fallos.
+  - L213: mensaje final según cantidad de fallos.
+  - L214: comentario del código de salida.
+  - L215: `process.exitCode = fallos === 0 ? 0 : 1;` — código de salida para CI.
+- **Se conecta con:** `public/sw.js` y `public/manifest.webmanifest` (lo que verifica), `vite.config.js` (build) y `package.json` (Playwright).
+
+## `verificar_tiempo_real.mjs` (494 líneas)
+- **Rol:** prueba de los dos navegadores para el módulo de tiempo real (SSE). Abre dos contextos aislados con sesiones distintas (paciente y admin), verifica que un turno reservado en uno aparece en el otro sin recargar, mide la latencia, confirma que el canal sigue vivo y que no hay polling, y limpia el turno creado.
+- **Recorrido línea por línea:**
+  - L1–L37: encabezado (qué es, la prueba de los dos navegadores, por qué dos contextos y no dos pestañas, cómo se ejecuta).
+  - L38: línea en blanco.
+  - L39: `import { chromium } from 'playwright';` — trae el navegador.
+  - L40: comentario del import.
+  - L41: línea en blanco.
+  - L42–L44: comentario de la URL del frontend.
+  - L45: `const WEB = process.env.WEB_URL || 'http://127.0.0.1:5173';` — URL del frontend.
+  - L46: línea en blanco.
+  - L47–L51: comentario sobre por qué la API va aparte.
+  - L52: `const API = process.env.API_URL || 'http://127.0.0.1:8000';` — URL del backend.
+  - L53: línea en blanco.
+  - L54–L56: comentario de los datos del turno (restricción de fecha).
+  - L57–L74: explicación de por qué la fecha debe caer en la ventana de estadísticas y las variables de entorno.
+  - L75: `const MEDICO = Number(process.env.MEDICO_ID || 10);` — id del médico.
+  - L76: línea en blanco.
+  - L77: `const FECHA_FIJADA = process.env.FECHA_CITA || '';` — fecha forzada opcional.
+  - L78: `const HORA_FIJADA = process.env.HORA_CITA || '';` — hora forzada opcional.
+  - L79: línea en blanco.
+  - L80–L89: docblock de `elegirFechaValida`.
+  - L90–L115: `async function elegirFechaValida()`; L91–L93 respeta `FECHA_FIJADA`; L95–L109 recorre hasta 7 días atrás consultando disponibilidad; L111–L114 fallback a hoy.
+  - L116: línea en blanco.
+  - L117–L126: docblock de `elegirHoraLibre`.
+  - L127–L137: `async function elegirHoraLibre(fecha)`; L128–L130 respeta `HORA_FIJADA`; L132–L136 consulta disponibilidad y devuelve la primera hora libre.
+  - L138: línea en blanco.
+  - L139–L149: comentario de las cuentas (dos usuarios a propósito).
+  - L150–L155: `const CUENTAS` — `escritor` (paciente) y `observador` (admin) con sus contraseñas.
+  - L156: línea en blanco.
+  - L157–L159: banner de utilidades de salida.
+  - L160: línea en blanco.
+  - L161: `let total = 0;` — total de pruebas.
+  - L162: `let fallos = 0;` — fallos.
+  - L163: línea en blanco.
+  - L164–L170: docblock de `prueba`.
+  - L171–L182: `function prueba(ok, titulo, detalle = '')` — imprime con color y acumula.
+  - L183: línea en blanco.
+  - L184–L194: docblock de `iniciarSesion`.
+  - L195–L214: `async function iniciarSesion(contexto, cuenta)`; L196–L200 POST a `/api/auth/login`, L202–L204 valida respuesta, L206–L213 obtiene el token o lanza error.
+  - L215: línea en blanco.
+  - L216–L218: banner de la prueba.
+  - L219: `console.log(...)` — título de la prueba.
+  - L220: `console.log(...)` — imprime la URL web.
+  - L221: `console.log(...)` — recuerda levantar backend y web.
+  - L222: línea en blanco.
+  - L223–L228: `const navegador = await chromium.launch({ headless: true, ... })` — abre el navegador.
+  - L229: línea en blanco.
+  - L230: `let codigoSalida = 0;` — reservado para el código de salida.
+  - L231: línea en blanco.
+  - L232: `try {` — inicio del bloque principal.
+  - L233–L235: banner de sección 1.
+  - L236: `const ctxA = await navegador.newContext();` — contexto del escritor.
+  - L237: `const ctxB = await navegador.newContext();` — contexto del observador.
+  - L238: línea en blanco.
+  - L239: `const tokenA = await iniciarSesion(ctxA, CUENTAS.escritor);` — login A.
+  - L240: `const tokenB = await iniciarSesion(ctxB, CUENTAS.observador);` — login B.
+  - L241: línea en blanco.
+  - L242–L243: `prueba(true, ...)` — ambas sesiones iniciaron.
+  - L244: línea en blanco.
+  - L245–L247: banner de sección 2.
+  - L248–L250: comentario de inyección del token en localStorage.
+  - L251: `const paginaB = await ctxB.newPage();` — pestaña del observador.
+  - L252: línea en blanco.
+  - L253–L255: comentario de los errores de consola capturados.
+  - L256: `const erroresConsola = [];` — buffer.
+  - L257–L261: handler de `console` que guarda los `error`.
+  - L262: línea en blanco.
+  - L263–L265: `await paginaB.addInitScript(...)` — inyecta el token antes de cargar.
+  - L266: línea en blanco.
+  - L267: `await paginaB.goto(`${WEB}/dashboard`, ...)` — abre el dashboard.
+  - L268: línea en blanco.
+  - L269–L272: comentario de esperar "En vivo".
+  - L273: `await paginaB.waitForSelector('.canal-conectado', ...)` — espera el canal.
+  - L274: línea en blanco.
+  - L275–L276: `prueba(true, ...)` — el canal quedó en vivo.
+  - L277: línea en blanco.
+  - L278–L280: banner de sección 3.
+  - L281–L288: comentario sobre hacer la reserva por API y la fecha en ventana.
+  - L289: `const FECHA = await elegirFechaValida();` — fecha del turno.
+  - L290: `const HORA = await elegirHoraLibre(FECHA);` — hora del turno.
+  - L291: línea en blanco.
+  - L292–L297: si no hay hora libre, reporta el fallo y lanza error.
+  - L298: línea en blanco.
+  - L299–L302: `const turno = await ctxA.request.post(`${API}/api/citas`, ...)` — reserva.
+  - L303: línea en blanco.
+  - L304–L311: si la reserva falla, reporta HTTP y sugiere revisar 409.
+  - L312: línea en blanco.
+  - L313–L318: comentario sobre guardar el id para borrarlo (correr la prueba más de una vez).
+  - L319: `const turnoCreado = (await turno.json()).data;` — cuerpo del turno.
+  - L320: `const idTurnoCreado = turnoCreado?.id_cita ?? turnoCreado?.id;` — id a borrar.
+  - L321: línea en blanco.
+  - L322–L323: `prueba(true, ...)` — reserva exitosa.
+  - L324: línea en blanco.
+  - L325–L327: banner de sección 4 (la medición).
+  - L328–L342: comentario sobre por qué no se usa `:first-child` y sí `.stat-box .stat-value`.
+  - L343: `const numeroAntes = await paginaB.locator('.stat-box .stat-value').first().textContent();` — valor antes.
+  - L344: `const instanteEvento = Date.now();` — marca de tiempo del evento.
+  - L345: línea en blanco.
+  - L346: `let latenciaMs = null;` — latencia a medir.
+  - L347: línea en blanco.
+  - L348: `try {` — inicio de la espera del cambio.
+  - L349–L356: comentario del timeout generoso y de usar `querySelector` dentro de la página.
+  - L357–L364: `await paginaB.waitForFunction(...)` — espera hasta 15 s a que cambie el número.
+  - L365: línea en blanco.
+  - L366: `latenciaMs = Date.now() - instanteEvento;` — calcula la latencia.
+  - L367–L369: `} catch (e) {` — deja `latenciaMs` en null si no cambió.
+  - L370: línea en blanco.
+  - L371: `const numeroDespues = await paginaB.locator('.stat-box .stat-value').first().textContent();` — valor después.
+  - L372: línea en blanco.
+  - L373–L376: si no hubo cambio, reporta fallo con detalle y errores de consola.
+  - L377–L379: si hubo cambio, reporta el antes→después y la latencia.
+  - L380: línea en blanco.
+  - L381–L395: comentario que justifica el umbral de 2000 ms (el server sondea cada segundo).
+  - L396: `const dentroDeRango = latenciaMs < 2000;` — veredicto.
+  - L397: línea en blanco.
+  - L398–L399: `prueba(...)` — latencia dentro del rango.
+  - L400: `}` — cierra el else.
+  - L401: línea en blanco.
+  - L402–L404: banner de sección 5.
+  - L405–L408: comentario de por qué se verifica que el canal siga vivo.
+  - L409: `const sigueVivo = await paginaB.locator('.canal-conectado').count();` — cuenta el canal.
+  - L410: línea en blanco.
+  - L411–L412: `prueba(...)` — el canal sigue conectado.
+  - L413: línea en blanco.
+  - L414–L416: banner de sección 6.
+  - L417–L420: comentario de la comprobación de polling.
+  - L421: `const peticionesTrasLaConexion = [];` — acumulador de peticiones.
+  - L422–L426: handler de `request` que registra las llamadas a `/api/estadisticas`.
+  - L427: línea en blanco.
+  - L428: `await paginaB.waitForTimeout(12000);` — 12 s quieto.
+  - L429: comentario de los 12 segundos.
+  - L430: línea en blanco.
+  - L431: `const peticionesQuietas = peticionesTrasLaConexion.length;` — cuántas hubo.
+  - L432: línea en blanco.
+  - L433–L436: `prueba(...)` — 0 peticiones quietas.
+  - L437: línea en blanco.
+  - L438–L440: banner de sección 7.
+  - L441–L443: comentario del cierre limpio y la fuga de procesos.
+  - L444: `await paginaB.close();` — cierra el panel de B.
+  - L445–L446: `prueba(...)` — el canal se cierra al salir.
+  - L447: línea en blanco.
+  - L448–L450: banner de sección 8.
+  - L451–L455: comentario de por qué se borra al final y no en `finally`.
+  - L456: `if (idTurnoCreado) {` — si se creó turno.
+  - L457–L460: comentario de que el borrado lo hace solo admin.
+  - L461: `const tokenAdmin = await iniciarSesion(ctxA, CUENTAS.observador);` — token admin.
+  - L462–L464: `const borrar = await ctxA.request.delete(...)` — borra el turno.
+  - L465: línea en blanco.
+  - L466–L470: `prueba(...)` — reporta si el turno se liberó o no.
+  - L471: `}` — cierra el if.
+  - L472: línea en blanco.
+  - L473: `await ctxA.close();` — cierra contexto A.
+  - L474: `await ctxB.close();` — cierra contexto B.
+  - L475: `} catch (err) {` — captura errores de la prueba.
+  - L476: `console.error(...)` — imprime el error.
+  - L477: `fallos += 1;` — suma un fallo.
+  - L478: `} finally {` — cierre garantizado.
+  - L479: `await navegador.close();` — cierra el navegador.
+  - L480: `}` — cierra el finally.
+  - L481: línea en blanco.
+  - L482–L484: banner de resumen.
+  - L485: `console.log(...)` — línea superior.
+  - L486–L490: imprime verde si todo pasó o rojo con el conteo.
+  - L491: `console.log(...)` — línea inferior.
+  - L492: línea en blanco.
+  - L493: comentario del código de salida para CI.
+  - L494: `process.exit(fallos === 0 ? 0 : 1);` — salida.
+- **Se conecta con:** el backend (`/api/auth/login`, `/api/citas`, `/api/estadisticas`), el canal SSE del frontend (`.canal-conectado`, `.stat-box .stat-value`) y `package.json` (Playwright).
+
+## `public/.htaccess` (115 líneas)
+- **Rol:** configuración de Apache para el frontend compilado. Hace el fallback de SPA (todo lo que no sea archivo/directorio va a `index.html`), bloquea `/api` con 403, y define cache de larga duración y compresión gzip.
+- **Recorrido línea por línea:**
+  - L1–L3: encabezado del archivo.
+  - L4–L19: comentario que explica por qué existe (rutas de react-router que no son archivos).
+  - L20: línea en blanco.
+  - L21–L22: comentario de `RewriteEngine`.
+  - L23: `RewriteEngine On` — activa mod_rewrite.
+  - L24: línea en blanco.
+  - L25–L27: comentario del bloque de API.
+  - L28–L34: comentario de por qué `/api` no debe pasar por la SPA.
+  - L35–L37: comentario de por qué se bloquea y no se reenvía.
+  - L38–L55: comentario detallado con la regla descartada y las dos razones (fuga de código y ruta local).
+  - L56: `RewriteRule ^api/ - [F,L]` — corta `/api` con 403 y detiene la evaluación.
+  - L57–L58: comentario de los flags `[F]` y `[L]`.
+  - L59: línea en blanco.
+  - L60–L62: banner del fallback a index.html.
+  - L63–L67: comentario de la condición `!-f`.
+  - L68: `RewriteCond %{REQUEST_FILENAME} !-f` — no reescribe archivos reales.
+  - L69: comentario de `!-f`.
+  - L70: línea en blanco.
+  - L71: `RewriteCond %{REQUEST_FILENAME} !-d` — no reescribe directorios.
+  - L72–L74: comentario de `!-d` y la carpeta `assets/`.
+  - L75: línea en blanco.
+  - L76: `RewriteRule ^ index.html [L]` — entrega todo lo demás a index.html.
+  - L77–L78: comentario de la regla.
+  - L79: línea en blanco.
+  - L80–L82: banner de cache.
+  - L83–L86: comentario del hash en el nombre de los archivos del build.
+  - L87: `<IfModule mod_expires.c>` — abre el bloque de expiración.
+  - L88: `ExpiresActive On` — activa el módulo.
+  - L89: comentario.
+  - L90: línea en blanco.
+  - L91: `ExpiresByType text/css "access plus 1 year"` — cache CSS.
+  - L92: comentario.
+  - L93: `ExpiresByType application/javascript "access plus 1 year"` — cache JS.
+  - L94: comentario.
+  - L95: `ExpiresByType image/jpeg "access plus 1 year"` — cache JPEG.
+  - L96: `ExpiresByType image/png "access plus 1 year"` — cache PNG.
+  - L97: comentario de las imágenes.
+  - L98: `ExpiresByType image/svg+xml "access plus 1 year"` — cache SVG.
+  - L99: comentario de los SVG.
+  - L100: `</IfModule>` — cierra el bloque de cache.
+  - L101: línea en blanco.
+  - L102–L104: banner de compresión.
+  - L105–L107: comentario de por qué comprimir.
+  - L108: `<IfModule mod_deflate.c>` — abre el bloque de compresión.
+  - L109: `AddOutputFilterByType DEFLATE text/html text/css text/plain` — comprime HTML/CSS/texto.
+  - L110: comentario.
+  - L111: `AddOutputFilterByType DEFLATE application/javascript application/json` — comprime JS y JSON.
+  - L112: comentario.
+  - L113: `AddOutputFilterByType DEFLATE image/svg+xml` — comprime SVG.
+  - L114: comentario.
+  - L115: `</IfModule>` — cierra el bloque.
+- **Se conecta con:** `public/sw.js` (ambos sostienen el comportamiento de SPA/PWA) y con el deploy en Apache descrito en el README.
+
+## `public/sw.js` (132 líneas)
+- **Rol:** service worker de la PWA. Da arranque offline cacheando el caparazón (HTML + assets), usa network-first para navegación, cache-first con refresco en segundo plano para assets del mismo origen, y deja `/api` siempre a la red (nunca cachea datos clínicos). Se registra solo en producción.
+- **Recorrido línea por línea:**
+  - L1–L20: encabezado y comentario de estrategias por tipo de request.
+  - L21: `"use strict";` — modo estricto.
+  - L22: línea en blanco.
+  - L23: `var CACHE_COPA = "saludweb-capa-v1";` — nombre y versión del caché.
+  - L24: `var ARCHIVOS_INICIALES = ["./", "./index.html"];` — rutas del caparazón a precargar.
+  - L25: línea en blanco.
+  - L26: `self.addEventListener("install", function (evento) {` — evento install.
+  - L27–L29: comentario de la precarga.
+  - L30–L35: `evento.waitUntil(...)` — abre el cache y hace `addAll` de los archivos iniciales.
+  - L36: `self.skipWaiting();` — activa el SW nuevo de inmediato.
+  - L37: `});` — cierra install.
+  - L38: línea en blanco.
+  - L39: `self.addEventListener("activate", function (evento) {` — evento activate.
+  - L40–L41: comentario de borrar versiones viejas.
+  - L42–L56: `evento.waitUntil(...)`; L44–L53 enumera las claves y borra las distintas de `CACHE_COPA`, L54 hace `clients.claim()`.
+  - L57: `});` — cierra activate.
+  - L58: línea en blanco.
+  - L59: `self.addEventListener("fetch", function (evento) {` — evento fetch.
+  - L60: `var request = evento.request;` — la petición.
+  - L61: línea en blanco.
+  - L62: comentario de que solo interesa GET.
+  - L63–L65: si el método no es GET, `return` (pasa de largo).
+  - L66: línea en blanco.
+  - L67: `var url = new URL(request.url);` — parsea la URL.
+  - L68: línea en blanco.
+  - L69: comentario de que la API nunca se cachea.
+  - L70–L72: si la URL contiene `/api`, `return` sin intervenir.
+  - L73: línea en blanco.
+  - L74: comentario de navegación.
+  - L75–L95: si `request.mode === "navigate"`; L76–L93 estrategia network-first con fallback al HTML cacheado (L81–L83 guarda, L84–L90 busca en caché o `index.html`), L94 `return`.
+  - L96: línea en blanco.
+  - L97–L98: comentario de assets del caparazón.
+  - L99–L129: si el origen es el mismo; L102–L104 abre el caché y busca copia; L105–L118 si hay copia la sirve y refresca por detrás; L120–L125 si no hay copia la pide a la red y la guarda; L128 `return`.
+  - L130: línea en blanco.
+  - L131: comentario de que otros orígenes quedan sin intervención.
+  - L132: `});` — cierra el listener fetch.
+- **Se conecta con:** `index.html` (caparazón y manifest), `public/manifest.webmanifest`, `verificar_pwa.mjs` (lo valida) y el registro del SW en producción desde el código de la app.
+---
+
+## Resumen
+
+- Ruta creada: `C:\xampp\htdocs\Workspace_SaludWEB\SaludWEB_Web\GUIA_CODIGO\01_raiz_public.md`
+- Archivos documentados: 10 (index.html, package.json, vite.config.js, proponer_contraste.php, ver_contraste.php, verificar_variables.php, verificar_pwa.mjs, verificar_tiempo_real.mjs, public/.htaccess, public/sw.js).
+- Ninguno quedó afuera: los 10 de la lista existen y se recorrieron completos.
