@@ -7,6 +7,38 @@ import { suscribirseAlCanal, TIPOS_EVENTO } from '../api/realtime';
 // Importa el wrapper de SSE. El componente nunca toca EventSource directamente:
 // esa lógica queda en un archivo y no se reparte por todos los componentes.
 
+// ============================================================
+// MODO DESARROLLO: SONDEO EN LUGAR DEL CANAL SSE
+// ============================================================
+// El canal real usa Server-Sent Events: una conexión HTTP que queda abierta
+// durante minutos. Eso necesita un servidor que atienda VARIAS peticiones a la
+// vez, cada una en su propio proceso (Apache con mod_php, nginx + PHP-FPM, etc.).
+//
+// En desarrollo este proyecto levanta el backend con el servidor NATIVO de PHP
+// (`php -S`), que atiende UNA petición por vez y en un solo hilo. Con un canal
+// SSE abierto, ese único hilo queda ocupado esperando eventos, y TODAS las
+// demás peticiones (login, estadísticas, la turnera entera) se encolan y
+// terminan en time-out: la pantalla se ve vacía y la sesión parece "caerse"
+// sola. Es un problema del servidor de desarrollo, no del código del canal.
+//
+// Por eso en desarrollo NO se abre el canal SSE: se simula con un sondeo cada
+// pocos segundos, que produce el mismo efecto visible (la pantalla se
+// actualiza sola) sin bloquear al servidor de un solo hilo. En producción
+// (build) sí se usa el canal SSE real, porque ahí hay un servidor con varios
+// workers que puede sostener la conexión abierta.
+//
+// `import.meta.env.DEV` lo define Vite: vale true con `npm run dev` y false en
+// el build de producción. Es exactamente la distinción que hace falta, sin
+// tener que configurar nada a mano.
+const CANAL_SIMULADO_POR_SONDEO = import.meta.env.DEV;
+
+// Cada cuántos milisegundos se dispara el aviso de "cambió algo" en desarrollo.
+const INTERVALO_SONDEO_MS = 5000;
+// 5 segundos: es lo que refrescaba esta pantalla antes de tener el canal. El
+// aviso NO trae datos (igual que el SSE): solo dispara la recarga por REST. El
+// retraso de 5 s es imperceptible y no se parece en nada a una petición por
+// segundo.
+
 /**
  * Hook que escucha el canal de tiempo real de un componente.
  *
@@ -107,6 +139,27 @@ export default function useEventosRealtime(canal, alRecibir, activo = true) {
     if (!activo || !canal) {
       setEstado('inactivo');   // se pausa la suscripción hasta que se cumplan las condiciones
       return undefined;        // no devuelve cleanup porque no hay nada abierto
+    }
+
+    // --------------------------------------------------
+    // Modo desarrollo: sondeo (ver el comentario de CANAL_SIMULADO_POR_SONDEO)
+    // --------------------------------------------------
+    // No se abre el EventSource: con el servidor nativo de PHP (un hilo) la
+    // conexión larga bloquearía el resto de la API. En su lugar se dispara el
+    // mismo aviso cada INTERVALO_SONDEO_MS, que es lo único que el componente
+    // necesita para recargar sus datos por REST. La interfaz lo ve como un
+    // canal "conectado", así que el cartel "En vivo" sigue siendo veraz en el
+    // sentido que le importa al usuario: los datos se actualizan solos.
+    if (CANAL_SIMULADO_POR_SONDEO) {
+      setEstado('conectado');   // el cartel queda verde igual que con SSE
+      const id = setInterval(() => {
+        manejarEvento('sondeo', { motivo: 'desarrollo' });   // mismo callback que el SSE
+      }, INTERVALO_SONDEO_MS);
+
+      // El cleanup es la contraparte exacta del clearTimeout del canal: al
+      // desmontar la pantalla se corta el intervalo para que no siga avisando a
+      // un componente que ya no está.
+      return () => clearInterval(id);
     }
 
     const control = suscribirseAlCanal({
