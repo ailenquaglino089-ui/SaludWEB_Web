@@ -52,8 +52,10 @@ La SPA sola no alcanza: necesita la API. Hay **dos formas** de levantar todo.
 
 En `SaludWEB_Web\scripts\` hay dos scripts para Windows, comentados línea por línea:
 
-- **`iniciar_saludweb.bat`** → levanta la API (PHP), levanta la web (Vite) y abre el
-  navegador. Detectar el PHP solo, **sin necesitar XAMPP ni MySQL**.
+- **`iniciar_saludweb.bat`** → levanta la API (PHP) y la web (Vite), **espera a que las dos
+  respondan** y abre **Chrome en `http://localhost:5173/turnera`**. Detecta el PHP solo,
+  **sin necesitar XAMPP ni MySQL**. Deja **2 ventanas** abiertas (una por servidor); la
+  ventana del lanzador se cierra sola. Si volvés a hacer doble clic, no duplica servidores.
 - **`detener_saludweb.bat`** → apaga los dos servidores (libera los puertos 8000 y 5173).
 
 Requisito: el repo `SaludWEB_Backend` tiene que estar como carpeta **hermana** de
@@ -78,8 +80,8 @@ explica cómo poner uno portable, paso a paso.
 
 #### Cómo entrar al sistema
 
-1. Ejecutá `iniciar_saludweb.bat` (o las dos terminales) y esperá a que abra
-   **http://localhost:5173**.
+1. Ejecutá `iniciar_saludweb.bat` (o las dos terminales) y esperá a que abra **Chrome** en
+   **http://localhost:5173/turnera** (la turnera es pública: se ve sin iniciar sesión).
 2. En un clon nuevo **no hay ninguna cuenta**: usá **Registro** (`/register`) y creá una
    (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`.
 3. Para entrar como **administradora** (con la base de demostración): usuario
@@ -165,7 +167,7 @@ SaludWEB_Web/
 │   └── main.jsx             # registra el SW solo en producción
 ├── index.html               # meta + theme-color de la marca
 ├── scripts/
-│   ├── iniciar_saludweb.bat # levanta API + web y abre el navegador (Windows, sin XAMPP)
+│   ├── iniciar_saludweb.bat # levanta API + web y abre Chrome en /turnera (Windows, sin XAMPP)
 │   └── detener_saludweb.bat # apaga los servidores (libera 8000 y 5173)
 ├── verificar_pwa.mjs        # verificación E2E de la PWA (Playwright)
 ├── verificar_tiempo_real.mjs # verificación E2E del canal en vivo
