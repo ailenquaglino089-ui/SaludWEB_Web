@@ -418,6 +418,32 @@ de A se actualiza porque B reservó":
 - [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
 - [Revisar y probar el proyecto: de checklist a evidencia](REVISAR_Y_PROBAR_EL_PROYECTO.md)
   (los cinco entregables de evidencia están en `QA/`)
+- [Registro de cambios y pasos del proyecto](REGISTRO_DE_CAMBIOS.md)
+
+## Registro de cambios (pasos del proyecto)
+
+La cronología completa del trabajo está en
+**[`REGISTRO_DE_CAMBIOS.md`](REGISTRO_DE_CAMBIOS.md)**, con el detalle de qué se
+hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resumen:
+
+- **15/10** - Corrección de los incidentes de seguridad **INC-001** (`GET
+  /api/pacientes` respondía sin sesión) e **INC-004** (el registro público
+  aceptaba el rol `admin`). Backend #19, Web #17, Mobile #14.
+- **14-15/10** - Se dejó de depender de **XAMPP/MySQL**: base **SQLite** y
+  **servidor nativo de PHP**; Web y Mobile apuntan a `127.0.0.1:8000`.
+  Backend #16, Web #14, Mobile #11.
+- **14-15/10** - Documentación: **guía de código** archivo por archivo y
+  **guía de QA** ("de checklist a evidencia"). Backend #17/#18, Web #15/#16,
+  Mobile #12/#13.
+- **16/10** - Puesta en marcha sin XAMPP + sección **"Si ves el aviso Sin
+  conexión"** + `resetear_password.php`. Backend #20, Web #18, Mobile #15.
+- **16/10** - **Lanzador de escritorio**: `scripts/iniciar_saludweb.bat` y
+  `detener_saludweb.bat` (esperan respuesta real, abren **Chrome en `/turnera`**
+  y dejan **2 ventanas**). Web #19 y Web #20.
+- **16/10** - **Arreglo del panel "En vivo"**: el **SSE** bloqueaba la API (el
+  servidor de PHP atiende una petición por vez), así que en **desarrollo** el
+  canal se simula con **sondeo cada 5 s**; el SSE real queda para producción.
+  Web #21.
 
 ## Calidad del software
 
