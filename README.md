@@ -44,9 +44,23 @@ npm run dev
 > `SaludWEB_Backend`: `composer run dev`). El proxy de Vite ya apunta ahí por
 > defecto, así que no hace falta configurar nada.
 
-### Puesta en marcha completa (backend + frontend)
+### Cómo abrir todo el proyecto (backend + frontend)
 
-La SPA sola no alcanza: necesita la API. Con **dos terminales**:
+La SPA sola no alcanza: necesita la API. Hay **dos formas** de levantar todo.
+
+#### Opción 1 — Un solo doble clic (recomendada)
+
+En `SaludWEB_Web\scripts\` hay dos scripts para Windows, comentados línea por línea:
+
+- **`iniciar_saludweb.bat`** → levanta la API (PHP), levanta la web (Vite) y abre el
+  navegador. Detectar el PHP solo, **sin necesitar XAMPP ni MySQL**.
+- **`detener_saludweb.bat`** → apaga los dos servidores (libera los puertos 8000 y 5173).
+
+Requisito: el repo `SaludWEB_Backend` tiene que estar como carpeta **hermana** de
+`SaludWEB_Web` (así vienen en el workspace del proyecto). Si tu PHP no está en la ruta por
+defecto, definí la variable de entorno `SALUDWEB_PHP` con la ruta a tu `php.exe`.
+
+#### Opción 2 — Dos terminales (manual)
 
 ```bash
 # Terminal 1 - la API (en SaludWEB_Backend)
@@ -59,12 +73,19 @@ npm run dev               # queda en http://localhost:5173
 
 No hace falta **Apache, XAMPP ni MySQL**: la API corre con el **servidor nativo de PHP** y
 guarda en un archivo **SQLite** (`SaludWEB_Backend/storage/saludweb.sqlite`) que se crea solo
-en el primer request. Si tenés XAMPP, alcanza con su `php.exe`; no hay que abrir el panel de
-control ni iniciar Apache o MySQL.
+en el primer request. XAMPP es opcional; si no tenés PHP instalado, el README del backend
+explica cómo poner uno portable, paso a paso.
 
-**Para entrar** hay que tener una cuenta. En un clon nuevo **no hay ninguna**: usá la pantalla
-de **Registro** (`/register`) y creá una (rol `paciente` o `medico`). El alta pública **no**
-permite crear `admin`.
+#### Cómo entrar al sistema
+
+1. Ejecutá `iniciar_saludweb.bat` (o las dos terminales) y esperá a que abra
+   **http://localhost:5173**.
+2. En un clon nuevo **no hay ninguna cuenta**: usá **Registro** (`/register`) y creá una
+   (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`.
+3. Para entrar como **administradora** (con la base de demostración): usuario
+   `admin@salud.com`. Si no recordás su clave, en el backend ejecutá
+   `php resetear_password.php admin@salud.com MiClaveNueva123` (ver el README del backend,
+   "¿Olvidaste la contraseña?").
 
 ### Si ves el aviso "Sin conexión"
 
@@ -143,6 +164,9 @@ SaludWEB_Web/
 │   ├── App.css
 │   └── main.jsx             # registra el SW solo en producción
 ├── index.html               # meta + theme-color de la marca
+├── scripts/
+│   ├── iniciar_saludweb.bat # levanta API + web y abre el navegador (Windows, sin XAMPP)
+│   └── detener_saludweb.bat # apaga los servidores (libera 8000 y 5173)
 ├── verificar_pwa.mjs        # verificación E2E de la PWA (Playwright)
 ├── verificar_tiempo_real.mjs # verificación E2E del canal en vivo
 ├── package.json
@@ -264,6 +288,9 @@ const { usuario, login, logout, registro } = useAuth();
 > ninguna**: creá tu cuenta con la pantalla de **Registro** (`/register`).
 > Las fichas de demo se regeneran con `php sembrar_datos_demo.php` en el backend, pero ese
 > script no crea usuarios ni contraseñas.
+>
+> **¿No recordás la clave de `admin@salud.com`?** En el backend:
+> `php resetear_password.php admin@salud.com MiClaveNueva123` (solo consola/desarrollo).
 
 ## PWA y arranque offline
 
