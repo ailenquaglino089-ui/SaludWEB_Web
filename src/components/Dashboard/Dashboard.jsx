@@ -41,6 +41,16 @@
 // un canal de Server-Sent Events: el servidor avisa cuando un turno cambia y el
 // panel se recarga en ese momento.
 //
+// EN DESARROLLO EL CANAL SE SIMULA CON UN SONDEO
+// ----------------------------------------------
+// El aviso "cambió algo" llega igual, pero en desarrollo no viene de un
+// EventSource real: viene de un sondeo cada 5 segundos. El motivo está en
+// useEventosRealtime.js y es del servidor, no del canal: `php -S` (el backend
+// de desarrollo) atiende una petición por vez, así que una conexión SSE
+// abierta dejaría a TODO el resto de la API esperando hasta el time-out. El
+// canal SSE de verdad se usa en el build de producción, que va a un servidor
+// con varios workers.
+//
 // POR QUÉ SOLO ACÁ Y NO EN TODAS LAS PANTALLAS
 // El polling no estaba mal por sí mismo: la guía lo acepta cuando el retraso no
 // molesta. Acá sí molesta. Un panel que dice "42 turnos registrados" cuando ya

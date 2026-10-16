@@ -226,6 +226,16 @@ import.meta.env.VITE_API_URL
 El panel **no pregunta al backend cada cierto tiempo**: abre un canal con `EventSource` y
 espera a que le avisen que algo cambió.
 
+> **En desarrollo el canal se simula con un sondeo cada 5 s.** El motivo es del servidor, no
+> del canal: `php -S` (el backend de desarrollo) atiende **una petición por vez** y en
+> Windows no admite varios workers. Con el canal SSE abierto, esa única petición quedaría
+> ocupada esperando eventos y el resto de la API (login, listados, turnera) se encolaría
+> hasta el time-out: la pantalla se vería vacía. Por eso, cuando el frontend corre en modo
+> desarrollo (`npm run dev`), el `EventSource` real se reemplaza por un sondeo cada 5 s —
+> mismo efecto visible, sin bloquear al servidor. El canal SSE de verdad se usa en el build
+> de producción, que va a un servidor con varios workers (Apache, nginx + PHP-FPM). Ver
+> [`src/hooks/useEventosRealtime.js`](src/hooks/useEventosRealtime.js).
+
 ```
 src/api/realtime.js             → suscribirse, reconectar y cerrar el canal
 src/hooks/useEventosRealtime.js → estado del canal + eventos, sin dejar conexiones abiertas
@@ -247,7 +257,7 @@ paciente nunca recibe avisos de otro.
 - ✅ Autenticación con JWT (login/registro), misma API que la app móvil
 - ✅ CRUD de Médicos / Pacientes / Prescripciones con gating por rol
 - ✅ Turnera: especialidades → profissionais → reserva, mis turnos y agenda del médico
-- ✅ Panel en vivo por SSE: se actualiza solo al reservar o cancelar, sin polling
+- ✅ Panel en vivo por SSE: se actualiza solo al reservar o cancelar, sin polling (SSE real en un servidor con varios workers; sondeo cada 5 s en desarrollo)
 - ✅ Indicador del estado del canal (conectado / reconectando / sin conexión)
 - ✅ Gestión de usuarios y roles (solo admin)
 - ✅ Cambio de estado de prescripciones y cancelación de turnos
@@ -327,6 +337,12 @@ npx vite --port 5173      # en una terminal
 node verificar_tiempo_real.mjs   # en otra
 ```
 
+> Esta prueba verifica el canal **SSE real**, así que necesita un backend con **varios
+> workers** (Apache, nginx + PHP-FPM). Con el backend de desarrollo (`php -S`, un solo hilo)
+> el panel usa sondeo, así que los pasos 4 y 7 no se cumplen y la prueba reportará
+> peticiones periódicas. El resto del proyecto (CRUD, turnera, suites REST) se prueba igual
+> con `php -S`.
+
 `verificar_tiempo_real.mjs` abre dos sesiones aisladas: una mira el panel y otra reserva un
 turno. Comprueba 9 cosas:
 
@@ -372,19 +388,23 @@ de A se actualiza porque B reservó":
 5. **En una ventana de incógnito (o en otro navegador), iniciar sesión como paciente** y
    reservar un turno desde la turnera.
 6. **Volver a la ventana del admin**: el número de "Turnos registrados" tiene que cambiar
-   solo, sin recargar la página.
-7. **Comprobar que no hay polling**: con el panel del admin quieto durante 12 segundos, el
-   contador de peticiones a `/api/estadisticas` tiene que quedar en cero.
+   solo, sin recargar la página. En desarrollo el cambio llega en unos segundos, porque el
+   panel se refresca por **sondeo cada 5 s**; con un servidor con varios workers llega al
+   instante por el canal SSE.
 
 > Si en el paso 4 no aparece "En vivo", el problema casi siempre es que el backend no está
 > levantado o que la sesión venció. El botón de recarga manual que aparece al lado
 > reconecta el canal sin cargar toda la página.
 
-> **Limitación del servidor nativo:** `php -S` atiende **una petición a la vez** (y en
-> Windows no admite varios workers). Mientras el canal SSE queda abierto, las demás
-> peticiones esperan, así que esta demo de dos ventanas necesita un servidor con varios
-> workers (nginx + PHP-FPM, u otro). El CRUD, la turnera y las suites REST andan perfecto
-> con `composer run dev`.
+> **Por qué en desarrollo se usa sondeo y no SSE.** `php -S` atiende **una petición a la vez**
+> (y en Windows no admite varios workers). Si el panel abriera el canal SSE, esa única
+> petición quedaría ocupada esperando eventos y **todo el resto de la API** (login, turnera,
+> listados) se encolaría hasta el time-out: la pantalla se vería vacía. Por eso, cuando el
+> frontend corre en modo desarrollo, el canal SSE se reemplaza por un sondeo cada 5 s: mismo
+> efecto visible, sin bloquear el servidor. El canal `EventSource` real se usa en el build de
+> producción, que va a un servidor con varios workers (Apache, nginx + PHP-FPM). El CRUD, la
+> turnera y las suites REST andan perfecto con `composer run dev` y con el lanzador
+> `scripts/iniciar_saludweb.bat`.
 
 > Para la versión exacta que se midió (9/9, 541 ms), ver
 > [la guía del módulo en el backend](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md).

@@ -35,6 +35,16 @@
 //
 // Requisitos: las cuentas de prueba existen y se cambian por variables de
 // entorno si hace falta (ver CUENTAS al principio del archivo).
+//
+// OJO: ESTA PRUEBA NECESITA UN BACKEND CON VARIOS WORKERS
+// -------------------------------------------------------
+// Verifica el canal SSE REAL, que mantiene una conexión abierta. El servidor
+// nativo de PHP (`php -S`, el backend de desarrollo) atiende UNA petición por
+// vez, así que no puede sostener el canal y, además, cuando el frontend corre en
+// modo desarrollo el panel usa un sondeo cada 5 s en lugar de SSE. Con `php -S`
+// esta prueba NO se cumple (los pasos de latencia y de "sin polling" fallan).
+// Hay que correrla contra Apache o nginx + PHP-FPM. El resto del proyecto
+// (CRUD, turnera, suites REST) sí funciona con `php -S`.
 
 import { chromium } from 'playwright';
 // Chromium de Playwright: el navegador con el que se hace la prueba.
