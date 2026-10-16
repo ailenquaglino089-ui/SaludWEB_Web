@@ -407,15 +407,15 @@ de A se actualiza porque B reservó":
 > `scripts/iniciar_saludweb.bat`.
 
 > Para la versión exacta que se midió (9/9, 541 ms), ver
-> [la guía del módulo en el backend](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md).
+> [la guía del módulo en el backend](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/GUIA_TIEMPO_REAL.md).
 
 ## 📚 Más información
 
 - [Guía de código (archivo por archivo)](GUIA_DE_CODIGO.md)
-- [Guía de tiempo real (por qué SSE y cómo está hecho)](../SaludWEB_Backend/GUIA_TIEMPO_REAL.md)
-- [Backend README](../SaludWEB_Backend/README.md)
-- [AGENDA de trabajo (planificación y pasos)](../SaludWEB_Backend/AGENDA_DE_TRABAJO.md)
-- [PROJECT_BRIEF](../SaludWEB_Backend/PROJECT_BRIEF.md)
+- [Guía de tiempo real (por qué SSE y cómo está hecho)](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/GUIA_TIEMPO_REAL.md)
+- [Backend README](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/README.md)
+- [AGENDA de trabajo (planificación y pasos)](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/AGENDA_DE_TRABAJO.md)
+- [PROJECT_BRIEF](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/PROJECT_BRIEF.md)
 - [Revisar y probar el proyecto: de checklist a evidencia](REVISAR_Y_PROBAR_EL_PROYECTO.md)
   (los cinco entregables de evidencia están en `QA/`)
 - [Registro de cambios y pasos del proyecto](REGISTRO_DE_CAMBIOS.md)
