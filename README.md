@@ -44,6 +44,50 @@ npm run dev
 > `SaludWEB_Backend`: `composer run dev`). El proxy de Vite ya apunta ahí por
 > defecto, así que no hace falta configurar nada.
 
+### Puesta en marcha completa (backend + frontend)
+
+La SPA sola no alcanza: necesita la API. Con **dos terminales**:
+
+```bash
+# Terminal 1 - la API (en SaludWEB_Backend)
+composer run dev          # equivale a: php -S 127.0.0.1:8000 index.php
+
+# Terminal 2 - la SPA (en SaludWEB_Web)
+npm install               # solo la primera vez
+npm run dev               # queda en http://localhost:5173
+```
+
+No hace falta **Apache, XAMPP ni MySQL**: la API corre con el **servidor nativo de PHP** y
+guarda en un archivo **SQLite** (`SaludWEB_Backend/storage/saludweb.sqlite`) que se crea solo
+en el primer request. Si tenés XAMPP, alcanza con su `php.exe`; no hay que abrir el panel de
+control ni iniciar Apache o MySQL.
+
+**Para entrar** hay que tener una cuenta. En un clon nuevo **no hay ninguna**: usá la pantalla
+de **Registro** (`/register`) y creá una (rol `paciente` o `medico`). El alta pública **no**
+permite crear `admin`.
+
+### Si ves el aviso "Sin conexión"
+
+> Sin conexión. Los datos podrían no actualizarse y los cambios no llegan al servidor.
+
+Ese cartel lo muestra `src/components/common/AvisoOffline.jsx` y aparece por una de dos causas:
+el navegador está **offline**, o **una petición a `/api` salió y no recibió respuesta** (el
+backend está caído o el proxy no llega a él). Ojo: **que la página se vea NO significa que la
+API esté arriba** — el HTML lo sirve Vite, no el backend. Checklist, en orden:
+
+1. **¿Responde la API?** Abrí `http://127.0.0.1:8000/api/health`. Tiene que devolver
+   `{"ok":true,...}`. Si no responde, el problema es el backend (ver su README); `npm run dev`
+   solo levanta la SPA, no la API.
+2. **¿Responde a través del proxy?** Abrí `http://localhost:5173/api/health`. Si el paso 1 anda
+   pero este no, el dev server de Vite no está corriendo, o el `.env` cambió
+   `VITE_PROXY_TARGET`.
+3. **¿Sigue levantado `npm run dev`?** Si cerraste esa terminal, el servidor se apagó y el
+   navegador no puede pedir nada. Volvé a ejecutarlo.
+4. **Cerrá el cartel** con la ✕: vuelve a ocultarse solo en cuanto una petición responde bien.
+
+> El cartel es un aviso de red, no un error del código: si `curl http://127.0.0.1:8000/api/health`
+> contesta `200`, el backend está bien y el problema estaba en que Vite no estaba corriendo.
+
 ### Variables de entorno (opcional)
 
 ```bash
