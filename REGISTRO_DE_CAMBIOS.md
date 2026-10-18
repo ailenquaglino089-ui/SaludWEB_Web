@@ -115,13 +115,42 @@ Publicado en: **Web #19** y **Web #20**.
 
 Publicado en: **Web #21**.
 
-## 7. Publicación en GitHub
+## 7. Guía para preparar el sistema para producción y defensa (16/10/2026)
+
+Se agregó **`PREPARAR_SISTEMA_PARA_PRODUCCION_Y_DEFENSA.md`** a la raíz de los
+tres repositorios, comentada línea por línea. Es una guía práctica para llevar un
+proyecto al entorno de producción con garantías de calidad y defenderlo con
+solidez. Cubre:
+
+- **Ambientes**: desarrollo, prueba (staging/QA) y producción, con qué rol cumple
+  cada uno y por qué nunca se trabaja directamente en producción.
+- **Variables de configuración**: qué son los `.env`, cómo se gestionan y las
+  buenas prácticas (nunca subir el archivo con secretos).
+- **Deploy**: preparación del repositorio, configuración del servidor, ejecución
+  del despliegue y verificación en producción; opciones de hosting (PaaS, VPS)
+  y automatización con CI/CD.
+- **Backups**: qué respaldar, frecuencia y retención, regla 3-2-1, herramientas
+  y la importancia de probar la restauración.
+- **README profesional**: estructura mínima (qué hace, cómo se instala, cómo se
+  usa) y buenas prácticas.
+- **Documentación funcional y técnica**: roles, casos de uso, reglas de negocio;
+  arquitectura, modelo de datos, API y estructura del código.
+- **Diagramas necesarios para la defensa**: Entidad-Relación, casos de uso,
+  arquitectura y flujo/secuencia, con herramientas sugeridas.
+- **Lista de verificación final** para la defensa del proyecto.
+
+Cada README de Backend, Web y Mobile enlaza la guía en su sección
+"Guía para preparar el sistema para producción y defensa".
+
+Publicado en: **Backend #23/#24**, **Web #24/#25**, **Mobile #19/#20**.
+
+## 8. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `114cb68` (PR #21) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `f18357d` (PR #21) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `f459076` (PR #16) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `95c8101` (PR #24) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `a4b83a2` (PR #25) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `a67c431` (PR #20) |
 
 ---
 
@@ -133,3 +162,5 @@ Publicado en: **Web #21**.
 - `SaludWEB_Web/scripts/iniciar_saludweb.bat` (comentado línea por línea).
 - `COMO_USAR_SaludWEB.txt` (en el Escritorio).
 - Documentos de QA: `QA/` y `REVISAR_Y_PROBAR_EL_PROYECTO.md`.
+- Guía de producción y defensa: `PREPARAR_SISTEMA_PARA_PRODUCCION_Y_DEFENSA.md`
+  (en los tres repositorios).
