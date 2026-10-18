@@ -492,3 +492,14 @@ servidor, en lugar de depender de la memoria de quien lo reporta.
 - Los datos personales (email, DNI, telefono, nombre) se enmascaran dejando cuatro caracteres.
 - El destino del log se pasa por parametro: asi las pruebas pueden comprobar que un token NO se
   escribe.
+
+## Guía para preparar el sistema para producción y defensa
+
+Guía práctica, comentada línea por línea, para llevar un proyecto al entorno de producción
+con garantías de calidad y defenderlo con solidez: ambientes (desarrollo, prueba y
+producción), variables de configuración, deploy, CI/CD, backups, README profesional,
+documentación funcional y técnica, y los diagramas necesarios (ER, casos de uso,
+arquitectura y flujo), con una lista de verificación final para la defensa. Está en la raíz
+de los tres repositorios del proyecto (Backend, Web y Mobile):
+
+- [PREPARAR_SISTEMA_PARA_PRODUCCION_Y_DEFENSA.md](https://github.com/ailenquaglino089-ui/SaludWEB_Web/blob/main/PREPARAR_SISTEMA_PARA_PRODUCCION_Y_DEFENSA.md)
