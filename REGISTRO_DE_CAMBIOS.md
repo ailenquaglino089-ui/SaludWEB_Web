@@ -194,13 +194,43 @@ enlaza esa guía.
 
 Publicado en: **Backend #28**, **Web #32**, **Mobile #24**.
 
-## 11. Publicación en GitHub
+## 11. Mapa de comandos, riesgos y verificaciones ejecutadas (19/10/2026)
+
+Los tres README agregaron la sección **"Comandos y verificaciones
+disponibles"**: cada comando con qué hace y qué riesgo o requisito tiene (qué
+bloquea la terminal, qué escribe la base, qué necesita servidor o navegador).
+
+Ese mismo día se ejecutaron en esta máquina:
+
+| Repo | Verificación | Resultado |
+|---|---|---|
+| Backend | `php -l` sobre 80 archivos | 0 errores de sintaxis |
+| Backend | `php tests/run.php` | 50/50 pruebas (5 clases) |
+| Backend | `verificar_turnera`, `probar_vinculacion`, `probar_roles`, `probar_seguridad`, `probar_turnera`, `probar_tiempo_real`, `probar_roles_http` | todo `EXIT=0`; los datos temporales se borraron |
+| Web | `npm test` | 32/32 |
+| Web | `verificar_variables.php` | 0 variables CSS rotas |
+| Web | `ver_contraste.php` | 12/12 tokens OK |
+| Web | `npm run build` | OK, 134 módulos |
+| Web | `verificar_pwa.mjs` | 12/12 (offline y caché de `/api`) |
+| Mobile | `npm test` | 27/27 |
+| Mobile | `npm run export` | OK (iOS 633 / Android 636 módulos) |
+
+Riesgos que quedaron documentados: `npm run dev` y `composer run dev` bloquean
+la terminal (y `php -S` no sostiene SSE); `verificar_tiempo_real.mjs` necesita
+Apache/nginx + PHP-FPM; `npm run web` de Mobile requiere `react-native-web` y
+`react-dom`; `seed_pacientes`, `resetear_password`, `sembrar_datos_demo` y
+`migrar_mysql_a_sqlite` escriben la base; `listar_usuarios.php` no debe
+desplegarse en producción.
+
+Publicado en: **Backend #29**, **Web #34**, **Mobile #25**.
+
+## 12. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `0a716c9` (PR #28) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `f8b60af` (PR #32) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `3064a0a` (PR #24) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `2fd8792` (PR #29) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `de983de` (PR #34) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `27dfba4` (PR #25) |
 
 ---
 
