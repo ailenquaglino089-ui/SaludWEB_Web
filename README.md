@@ -571,6 +571,13 @@ abren desde el navegador, sin instalar nada. Para que eso funcione en una red:
 > red, la app móvil se apunta a `http://<IP-del-servidor>:8000/api` (ver el
 > README de Mobile).
 
+### ¿Y en un celular?
+
+Sí: la app móvil de SaludWEB corre en un celular real (con **Expo Go**
+escaneando un QR) o en un emulador, sobre la misma API. El guion completo, paso
+a paso, está en el README de Mobile, sección
+["Cómo usarlo en teléfonos"](https://github.com/ailenquaglino089-ui/SaludWEB_Mobile/blob/main/README.md#cómo-usarlo-en-teléfonos-paso-a-paso).
+
 ### Lo que NO hace falta
 
 - MySQL u otro servidor de bases de datos: la base es un archivo SQLite que se crea solo.
