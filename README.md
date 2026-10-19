@@ -577,6 +577,16 @@ abren desde el navegador, sin instalar nada. Para que eso funcione en una red:
 - Instalar algo en la PC del usuario final: solo navegador.
 - Licencias de software: PHP, SQLite, React y Expo son libres.
 
+## Base de datos de desarrollo
+
+La web **no guarda datos en la PC del usuario**: todo lo pide y lo recibe del
+backend. La base de desarrollo del proyecto es un archivo **SQLite** del backend,
+en `SaludWEB_Backend/storage/saludweb.sqlite`, que se crea solo en el primer
+arranque de la API y **no se sube a GitHub** (cada clone genera el suyo, vacío de
+cuentas). Detalle completo —qué contiene, cómo regenerar los datos de demo y
+cómo moverla— en la sección **"Base de datos de desarrollo"** del
+[README del Backend](https://github.com/ailenquaglino089-ui/SaludWEB_Backend/blob/main/README.md).
+
 ## Guía para preparar el sistema para producción y defensa
 
 Guía práctica, comentada línea por línea, para llevar un proyecto al entorno de producción
