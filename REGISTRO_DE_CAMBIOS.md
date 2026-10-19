@@ -144,13 +144,31 @@ Cada README de Backend, Web y Mobile enlaza la guía en su sección
 
 Publicado en: **Backend #23/#24**, **Web #24/#25**, **Mobile #19/#20**.
 
-## 8. Publicación en GitHub
+## 8. Cómo presentar el proyecto y usarlo en otras computadoras (19/10/2026)
+
+Los README de los tres repos ahora incluyen dos secciones nuevas:
+
+- **"Cómo presentar el proyecto a alguien que no entiende de tecnología"**: el
+  discurso en criollo —en una frase qué es, qué problema resuelve, qué gana cada
+  persona, las preguntas típicas respondidas sin jerga y una demo de 3 minutos
+  para mostrarlo en vivo—, más una analogía por repositorio (la API como caja
+  registradora, la web como mostrador, la app como la app del banco).
+- **"¿Se puede usar en otras computadoras?"**: qué necesita cada máquina según
+  su rol (usar el sistema = solo navegador; levantarlo = PHP + Composer + Node),
+  los pasos en una PC nueva, cómo atender desde la red local (`php -S
+  0.0.0.0:8000` + `CORS_ORIGINS`) y lo que no hace falta (MySQL, XAMPP,
+  licencias). En Mobile se agrega cómo probarla en otro celular (Expo Go / IP
+  local) y qué falta para distribuirla como app instalable (EAS Build).
+
+Publicado en: **Backend #26**, **Web #28**, **Mobile #22**.
+
+## 9. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `95c8101` (PR #24) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `a4b83a2` (PR #25) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `a67c431` (PR #20) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `720e414` (PR #26) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `9e7144b` (PR #28) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `039f3b8` (PR #22) |
 
 ---
 
