@@ -178,13 +178,29 @@ patrones `*.sqlite`), así que cada clone arranca con una base nueva, sin cuenta
 
 Publicado en: **Backend #27**, **Web #30**, **Mobile #23**.
 
-## 10. Publicación en GitHub
+## 10. Cómo usar la app en teléfonos (19/10/2026)
+
+Quedó grabado en el README de Mobile la sección **"Cómo usarlo en teléfonos
+(paso a paso)"**, con los tres caminos para llevar la app a un dispositivo:
+
+- **Celular físico con Expo Go**: backend en `0.0.0.0`, IP de la PC por
+  `ipconfig`, `.env` con `EXPO_PUBLIC_API_URL`, `npm start --clear`, escanear
+  el QR y entrar (registro o credenciales de prueba).
+- **Emulador Android** (`10.0.2.2`) e **iOS simulator** (`127.0.0.1`).
+- **App instalable** con EAS Build (link de descarga; requiere cuenta de Expo).
+
+Los README de Backend y Web agregan la sección **"¿Y en un celular?"** que
+enlaza esa guía.
+
+Publicado en: **Backend #28**, **Web #32**, **Mobile #24**.
+
+## 11. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `9e6bac5` (PR #27) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `c9f4bdc` (PR #30) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `ef6fa72` (PR #23) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `0a716c9` (PR #28) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `f8b60af` (PR #32) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `3064a0a` (PR #24) |
 
 ---
 
