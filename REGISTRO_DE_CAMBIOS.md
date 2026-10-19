@@ -162,13 +162,29 @@ Los README de los tres repos ahora incluyen dos secciones nuevas:
 
 Publicado en: **Backend #26**, **Web #28**, **Mobile #22**.
 
-## 9. Publicación en GitHub
+## 9. Base de datos de desarrollo: dónde está guardada (19/10/2026)
+
+Quedó documentado en los README que el proyecto tiene **base de datos propia desde
+el desarrollo**: un archivo **SQLite** (`SaludWEB_Backend/storage/saludweb.sqlite`)
+que se crea solo en el primer arranque de la API, con el esquema y los datos de
+ejemplo. **No se sube a GitHub**: `storage/` está entero en `.gitignore` (más los
+patrones `*.sqlite`), así que cada clone arranca con una base nueva, sin cuentas.
+
+- El README del Backend lleva la tabla completa: qué contiene, cómo regenerar los
+  datos de demo (`php sembrar_datos_demo.php`), cómo moverla (`DB_DATABASE` en el
+  `.env`) y qué más guarda esa carpeta (secreto JWT, logs, rate limiting).
+- Los README de Web y Mobile aclaran que esas apps no guardan datos locales
+  (ni en la PC ni en el celular) y enlazan el detalle del Backend.
+
+Publicado en: **Backend #27**, **Web #30**, **Mobile #23**.
+
+## 10. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `720e414` (PR #26) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `9e7144b` (PR #28) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `039f3b8` (PR #22) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `9e6bac5` (PR #27) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `c9f4bdc` (PR #30) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `ef6fa72` (PR #23) |
 
 ---
 
