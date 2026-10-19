@@ -493,6 +493,90 @@ servidor, en lugar de depender de la memoria de quien lo reporta.
 - El destino del log se pasa por parametro: asi las pruebas pueden comprobar que un token NO se
   escribe.
 
+## Cómo presentar el proyecto a alguien que no entiende de tecnología
+
+Discurso armado sin jerga, para una demo, una defensa o una charla con alguien del
+rubro salud que no programa. La regla: hablar de problemas y beneficios, nunca de
+tecnologías. Esta web es la cara visible de SaludWEB.
+
+**En una frase:** SaludWEB es un sistema para gestionar turnos médicos en línea:
+el paciente reserva desde el celular o la computadora, y la pantalla del
+consultorio se actualiza sola en cuanto alguien reserva o cancela.
+
+**El problema que resuelve:**
+
+- Turnos tomados por teléfono, en horarios limitados.
+- Agenda en papel o en Excel, con riesgo de turnos dobles y olvidos.
+- El paciente espera sin saber si le quedó el turno.
+
+**Qué gana cada persona:**
+
+| Quién | Qué gana |
+|---|---|
+| Paciente | Reserva su turno las 24 horas desde el celular, sin llamar, y puede ver o cancelar los suyos. |
+| Médico | Ve su agenda del día actualizada sola, sin llamadas ni anotaciones manuales. |
+| Administrador | Controla usuarios, profesionales y turnos desde una sola pantalla, con estadísticas de gestión. |
+
+**Respuestas a las preguntas típicas, en criollo:**
+
+| Pregunta | Respuesta |
+|---|---|
+| ¿Hay que instalar algo? | No. Para el usuario es como entrar a cualquier página web: solo necesita un navegador y conexión. |
+| ¿Es una web o una app? | Las dos: se usa desde cualquier navegador y también desde la app de celular. |
+| ¿Dónde están los datos? | Guardados en el servidor del sistema, en una base de datos propia, sin depender de servicios de terceros. |
+| ¿Es seguro? | Cada persona entra con su usuario y contraseña, y el sistema respeta el rol de cada una: un paciente solo ve sus propios turnos. |
+| ¿Cuánto cuesta? | El software no tiene licencias: está hecho con tecnología libre (PHP, SQLite, React) y corre en una computadora común. |
+
+**Demo de 3 minutos (guion para mostrarlo en vivo):**
+
+1. Abrir la turnera (`/turnera`) sin iniciar sesión: es pública y se ve de entrada.
+2. Registrarse como paciente y reservar un turno (elegir especialidad, profesional y horario).
+3. Entrar como administrador y abrir el panel (`/dashboard`): el contador de
+   turnos cambia solo, sin recargar la página.
+4. Si hay un celular a mano, repetir la reserva desde la app móvil y verla
+   aparecer en la web.
+
+**Analogía que funciona:** para el paciente, SaludWEB es como reservar un asiento
+de cine en línea: elige la sala (el profesional), el día y la hora, y listo.
+Nadie tiene que aprender a usar el sistema.
+
+## ¿Se puede usar en otras computadoras?
+
+**Sí.** Vale la pena distinguir dos situaciones distintas:
+
+### Otra computadora para desarrollo o demostración
+
+Se levanta igual que esta: se clonan los repositorios y se siguen los mismos pasos
+(`composer install` + `composer run dev` en el backend; `npm install` +
+`npm run dev` en la web, o el lanzador `scripts\iniciar_saludweb.bat`). Cada
+computadora queda con su propia base de datos —un archivo que se crea solo—, así
+que no hay que instalar MySQL ni compartir configuración.
+
+Requisitos de esa máquina: Windows (para los scripts `.bat`; en macOS o Linux se
+usan los mismos comandos manuales), PHP 8, Composer y Node.js.
+
+### Usuarios finales desde otras computadoras o celulares
+
+El sistema corre en una sola computadora (que hace de servidor) y los demás la
+abren desde el navegador, sin instalar nada. Para que eso funcione en una red:
+
+1. El backend tiene que escuchar en la red local, no solo en la máquina:
+   `php -S 0.0.0.0:8000 index.php` (en vez de `127.0.0.1`).
+2. La web tiene que estar compilada (`npm run build`) y servida como archivos
+   estáticos desde el servidor; el `dist/` usa rutas relativas y puede vivir en
+   cualquier carpeta.
+3. Cada dispositivo abre la dirección del servidor en su navegador.
+
+> Detalle pensado para el celular del médico: con el backend escuchando en la
+> red, la app móvil se apunta a `http://<IP-del-servidor>:8000/api` (ver el
+> README de Mobile).
+
+### Lo que NO hace falta
+
+- MySQL u otro servidor de bases de datos: la base es un archivo SQLite que se crea solo.
+- Instalar algo en la PC del usuario final: solo navegador.
+- Licencias de software: PHP, SQLite, React y Expo son libres.
+
 ## Guía para preparar el sistema para producción y defensa
 
 Guía práctica, comentada línea por línea, para llevar un proyecto al entorno de producción
