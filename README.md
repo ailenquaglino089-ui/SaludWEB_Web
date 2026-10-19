@@ -493,6 +493,28 @@ servidor, en lugar de depender de la memoria de quien lo reporta.
 - El destino del log se pasa por parametro: asi las pruebas pueden comprobar que un token NO se
   escribe.
 
+## Comandos y verificaciones disponibles
+
+Mapa completo de lo que se puede ejecutar en este repositorio, qué hace cada
+comando y con qué cuidado.
+
+| Comando | Qué hace | Riesgo / requisito |
+|---|---|---|
+| `npm run dev` | Levanta Vite en `127.0.0.1:5173` | Bloquea la terminal. En desarrollo el panel usa sondeo cada 5 s (sin SSE real). |
+| `npm run build` | Compila la SPA a `dist/` | Escribe `dist/` (ignorado por git). Seguro. |
+| `npm run preview` | Sirve `dist/` en `127.0.0.1:4173` | Bloquea la terminal. Es lo que necesita la prueba de PWA. |
+| `npm test` | 32 pruebas unitarias (logger y correlación) | Ninguno: no necesita backend. |
+| `npm run test:watch` | Las mismas pruebas en modo vigilancia | Bloquea hasta Ctrl+C. |
+| `php verificar_variables.php` | Busca `var(--x)` sin definir en el CSS | Solo lectura. |
+| `php ver_contraste.php` | Audita el contraste WCAG de `tokens.css` | Solo lectura. |
+| `php proponer_contraste.php` | Propone ajustes de color que cumplan 4.5:1 | Solo lectura (imprime propuestas). |
+| `node verificar_pwa.mjs` | 12 comprobaciones de PWA en Chromium real | Requiere build + `vite preview` + `npx playwright install chromium`. No escribe datos. |
+| `node verificar_tiempo_real.mjs` | Dos sesiones aisladas y latencia del canal SSE | Requiere un backend con varios workers (Apache/nginx + PHP-FPM); con `php -S` falla a propósito. Crea y borra un turno. |
+
+Última corrida (19/10/2026): **32/32 pruebas unitarias**, build **OK** (134
+módulos), **0 variables CSS rotas**, **12/12 tokens de contraste OK** y PWA
+**12/12** (incluye arranque offline y que `/api` no salga del caché).
+
 ## Cómo presentar el proyecto a alguien que no entiende de tecnología
 
 Discurso armado sin jerga, para una demo, una defensa o una charla con alguien del
