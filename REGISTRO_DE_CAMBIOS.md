@@ -1,4 +1,4 @@
-# Registro de cambios y pasos del proyecto - SaludWEB
+﻿# Registro de cambios y pasos del proyecto - SaludWEB
 
 Este documento es la **cronología del trabajo** sobre el proyecto "SaludWEB"
 (Sistema de gestión de citas online). Reúne, en orden, **qué se fue haciendo,
@@ -224,7 +224,13 @@ desplegarse en producción.
 
 Publicado en: **Backend #29**, **Web #34**, **Mobile #25**.
 
-## 12. Publicación en GitHub
+## 12. Documentar y Publicar: El Camino al Exito del Proyecto (19/10/2026)
+
+Se agrego DOCUMENTAR_Y_PUBLICAR_EL_CAMINO_AL_EXITO.md a la raiz de los tres repositorios, comentada linea por linea. La guia cubre objetivos, revision tecnica, README, manual de instalacion, arquitectura, diagrama de base de datos, preparacion para el deploy, verificacion y publicacion, y el entregable El Paquete. Cada README enlaza la guia en su nueva seccion.
+
+Publicado en: Backend #30, Web #36, Mobile #26.
+
+## 13. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
