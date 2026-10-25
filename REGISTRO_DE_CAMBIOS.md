@@ -244,9 +244,9 @@ Publicado en: Backend #32, Web #39, Mobile #28.
 
 Los tres README incluyen, además, un resumen del trabajo documental realizado, con el alcance de los cambios y el enlace a este registro.
 
-## 15. Publicación en GitHub (actualizada al 25/10/2026)
+## 15. Publicación en GitHub
 
-| Repositorio | URL | Último merge a `main` |
+| Repositorio | URL | Merge que publicó este documento |
 |---|---|---|
 | Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `da4ac5c` (PR #34) |
 | Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `df6bd70` (PR #42) |
@@ -259,6 +259,8 @@ Se agregó MATEMATICA_DISCRETA_Y_LOGICA_APLICADAS.md a la raíz de los tres repo
 Resuelve las actividades del material, corrige el error de la suma `1101 + 1101` y las deformaciones de símbolos, y agrega una tabla de trazabilidad `archivo:línea`. Los tres README enlazan el documento.
 
 Publicado en: **Backend #34**, **Web #42**, **Mobile #30**.
+
+La corrección de las tablas de conjuntos se publicó en: **Backend #35**, **Web #44**, **Mobile #31**.
 
 ---
 
