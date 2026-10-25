@@ -266,13 +266,13 @@ La corrección de las tablas de conjuntos se publicó en: **Backend #35**, **Web
 
 Se agregó PROBABILIDAD_Y_ESTADISTICA_APLICADAS.md a la raíz de los tres repositorios. El documento aplica el material de cátedra de Probabilidad y Estadística a SaludWEB: estadística descriptiva e inferencial, tablas de frecuencia, medidas de tendencia central y dispersión, boxplot, probabilidad, sucesos, probabilidad condicional, independencia, probabilidad total, Bayes, variables aleatorias y distribuciones binomial, normal y Poisson. Incluye la Guía N°1 verificada, la Guía N°2 resuelta con las 500 respuestas del formulario, el análisis de los datos reales de la base de desarrollo y el segundo recuperatorio, con trazabilidad de las consultas y las limitaciones de los datos. Los tres README enlazan el documento.
 
-Publicado en: pendiente de los PR de publicación.
+Publicado en: **Backend #36**, **Web #46**, **Mobile #32**.
 
 ## 18. Organización empresarial aplicada al proyecto (25/10/2026)
 
 Se agregó ORGANIZACION_EMPRESARIAL_APLICADA.md a la raíz de los tres repositorios. El documento aplica el material de cátedra de Organización Empresarial a SaludWEB: la administración como ciencia, técnica y arte; el proceso administrativo y la previsión; las organizaciones, sus recursos y su clasificación; la Actividad 1 resuelta; los organigramas de Mercería SA y Design & Harmony de la Actividad 2, con sus errores y propuestas de mejora; los documentos comerciales; los roles y las habilidades del administrador; el emprendedor; eficacia, eficiencia y economicidad; el diseño de la estructura organizativa según Mintzberg; el Trabajo Integrador Final y el plan de negocios. Aclara que SaludWEB no es una empresa constituida, que la estructura y el plan son propuestas para la etapa inicial y que los importes del plan son un ejemplo didáctico. Los tres README enlazan el documento.
 
-Publicado en: pendiente de los PR de publicación.
+Publicado en: **Backend #36**, **Web #46**, **Mobile #32**.
 
 ---
 
