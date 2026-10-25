@@ -224,19 +224,25 @@ desplegarse en producción.
 
 Publicado en: **Backend #29**, **Web #34**, **Mobile #25**.
 
-## 12. Documentar y Publicar: El Camino al Exito del Proyecto (19/10/2026)
+## 12. Documentar y Publicar: El Camino al Éxito del Proyecto (19/10/2026)
 
-Se agrego DOCUMENTAR_Y_PUBLICAR_EL_CAMINO_AL_EXITO.md a la raiz de los tres repositorios, comentada linea por linea. La guia cubre objetivos, revision tecnica, README, manual de instalacion, arquitectura, diagrama de base de datos, preparacion para el deploy, verificacion y publicacion, y el entregable El Paquete. Cada README enlaza la guia en su nueva seccion.
+Se agregó DOCUMENTAR_Y_PUBLICAR_EL_CAMINO_AL_EXITO.md a la raíz de los tres repositorios, comentada línea por línea. La guía cubre objetivos, revisión técnica, README, manual de instalación, arquitectura, diagrama de base de datos, preparación para el deploy, verificación y publicación, y el entregable El Paquete. Cada README enlaza la guía en su nueva sección.
 
 Publicado en: Backend #30, Web #36, Mobile #26.
 
-## 13. Publicación en GitHub
+## 13. Arquitectura y Sistemas Operativos aplicada al proyecto (19/10/2026)
+
+Se agregó ARQUITECTURA_Y_SISTEMAS_OPERATIVOS_APLICADO.md a la raíz de los tres repositorios. El documento vincula las consignas del trabajo práctico de Arquitectura y Sistemas Operativos con evidencia real del proyecto (ciclo de una petición, modelo de capas, llamadas al sistema, jerarquía de memoria, modelos de ejecución, PCB, estados, concurrencia y deadlock), y corrige el ejercicio de planificación: las tablas de FCFS, SJF, SRTF, Round Robin con quantum 2 y prioridad expropiativa y no expropiativa se rehicieron respetando los tiempos de llegada. La conclusión corregida indica que SRTF obtiene el mejor tiempo de espera y de retorno promedio, Round Robin el mejor tiempo de respuesta, y que la inanición no es exclusiva de la planificación por prioridad. También se corrigieron los acentos de la sección de la guía anterior en los tres README.
+
+Publicado en: Backend #31, Web #37, Mobile #27.
+
+## 14. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `2fd8792` (PR #29) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `de983de` (PR #34) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `27dfba4` (PR #25) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `f931454` (PR #31) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `b272ed2` (PR #37) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `8ce6423` (PR #27) |
 
 ---
 
@@ -250,3 +256,5 @@ Publicado en: Backend #30, Web #36, Mobile #26.
 - Documentos de QA: `QA/` y `REVISAR_Y_PROBAR_EL_PROYECTO.md`.
 - Guía de producción y defensa: `PREPARAR_SISTEMA_PARA_PRODUCCION_Y_DEFENSA.md`
   (en los tres repositorios).
+- Trabajo práctico de Sistemas Operativos aplicado:
+  `ARQUITECTURA_Y_SISTEMAS_OPERATIVOS_APLICADO.md` (en los tres repositorios).
