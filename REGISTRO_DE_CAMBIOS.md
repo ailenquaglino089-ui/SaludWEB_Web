@@ -242,6 +242,8 @@ Se agregó TRABAJO_PRACTICO_2_E_INTEGRADOR_APLICADO.md a la raíz de los tres re
 
 Publicado en: Backend #32, Web #39, Mobile #28.
 
+Los tres README incluyen, además, un resumen del trabajo documental realizado, con el alcance de los cambios y el enlace a este registro.
+
 ## 15. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
