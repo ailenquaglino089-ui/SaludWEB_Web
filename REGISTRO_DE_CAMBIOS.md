@@ -244,13 +244,13 @@ Publicado en: Backend #32, Web #39, Mobile #28.
 
 Los tres README incluyen, además, un resumen del trabajo documental realizado, con el alcance de los cambios y el enlace a este registro.
 
-## 15. Publicación en GitHub
+## 15. Publicación en GitHub (actualizada al 25/10/2026)
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `013d0d5` (PR #32) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `265d1cf` (PR #39) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `7378de1` (PR #28) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `da4ac5c` (PR #34) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `df6bd70` (PR #42) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `8a2b774` (PR #30) |
 
 ## 16. Matemática discreta y lógica aplicadas al proyecto (25/10/2026)
 
