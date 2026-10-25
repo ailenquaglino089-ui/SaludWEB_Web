@@ -252,6 +252,14 @@ Los tres README incluyen, además, un resumen del trabajo documental realizado, 
 | Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `265d1cf` (PR #39) |
 | Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `7378de1` (PR #28) |
 
+## 16. Matemática discreta y lógica aplicadas al proyecto (25/10/2026)
+
+Se agregó MATEMATICA_DISCRETA_Y_LOGICA_APLICADAS.md a la raíz de los tres repositorios. El documento aplica el material de cátedra de Erika R. Aab: sistemas de numeración (conversiones, complemento a dos, permisos en octal, colores hexadecimales, IDs y JWT), lógica proposicional (tablas de verdad, De Morgan, condicional y contrapositivo, falacias y demostraciones), conjuntos (operaciones y su traducción a SQL), relaciones (equivalencia, orden y la función parcial de turnos), matrices y grafos (adyacencia, B-tree, claves foráneas y árboles).
+
+Resuelve las actividades del material, corrige el error de la suma `1101 + 1101` y las deformaciones de símbolos, y agrega una tabla de trazabilidad `archivo:línea`. Los tres README enlazan el documento.
+
+Publicado en: **Backend #34**, **Web #42**, **Mobile #30**.
+
 ---
 
 ## Dónde mirar para revisar
@@ -268,3 +276,5 @@ Los tres README incluyen, además, un resumen del trabajo documental realizado, 
   `ARQUITECTURA_Y_SISTEMAS_OPERATIVOS_APLICADO.md` (en los tres repositorios).
 - TP2 y TP Integrador aplicados:
   `TRABAJO_PRACTICO_2_E_INTEGRADOR_APLICADO.md` (en los tres repositorios).
+- Matemática discreta y lógica aplicadas:
+  `MATEMATICA_DISCRETA_Y_LOGICA_APLICADAS.md` (en los tres repositorios).
