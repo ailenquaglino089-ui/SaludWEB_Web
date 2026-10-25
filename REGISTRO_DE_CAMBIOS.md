@@ -236,13 +236,19 @@ Se agregó ARQUITECTURA_Y_SISTEMAS_OPERATIVOS_APLICADO.md a la raíz de los tres
 
 Publicado en: Backend #31, Web #37, Mobile #27.
 
-## 14. Publicación en GitHub
+## 14. TP2 y TP Integrador de Sistemas Operativos aplicados (19/10/2026)
+
+Se agregó TRABAJO_PRACTICO_2_E_INTEGRADOR_APLICADO.md a la raíz de los tres repositorios, con la carátula de ambos trabajos. Incluye la resolución del TP2 (FCFS, SJF, SRTF, Round Robin con quantum 2 y prioridad expropiativa, con los tiempos de llegada respetados) y el método del Algoritmo del Banquero con un ejemplo propio de workers, además de las 19 consignas del TP Integrador corregidas y aplicadas al proyecto (memoria virtual, reemplazo de páginas, archivos, sistemas de archivos, interrupciones, topologías, OSI/TCP-IP, IPv4/IPv6 y clases de IP). Quedó señalado que la tabla del TP2 se interpretó y que la del Banquero debe confirmarse con la tabla original.
+
+Publicado en: Backend #32, Web #39, Mobile #28.
+
+## 15. Publicación en GitHub
 
 | Repositorio | URL | Último merge a `main` |
 |---|---|---|
-| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `f931454` (PR #31) |
-| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `b272ed2` (PR #37) |
-| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `8ce6423` (PR #27) |
+| Backend | <https://github.com/ailenquaglino089-ui/SaludWEB_Backend> | `013d0d5` (PR #32) |
+| Web | <https://github.com/ailenquaglino089-ui/SaludWEB_Web> | `265d1cf` (PR #39) |
+| Mobile | <https://github.com/ailenquaglino089-ui/SaludWEB_Mobile> | `7378de1` (PR #28) |
 
 ---
 
@@ -258,3 +264,5 @@ Publicado en: Backend #31, Web #37, Mobile #27.
   (en los tres repositorios).
 - Trabajo práctico de Sistemas Operativos aplicado:
   `ARQUITECTURA_Y_SISTEMAS_OPERATIVOS_APLICADO.md` (en los tres repositorios).
+- TP2 y TP Integrador aplicados:
+  `TRABAJO_PRACTICO_2_E_INTEGRADOR_APLICADO.md` (en los tres repositorios).
