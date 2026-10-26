@@ -316,6 +316,12 @@ Se agregó la sección **19.5 Material de cátedra aplicado** a `DERECHO_APLICAD
 
 Publicado en: **Backend #39**, **Web #50**, **Mobile #35**.
 
+## 26. Aplicación completa del material de legislación (26/10/2026)
+
+Se completó la aplicación explícita de los archivos de cátedra en `DERECHO_APLICADO_A_LA_INFORMATICA_APLICADO.md`: se agregó la distinción entre informática jurídica y derecho de la informática; se delimitó el alcance civil de la Unidad 2 (personas, obligaciones, contratos y responsabilidad; familia, sucesiones y derechos reales fuera de alcance); se incorporaron las tres dimensiones de la subordinación y los principios protectores de la Unidad 3; y se amplió la Clase 25 con tareas de cuidado, privacidad y reforma laboral de la Ley 27.742. La sección 19.5 se actualizó con las secciones exactas de aplicación.
+
+Publicado en: **Backend #40**, **Web #52**, **Mobile #36**.
+
 ---
 
 ## Dónde mirar para revisar
