@@ -322,6 +322,12 @@ Se completó la aplicación explícita de los archivos de cátedra en `DERECHO_A
 
 Publicado en: **Backend #40**, **Web #52**, **Mobile #36**.
 
+## 27. READMEs con la trazabilidad del material de legislación (26/10/2026)
+
+Se agregó en los tres READMEs un párrafo que explica qué hizo la sección **19.5** del documento de Derecho: la trazabilidad de los cinco grupos de contenido, los parciales, los trabajos prácticos y el repaso; la aclaración sobre el PDF duplicado del Módulo 1 y el archivo administrativo de asistencia; y la decisión de no copiar los archivos fuente al repositorio, sino publicar la síntesis aplicada.
+
+Publicado en: **Backend #41**, **Web #54**, **Mobile #37**.
+
 ---
 
 ## Dónde mirar para revisar
