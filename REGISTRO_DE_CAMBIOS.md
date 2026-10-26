@@ -278,7 +278,7 @@ Publicado en: **Backend #36**, **Web #46**, **Mobile #32**.
 
 Se agregó BASES_DE_DATOS_I_GESTION_DE_PEDIDOS_APLICADA.md a la raíz de los tres repositorios. El documento aplica el Parcial II de Bases de Datos I a SaludWEB: modelo de referencia de rubros, proveedores, clientes, productos, pedidos, ítems y movimientos de stock; equivalencias con las tablas actuales del proyecto; DER y diccionario de datos; normalización hasta 3FN; DDL de referencia para MySQL 8/MariaDB; integridad referencial y trigger que impide stock negativo; índices y criterios de rendimiento; vistas `vw_stock_actual` y `vw_reportes_pedidos`; las 15 consultas obligatorias con explicación; carga masiva reproducible; verificación y límites. Aclara que no incluye el archivo `.sql` ni el PDF de entrega y que el módulo de farmacia e insumos es una propuesta, no una funcionalidad implementada. Los tres README enlazan el documento.
 
-Publicado en: pendiente de los PR de publicación.
+Publicado en: **Backend #37**, **Web #47**, **Mobile #33**.
 
 ---
 
