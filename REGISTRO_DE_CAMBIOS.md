@@ -328,6 +328,12 @@ Se agregó en los tres READMEs un párrafo que explica qué hizo la sección **1
 
 Publicado en: **Backend #41**, **Web #54**, **Mobile #37**.
 
+## 28. Tabla completa de legislación en los READMEs (26/10/2026)
+
+Se agregó en los tres READMEs la tabla completa del material de cátedra aplicado: los cinco grupos de contenido (Módulo 1, Módulo 2, Unidad 2, Unidad 3 y Unidades 4–5), los parciales y trabajos prácticos (examen conceptual, trabajo áulico, casos 3 y 4, clase 25/09, actividad CloudNet y repaso), la sección del documento donde se aplica cada uno y los dos casos especiales (archivo administrativo y PDF duplicado).
+
+Publicado en: **Backend #42**, **Web #56**, **Mobile #38**.
+
 ---
 
 ## Dónde mirar para revisar
