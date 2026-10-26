@@ -310,6 +310,12 @@ Se agregó COMO_DEFENDER_UN_PROYECTO_PROFESIONAL_APLICADO.md a la raíz de los t
 
 Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
+## 25. Trazabilidad del material de legislación aplicado (26/10/2026)
+
+Se agregó la sección **19.5 Material de cátedra aplicado** a `DERECHO_APLICADO_A_LA_INFORMATICA_APLICADO.md` en los tres repositorios. Documenta qué aportó cada archivo de la carpeta `LEGISLACIÓN` y en qué sección del documento se aplicó: los cinco grupos de contenido (módulos y unidades), los parciales, los trabajos prácticos y el material de repaso. También aclara que el PDF del Módulo 1 es un duplicado y que el archivo de asistencia y criterios es administrativo. No se copiaron los archivos fuente al repositorio; la aplicación queda trazada en el documento publicado.
+
+Publicado en: **Backend #39**, **Web #50**, **Mobile #35**.
+
 ---
 
 ## Dónde mirar para revisar
