@@ -284,31 +284,31 @@ Publicado en: **Backend #37**, **Web #47**, **Mobile #33**.
 
 Se agregó METODOLOGIA_DE_SISTEMAS_II_APLICADA.md a la raíz de los tres repositorios. Aplica calidad de diseño y los diez principios, SOLID, arquitectura en capas, lógica de negocio, acceso a datos, patrones, UML, representación lógica, documentación, evaluación heurística, prueba de usabilidad, estrategia de pruebas y los TP 1 a 3. Incluye diagramas Mermaid, trazabilidad `archivo:línea`, hallazgos priorizados y una deuda alta de autorización en pacientes y prescripciones. Los tres README enlazan el documento.
 
-Pendiente de publicación.
+Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
 ## 21. Análisis de Datos aplicado al proyecto (25/10/2026)
 
 Se agregó ANALISIS_DE_DATOS_APLICADO.md a la raíz de los tres repositorios. Aplica fuentes, inventario, diccionario, calidad de datos, estadística descriptiva, probabilidad, indicadores, visualización y límites. Analiza la base real de desarrollo (223 pacientes, 8 médicos, 25 bloques, 1 cita y 17 triages), la Guía N°2 de 500 estudiantes y las precauciones para un tablero honesto; incluye consultas de reproducción y recomendaciones priorizadas. Los tres README enlazan el documento.
 
-Pendiente de publicación.
+Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
 ## 22. Gestión de Desarrollo de Software aplicada al proyecto (25/10/2026)
 
 Se agregó GESTION_DE_DESARROLLO_DE_SOFTWARE_APLICADA.md a la raíz de los tres repositorios. Aplica alcance, EDT, fases, equipo, interesados, cronograma, riesgos, calidad, configuración, cambios y el TP **Reportes e Indicadores en Proyectos de Software**. Audita el tablero publicado (85 %, 2 días, 1 bug, 9 historias y velocidad 8/10/9), lo contrasta con la evidencia del repositorio, corrige la referencia a XAMPP/MySQL y propone un tablero con fórmula, fuente, fecha y dueño. Los tres README enlazan el documento.
 
-Pendiente de publicación.
+Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
 ## 23. Derecho Aplicado a la Informática aplicado al proyecto (25/10/2026)
 
 Se agregó DERECHO_APLICADO_A_LA_INFORMATICA_APLICADO.md a la raíz de los tres repositorios. Aplica derecho público y privado, jerarquía normativa, derechos digitales, Ley 25.326, datos sensibles de salud, consentimiento, derechos del titular, firma electrónica y digital, Ley 27.553 de receta electrónica, responsabilidad civil, prueba digital, derecho laboral, propiedad intelectual, licencias, consumidor, ciberdelitos, IA y casos de análisis. Incluye matriz legal y plan de cumplimiento para SaludWEB. Aclara que no constituye asesoramiento jurídico. Los tres README enlazan el documento.
 
-Pendiente de publicación.
+Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
 ## 24. Cómo defender un proyecto profesional aplicado al proyecto (25/10/2026)
 
 Se agregó COMO_DEFENDER_UN_PROYECTO_PROFESIONAL_APLICADO.md a la raíz de los tres repositorios. Prepara la defensa oral de SaludWEB: qué evalúa un tribunal, el problema antes del código, la arquitectura cliente-servidor, la justificación de las tecnologías, la seguridad y la autenticación, la base de datos, la integridad y el tiempo real, las decisiones por pantalla, un guion de 10 minutos, las preguntas difíciles, la lista de verificación, los límites y la deuda técnica, y la trazabilidad de cada afirmación. Incluye diagramas Mermaid, un plan B para la demo y una matriz de evidencia; complementa el discurso no técnico y la demo de 3 minutos del README, y la guía de producción y defensa. Los tres README enlazan el documento.
 
-Pendiente de publicación.
+Publicado en: **Backend #38**, **Web #48**, **Mobile #34**.
 
 ---
 
