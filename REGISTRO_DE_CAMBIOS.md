@@ -340,6 +340,8 @@ Se agregó SIMULACION_DE_DEFENSA_FINAL.md a la raíz de los tres repositorios. A
 
 Publicado en: **Backend #43**, **Web #58**, **Mobile #39**.
 
+El cierre administrativo, sin placeholders y con los datos de cátedra remitidos a la carátula oficial, se publicó en: **Backend #44**, **Web #59**, **Mobile #40**.
+
 ---
 
 ## Dónde mirar para revisar
