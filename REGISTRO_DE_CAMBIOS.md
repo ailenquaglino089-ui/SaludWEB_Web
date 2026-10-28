@@ -336,9 +336,11 @@ Publicado en: **Backend #42**, **Web #56**, **Mobile #38**.
 
 ## 29. Simulación de Defensa Final aplicada al proyecto (28/10/2026)
 
-Se agregó SIMULACION_DE_DEFENSA_FINAL.md a la raíz de los tres repositorios. Aplica la guía de simulación de defensa a SaludWEB: tres rondas de ensayo, cronómetro y reglas de práctica, guion de 12 minutos con transiciones, problema y solución, objetivos, arquitectura y tecnologías, demo por roles con plan B, cuatro fragmentos de código explicados línea por línea, resultados verificados, límites y deuda, preguntas técnicas y metodológicas, video de respaldo, checklist y matriz de evidencia. El documento está comentado línea por línea con comentarios HTML y distingue hechos, propuestas y datos pendientes; no inventa métricas ni modifica el código. Los tres README enlazan el documento.
+Se agregó SIMULACION_DE_DEFENSA_FINAL.md a la raíz de los tres repositorios. Aplica la guía de simulación de defensa a SaludWEB: tres rondas de ensayo, cronómetro y reglas de práctica, guion de 12 minutos con transiciones, problema y solución, objetivos, arquitectura y tecnologías, demo por roles con plan B, cuatro fragmentos de código explicados línea por línea, resultados verificados, límites y deuda, preguntas técnicas y metodológicas, video de respaldo, checklist y matriz de evidencia. El documento está comentado línea por línea con comentarios HTML y distingue hechos, propuestas y datos que se completan en la carátula oficial; no inventa métricas ni modifica el código. Los tres README enlazan el documento.
 
 Publicado en: **Backend #43**, **Web #58**, **Mobile #39**.
+
+El cierre administrativo, sin placeholders y con los datos de cátedra remitidos a la carátula oficial, se publicó en: **Backend #44**, **Web #59**, **Mobile #40**.
 
 ---
 
