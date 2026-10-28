@@ -334,6 +334,12 @@ Se agregó en los tres READMEs la tabla completa del material de cátedra aplica
 
 Publicado en: **Backend #42**, **Web #56**, **Mobile #38**.
 
+## 29. Simulación de Defensa Final aplicada al proyecto (28/10/2026)
+
+Se agregó SIMULACION_DE_DEFENSA_FINAL.md a la raíz de los tres repositorios. Aplica la guía de simulación de defensa a SaludWEB: tres rondas de ensayo, cronómetro y reglas de práctica, guion de 12 minutos con transiciones, problema y solución, objetivos, arquitectura y tecnologías, demo por roles con plan B, cuatro fragmentos de código explicados línea por línea, resultados verificados, límites y deuda, preguntas técnicas y metodológicas, video de respaldo, checklist y matriz de evidencia. El documento está comentado línea por línea con comentarios HTML y distingue hechos, propuestas y datos pendientes; no inventa métricas ni modifica el código. Los tres README enlazan el documento.
+
+Publicado en: **Backend #43**, **Web #58**, **Mobile #39**.
+
 ---
 
 ## Dónde mirar para revisar
@@ -360,3 +366,5 @@ Publicado en: **Backend #42**, **Web #56**, **Mobile #38**.
   `BASES_DE_DATOS_I_GESTION_DE_PEDIDOS_APLICADA.md` (en los tres repositorios).
 - Cómo defender un proyecto profesional aplicado:
   `COMO_DEFENDER_UN_PROYECTO_PROFESIONAL_APLICADO.md` (en los tres repositorios).
+- Simulación de Defensa Final:
+  `SIMULACION_DE_DEFENSA_FINAL.md` (en los tres repositorios).
