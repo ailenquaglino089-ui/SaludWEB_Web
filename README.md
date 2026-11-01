@@ -6,13 +6,16 @@ Frontend moderno construido con **React + Vite**. Consume la API REST del backen
 ## Qué hacemos acá
 
 - **Web app profesional** (SPA) con login y registro JWT.
+- **Acceso desde teléfonos y computadoras** por navegador, sin depender de la marca
+  del teléfono. En el login, **Ver contraseña** muestra solo lo que se está escribiendo;
+  no recupera ni expone contraseñas guardadas.
 - **Módulos de gestión**: médicos, pacientes y prescripciones (la app respeta las mismas
   reglas que el backend: un paciente no puede crear médicos, solo los médicos recetan, etc.).
 - **Turnera (citas online)**: catálogo de especialidades → profesionales → reserva de turno;
   mis turnos; agenda del profesional con *polling adaptativo*.
-- **Tiempo real en el panel**: los indicadores del consultorio se actualizan por
-  **Server-Sent Events** cuando alguien reserva o cancela un turno, sin polling y sin recargar.
-  Se ve el detalle en [Tiempo real](#tiempo-real-sin-polling).
+- **Actualización automática del panel**: por defecto consulta cambios cada 15 segundos;
+  puede usar **Server-Sent Events** cuando el backend tiene varios workers. No hace falta
+  recargar la página. Se explica en [Actualización del panel](#actualización-del-panel).
 - **Roles y permisos en la UI**: cada usuario ve y hace solo lo que su rol permite
   (`admin | medico | paciente`), usando `tipo_usuario` de `/api/auth/me`.
 - **Manejo de errores de red**: aviso global **"Sin conexión"** cuando el navegador queda
@@ -52,25 +55,44 @@ La SPA sola no alcanza: necesita la API. Hay **dos formas** de levantar todo.
 
 En `SaludWEB_Web\scripts\` hay dos scripts para Windows, comentados línea por línea:
 
-- **`iniciar_saludweb.bat`** → levanta la API (PHP) y la web (Vite), **espera a que las dos
-  respondan** y abre **Chrome en `http://localhost:5173/turnera`**. Detecta el PHP solo,
-  **sin necesitar XAMPP ni MySQL**. Deja **2 ventanas** abiertas (una por servidor); la
-  ventana del lanzador se cierra sola. Si volvés a hacer doble clic, no duplica servidores.
+- **`iniciar_saludweb.bat`** → detecta la IP local, levanta la API en `0.0.0.0:8000` y
+  compila/sirve la web en modo producción en `0.0.0.0:5173`, **espera a que las dos
+  respondan** y abre **Chrome en `http://localhost:5173/turnera`**. Al final muestra la
+  dirección para el celular (`http://<IP-DE-LA-PC>:5173`) y la URL fija de Tailscale para
+  acceder desde cualquier red. Detecta el PHP solo, **sin necesitar XAMPP ni MySQL**.
+  Deja **2 ventanas** abiertas (una por servidor); la ventana del lanzador se cierra sola.
+  Si volvés a hacer doble clic, no duplica servidores.
 - **`detener_saludweb.bat`** → apaga los dos servidores (libera los puertos 8000 y 5173).
 
 Requisito: el repo `SaludWEB_Backend` tiene que estar como carpeta **hermana** de
 `SaludWEB_Web` (así vienen en el workspace del proyecto). Si tu PHP no está en la ruta por
 defecto, definí la variable de entorno `SALUDWEB_PHP` con la ruta a tu `php.exe`.
 
+#### Acceso desde cualquier red (WiFi o datos móviles)
+
+La URL fija es **`https://desktop-5f7743f.taileeeb72.ts.net`**. Se publica con
+**Tailscale Funnel** y funciona desde cualquier WiFi o datos móviles, sin instalar
+Tailscale en el celular:
+
+1. Abrí la URL en el navegador del teléfono e iniciá sesión.
+2. En Android: menú de Chrome → **Instalar app** o **Agregar a pantalla de inicio**.
+   En iPhone: Compartir → **Agregar a pantalla de inicio**.
+3. La PC tiene que quedar **encendida y con Internet**; Tailscale corre como servicio de
+   Windows y mantiene la URL. La web se sirve con `npm run build && npm run preview`.
+4. La URL es **pública**: cualquiera que la conozca llega a la pantalla de login. Cambiá la
+   contraseña de demostración y no compartas el enlace.
+5. El link anterior de `trycloudflare.com` era un túnel temporal y **ya no existe**. La app
+   instalada desde ese link hay que desinstalarla y volver a instalarla desde esta URL.
+
 #### Opción 2 — Dos terminales (manual)
 
 ```bash
 # Terminal 1 - la API (en SaludWEB_Backend)
-composer run dev          # equivale a: php -S 127.0.0.1:8000 index.php
+composer run dev          # equivale a: php -S 0.0.0.0:8000 index.php
 
 # Terminal 2 - la SPA (en SaludWEB_Web)
 npm install               # solo la primera vez
-npm run dev               # queda en http://localhost:5173
+npm run dev               # queda en http://localhost:5173 y en la IP local
 ```
 
 No hace falta **Apache, XAMPP ni MySQL**: la API corre con el **servidor nativo de PHP** y
@@ -78,16 +100,61 @@ guarda en un archivo **SQLite** (`SaludWEB_Backend/storage/saludweb.sqlite`) que
 en el primer request. XAMPP es opcional; si no tenés PHP instalado, el README del backend
 explica cómo poner uno portable, paso a paso.
 
+El servidor nativo de PHP atiende una petición a la vez. Por eso el build local usa
+actualizaciones periódicas cada 15 segundos en el panel, en lugar de dejar abierto el
+canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilitar con
+`VITE_REALTIME_SSE=true` únicamente al usar un backend con varios workers.
+
 #### Cómo entrar al sistema
 
 1. Ejecutá `iniciar_saludweb.bat` (o las dos terminales) y esperá a que abra **Chrome** en
    **http://localhost:5173/turnera** (la turnera es pública: se ve sin iniciar sesión).
+   Desde un celular en la misma red, abrí la dirección que muestra el script:
+   `http://<IP-DE-LA-PC>:5173`. Fuera de casa usá
+   `https://desktop-5f7743f.taileeeb72.ts.net` (ver “Acceso desde cualquier red”).
 2. En un clon nuevo **no hay ninguna cuenta**: usá **Registro** (`/register`) y creá una
-   (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`.
+   (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`. La contraseña
+   puede ser la que quieras: solo se exige que no esté vacía (máximo 72 caracteres).
 3. Para entrar como **administradora** (con la base de demostración): usuario
    `admin@salud.com`. Si no recordás su clave, en el backend ejecutá
    `php resetear_password.php admin@salud.com MiClaveNueva123` (ver el README del backend,
    "¿Olvidaste la contraseña?").
+
+### Acceso desde el teléfono: flujo explicado paso a paso
+
+1. **Elegir cómo conectarse.** En la misma Wi‑Fi que la PC, usar la dirección local que
+   muestra `iniciar_saludweb.bat` (`http://<IP-DE-LA-PC>:5173`); es el camino directo y
+   normalmente más rápido. Desde otra Wi‑Fi o con datos móviles, abrir
+   <https://desktop-5f7743f.taileeeb72.ts.net>.
+2. **Mantener disponible el servidor.** Para el enlace público, la PC queda encendida,
+   conectada a Internet, con la API y la web iniciadas y Tailscale activo. La dirección
+   local solo funciona mientras el teléfono y la PC estén en la misma red.
+3. **Crear una cuenta personal.** En “Regístrate aquí”, ingresar nombre, email (puede ser
+   Gmail) y una contraseña elegida por la persona. El email no se verifica como una cuenta
+   Google; “Gmail” aquí es el formato del email, no un inicio OAuth.
+4. **Volver a iniciar sesión.** Usar el mismo email y la misma contraseña elegida al
+   registrarse. El sistema no acepta una contraseña arbitraria en cada acceso: la API
+   verifica el hash de la contraseña guardada.
+5. **Verificar lo que se escribe.** En `src/components/Auth/Login.jsx`, el botón cambia el
+   campo entre texto oculto y visible; `Auth.css` le da espacio y un área táctil adecuada
+   para pantalla chica. El mismo formulario responsive sirve en computadora y teléfono.
+6. **Entender la conexión con la API.** `src/api/client.js` usa el origen de la página en
+   un build publicado para que el navegador del teléfono llame a la API del mismo sitio;
+   no intenta conectarse a `127.0.0.1`, que en un teléfono sería el propio teléfono.
+   `vite.config.js` conserva el proxy `/api` para desarrollo local.
+7. **Evitar bloqueos en el servidor local.** `src/hooks/useEventosRealtime.js` usa por
+   defecto sondeo cada 15 segundos. El PHP integrado atiende una petición a la vez; una
+   conexión SSE permanente podría dejar esperando el login u otras consultas. SSE se
+   habilita solo en servidores configurados con varios workers.
+8. **Actualizar un acceso instalado.** “Agregar a pantalla de inicio” crea un acceso web
+   (PWA), no instala una app nativa. Si queda una versión anterior en caché, cerrar la
+   pestaña/app y volver a abrir el enlace para que el service worker descargue los assets
+   nuevos. `/api` nunca se sirve desde caché.
+
+> **Compatibilidad:** se puede usar en navegadores actuales de Android y iPhone, sin
+> importar la marca. Un sistema operativo o navegador demasiado antiguo puede no soportar
+> los requisitos actuales de HTTPS/PWA. La dirección pública es accesible para cualquiera
+> que la conozca: cada persona necesita su propia cuenta y la computadora debe seguir en línea.
 
 ### Si ves el aviso "Sin conexión"
 
@@ -221,19 +288,18 @@ Para verificar desde la consola, sin mirar el código:
 import.meta.env.VITE_API_URL
 ```
 
-## Tiempo real (sin polling)
+## Actualización del panel
 
-El panel **no pregunta al backend cada cierto tiempo**: abre un canal con `EventSource` y
-espera a que le avisen que algo cambió.
+Con la configuración predeterminada, el panel consulta si hubo cambios cada 15 segundos.
+También se puede usar un canal `EventSource` cuando el backend admite varios workers.
 
-> **En desarrollo el canal se simula con un sondeo cada 5 s.** El motivo es del servidor, no
-> del canal: `php -S` (el backend de desarrollo) atiende **una petición por vez** y en
+> **Con `php -S` se usa sondeo, también en el build local.** El motivo es del servidor, no
+> del canal: `php -S` atiende **una petición por vez** y en
 > Windows no admite varios workers. Con el canal SSE abierto, esa única petición quedaría
 > ocupada esperando eventos y el resto de la API (login, listados, turnera) se encolaría
-> hasta el time-out: la pantalla se vería vacía. Por eso, cuando el frontend corre en modo
-> desarrollo (`npm run dev`), el `EventSource` real se reemplaza por un sondeo cada 5 s —
-> mismo efecto visible, sin bloquear al servidor. El canal SSE de verdad se usa en el build
-> de producción, que va a un servidor con varios workers (Apache, nginx + PHP-FPM). Ver
+> hasta el time-out: la pantalla se vería vacía. Por eso, por defecto el `EventSource` se
+> reemplaza por un sondeo cada 15 s —sin bloquear al servidor. Solo se habilita SSE con
+> `VITE_REALTIME_SSE=true` cuando el backend usa varios workers (Apache, nginx + PHP-FPM). Ver
 > [`src/hooks/useEventosRealtime.js`](src/hooks/useEventosRealtime.js).
 
 ```
@@ -257,7 +323,7 @@ paciente nunca recibe avisos de otro.
 - ✅ Autenticación con JWT (login/registro), misma API que la app móvil
 - ✅ CRUD de Médicos / Pacientes / Prescripciones con gating por rol
 - ✅ Turnera: especialidades → profissionais → reserva, mis turnos y agenda del médico
-- ✅ Panel en vivo por SSE: se actualiza solo al reservar o cancelar, sin polling (SSE real en un servidor con varios workers; sondeo cada 5 s en desarrollo)
+- ✅ Panel con actualización automática (sondeo cada 15 s por defecto; SSE opcional en servidores multi-worker)
 - ✅ Indicador del estado del canal (conectado / reconectando / sin conexión)
 - ✅ Gestión de usuarios y roles (solo admin)
 - ✅ Cambio de estado de prescripciones y cancelación de turnos
@@ -314,7 +380,11 @@ La SPA es instalable y abre sin red cuando ya se visitó una vez:
   se cachean: turnos y prescripciones siempre se piden a la red con autorización.
 - El service worker se registra **solo en el build de producción** (`npm run build`), en
   `src/main.jsx`.
-- Requiere HTTPS (o `localhost`) para que el navegador active el service worker.
+- Requiere HTTPS (o `localhost`) para que el navegador active el service worker. La URL de
+  Tailscale (`https://desktop-5f7743f.taileeeb72.ts.net`) cumple ese requisito y sirve el
+  build con `npm run preview` en el puerto 5173.
+- En desarrollo (`npm run dev`) la app funciona, pero **no es instalable** porque el service
+  worker no se registra; para probar la instalación usá el build de producción.
 
 ### Verificar la PWA (E2E en navegador real)
 
@@ -381,28 +451,28 @@ de A se actualiza porque B reservó":
    npm install      # solo la primera vez
    npm run dev
    ```
-   Queda en `http://127.0.0.1:5173`.
-3. **Iniciar sesión como admin** en `http://127.0.0.1:5173/login`.
+   Queda en `http://localhost:5173` y en `http://<IP-DE-LA-PC>:5173`.
+3. **Iniciar sesión como admin** en `http://localhost:5173/login`.
 4. **Abrir el panel** (`/dashboard`). Arriba tiene que decir **"En vivo"** en verde.
    Si dice "Conectando..." o "Sin canal en vivo", el canal no llegó: recargá con F5.
 5. **En una ventana de incógnito (o en otro navegador), iniciar sesión como paciente** y
    reservar un turno desde la turnera.
 6. **Volver a la ventana del admin**: el número de "Turnos registrados" tiene que cambiar
-   solo, sin recargar la página. En desarrollo el cambio llega en unos segundos, porque el
-   panel se refresca por **sondeo cada 5 s**; con un servidor con varios workers llega al
-   instante por el canal SSE.
+   solo, sin recargar la página. Por defecto el cambio llega en un máximo de **15 s** por
+   sondeo; con `VITE_REALTIME_SSE=true` y un servidor con varios workers llega al instante.
 
 > Si en el paso 4 no aparece "En vivo", el problema casi siempre es que el backend no está
 > levantado o que la sesión venció. El botón de recarga manual que aparece al lado
 > reconecta el canal sin cargar toda la página.
 
-> **Por qué en desarrollo se usa sondeo y no SSE.** `php -S` atiende **una petición a la vez**
+> **Por qué con `php -S` se usa sondeo y no SSE.** `php -S` atiende **una petición a la vez**
 > (y en Windows no admite varios workers). Si el panel abriera el canal SSE, esa única
 > petición quedaría ocupada esperando eventos y **todo el resto de la API** (login, turnera,
 > listados) se encolaría hasta el time-out: la pantalla se vería vacía. Por eso, cuando el
-> frontend corre en modo desarrollo, el canal SSE se reemplaza por un sondeo cada 5 s: mismo
-> efecto visible, sin bloquear el servidor. El canal `EventSource` real se usa en el build de
-> producción, que va a un servidor con varios workers (Apache, nginx + PHP-FPM). El CRUD, la
+> frontend corre en modo desarrollo o se sirve con `php -S`, el canal SSE se reemplaza por
+> un sondeo cada 15 s: mismo efecto visible, sin bloquear al servidor. El canal `EventSource`
+> se habilita con `VITE_REALTIME_SSE=true` solo en servidores multi-worker (Apache, nginx +
+> PHP-FPM). El CRUD, la
 > turnera y las suites REST andan perfecto con `composer run dev` y con el lanzador
 > `scripts/iniciar_saludweb.bat`.
 
@@ -500,7 +570,7 @@ comando y con qué cuidado.
 
 | Comando | Qué hace | Riesgo / requisito |
 |---|---|---|
-| `npm run dev` | Levanta Vite en `127.0.0.1:5173` | Bloquea la terminal. En desarrollo el panel usa sondeo cada 5 s (sin SSE real). |
+| `npm run dev` | Levanta Vite en `0.0.0.0:5173` (localhost y red local) | Bloquea la terminal. El panel usa sondeo cada 15 s (sin SSE real). |
 | `npm run build` | Compila la SPA a `dist/` | Escribe `dist/` (ignorado por git). Seguro. |
 | `npm run preview` | Sirve `dist/` en `127.0.0.1:4173` | Bloquea la terminal. Es lo que necesita la prueba de PWA. |
 | `npm test` | 32 pruebas unitarias (logger y correlación) | Ninguno: no necesita backend. |
@@ -580,14 +650,27 @@ usan los mismos comandos manuales), PHP 8, Composer y Node.js.
 ### Usuarios finales desde otras computadoras o celulares
 
 El sistema corre en una sola computadora (que hace de servidor) y los demás la
-abren desde el navegador, sin instalar nada. Para que eso funcione en una red:
+abren desde el navegador, sin instalar nada. Para que eso funcione en cualquier
+WiFi a la que se conecte la PC (o en un hotspot del celular):
 
-1. El backend tiene que escuchar en la red local, no solo en la máquina:
-   `php -S 0.0.0.0:8000 index.php` (en vez de `127.0.0.1`).
-2. La web tiene que estar compilada (`npm run build`) y servida como archivos
-   estáticos desde el servidor; el `dist/` usa rutas relativas y puede vivir en
-   cualquier carpeta.
-3. Cada dispositivo abre la dirección del servidor en su navegador.
+1. Ejecutá `iniciar_saludweb.bat`. El script ya deja la API en `0.0.0.0:8000`
+   y Vite en `0.0.0.0:5173`, detecta la IP local y muestra la dirección exacta.
+2. Si lo hacés a mano, usá `php -S 0.0.0.0:8000 index.php` para la API; Vite ya
+   escucha en `0.0.0.0` por `vite.config.js`.
+3. En el celular o en otra PC de la misma red, abrí `http://<IP-DE-LA-PC>:5173`.
+4. La primera vez, ejecutá como administrador
+   `SaludWEB_Mobile\scripts\permitir_firewall_saludweb.bat` para habilitar los
+   puertos 8000, 5173 y 8081 solo para la subred local.
+
+No hace falta compilar (`npm run build`) para la demo: el servidor de Vite sirve
+la SPA directamente.
+
+> **Datos móviles:** el celular y la PC tienen que estar en la misma red. Si la
+> PC se conecta al hotspot del celular (los datos móviles del celular), funciona.
+> Si el celular usa datos móviles y la PC está en otra red, no se puede acceder
+> sin publicar el sistema en Internet. Eso queda descartado: no se usa túnel
+> público, Cloudflare, ngrok ni similar. El firewall limita el acceso a la
+> subred local.
 
 > Detalle pensado para el celular del médico: con el backend escuchando en la
 > red, la app móvil se apunta a `http://<IP-del-servidor>:8000/api` (ver el
@@ -595,9 +678,12 @@ abren desde el navegador, sin instalar nada. Para que eso funcione en una red:
 
 ### ¿Y en un celular?
 
-Sí: la app móvil de SaludWEB corre en un celular real (con **Expo Go**
-escaneando un QR) o en un emulador, sobre la misma API. El guion completo, paso
-a paso, está en el README de Mobile, sección
+Sí: la app móvil de SaludWEB corre en cualquier celular **Android o iPhone**,
+sin importar la marca (Redmi, Motorola, Samsung, etc.), con **Expo Go**
+escaneando un QR, con un build instalable o en un emulador/simulador, sobre la
+misma API. En iPhone, verificá que Expo Go sea compatible con el SDK 53; si no,
+usá un development build con EAS o actualizá el SDK. El guion completo, paso a
+paso, está en el README de Mobile, sección
 ["Cómo usarlo en teléfonos"](https://github.com/ailenquaglino089-ui/SaludWEB_Mobile/blob/main/README.md#cómo-usarlo-en-teléfonos-paso-a-paso).
 
 ### Lo que NO hace falta
