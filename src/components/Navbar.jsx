@@ -175,8 +175,14 @@ export default function Navbar() {
             una mala primera impresión: la persona solo quería mirar la
             cartilla de profesionales y de golpe le piden contraseña. */}
         <Link to="/turnera" className="navbar-brand">
-          🏥 SaludWEB
+          SaludWEB <span className="navbar-brand-pro">PRO</span>
         </Link>
+
+        {/* Saludo visible SOLO en mobile, al lado de la hamburguesa. En
+            escritorio el nombre sigue en el bloque de usuario, como siempre. */}
+        {autenticado && (
+          <span className="navbar-saludo">Hola, {usuario?.nombre}</span>
+        )}
 
         {/* Botón "hamburguesa" (☰): solo visible en pantallas pequeñas.
             aria-expanded es lo que le dice a un lector de pantalla si el menú

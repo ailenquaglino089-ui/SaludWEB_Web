@@ -8,36 +8,31 @@ import { suscribirseAlCanal, TIPOS_EVENTO } from '../api/realtime';
 // esa lógica queda en un archivo y no se reparte por todos los componentes.
 
 // ============================================================
-// MODO DESARROLLO: SONDEO EN LUGAR DEL CANAL SSE
+// MODO COMPATIBLE CON PHP INTEGRADO: SONDEO EN LUGAR DE SSE
 // ============================================================
 // El canal real usa Server-Sent Events: una conexión HTTP que queda abierta
 // durante minutos. Eso necesita un servidor que atienda VARIAS peticiones a la
 // vez, cada una en su propio proceso (Apache con mod_php, nginx + PHP-FPM, etc.).
 //
-// En desarrollo este proyecto levanta el backend con el servidor NATIVO de PHP
+// Este proyecto levanta el backend local con el servidor NATIVO de PHP
 // (`php -S`), que atiende UNA petición por vez y en un solo hilo. Con un canal
 // SSE abierto, ese único hilo queda ocupado esperando eventos, y TODAS las
 // demás peticiones (login, estadísticas, la turnera entera) se encolan y
 // terminan en time-out: la pantalla se ve vacía y la sesión parece "caerse"
-// sola. Es un problema del servidor de desarrollo, no del código del canal.
+// sola. Es un problema del servidor local, no del código del canal.
 //
-// Por eso en desarrollo NO se abre el canal SSE: se simula con un sondeo cada
-// pocos segundos, que produce el mismo efecto visible (la pantalla se
-// actualiza sola) sin bloquear al servidor de un solo hilo. En producción
-// (build) sí se usa el canal SSE real, porque ahí hay un servidor con varios
-// workers que puede sostener la conexión abierta.
+// Por eso el sondeo es el modo predeterminado tanto en desarrollo como en
+// builds. Un despliegue puede habilitar SSE explícitamente con
+// VITE_REALTIME_SSE=true cuando el backend tenga varios workers.
 //
-// `import.meta.env.DEV` lo define Vite: vale true con `npm run dev` y false en
-// el build de producción. Es exactamente la distinción que hace falta, sin
-// tener que configurar nada a mano.
-const CANAL_SIMULADO_POR_SONDEO = import.meta.env.DEV;
+// `import.meta.env.DEV` mantiene el sondeo en Vite dev. En builds, la variable
+// explícita evita asumir que cualquier servidor de producción es multi-worker.
+const CANAL_SIMULADO_POR_SONDEO =
+  import.meta.env.DEV || import.meta.env.VITE_REALTIME_SSE !== 'true';
 
-// Cada cuántos milisegundos se dispara el aviso de "cambió algo" en desarrollo.
-const INTERVALO_SONDEO_MS = 5000;
-// 5 segundos: es lo que refrescaba esta pantalla antes de tener el canal. El
-// aviso NO trae datos (igual que el SSE): solo dispara la recarga por REST. El
-// retraso de 5 s es imperceptible y no se parece en nada a una petición por
-// segundo.
+// Reduce consultas de fondo y deja libre el único worker para las acciones de
+// la persona usuaria.
+const INTERVALO_SONDEO_MS = 15000;
 
 /**
  * Hook que escucha el canal de tiempo real de un componente.

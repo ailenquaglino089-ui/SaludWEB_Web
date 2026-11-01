@@ -17,6 +17,8 @@ export default function Register() {
     confirmPassword: '',     // Re-escritura de la contraseña (para validación)
     tipo_usuario: 'paciente' // Rol por defecto al crear la cuenta (paciente)
   });
+  const [verPassword, setVerPassword] = useState(false);
+  const [verConfirmacion, setVerConfirmacion] = useState(false);
   // Estado del mensaje de error a mostrar al usuario (cadena vacía = sin error).
   const [error, setError] = useState('');
   // Estado de carga: deshabilita el formulario mientras se procesa el registro.
@@ -49,9 +51,10 @@ export default function Register() {
       return; // Salimos del handler sin enviar nada al servidor
     }
 
-    // Regla de seguridad: la contraseña debe tener al menos 6 caracteres.
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    // Cada persona elige la contraseña que quiera. La única regla es que no
+    // esté vacía: el campo tiene `required`, pero este mensaje es más claro.
+    if (formData.password.trim() === '') {
+      setError('Escribí una contraseña (puede ser la que quieras)');
       return; // Salimos del handler sin enviar nada al servidor
     }
 
@@ -88,7 +91,7 @@ export default function Register() {
       <div className="auth-card">
         {/* Encabezado visual con la marca de la aplicación */}
         <div className="auth-header">
-          <h1>🏥 SaludWEB</h1>
+          <h1>SaludWEB <span className="auth-brand-pro">PRO</span></h1>
           <p>Sistema de Gestión de Salud</p>
         </div>
 
@@ -149,31 +152,59 @@ export default function Register() {
           {/* Grupo del campo de contraseña */}
           <div className="form-group">
             <label htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={cargando}
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="password"
+                type={verPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="La que quieras"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={cargando}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerPassword((visible) => !visible)}
+                disabled={cargando}
+                aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-controls="password"
+                aria-pressed={verPassword}
+              >
+                {verPassword ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </div>
 
           {/* Grupo del campo de confirmación de contraseña */}
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              name="confirmPassword"
-              placeholder="••••••••"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              disabled={cargando}
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="confirmPassword"
+                type={verConfirmacion ? 'text' : 'password'}
+                name="confirmPassword"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                disabled={cargando}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerConfirmacion((visible) => !visible)}
+                disabled={cargando}
+                aria-label={verConfirmacion ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-controls="confirmPassword"
+                aria-pressed={verConfirmacion}
+              >
+                {verConfirmacion ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </div>
 
           {/* Botón de envío: cambia su texto mientras carga y se deshabilita */}

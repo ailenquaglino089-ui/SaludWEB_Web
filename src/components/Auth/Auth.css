@@ -12,10 +12,15 @@
   justify-content: center;
   /* La tarjeta siempre ocupa al menos toda la altura de la ventana */
   min-height: 100vh;
-  /* Fondo degradado en los colores de la marca */
-  background: var(--degradado-marca);
+  /* Fondo neutro: la pantalla de acceso va directo al formulario, sin el
+     degradado a pantalla completa que tenía antes. */
+  background: var(--fondo);
+  /* Aire en los bordes para que la tarjeta no quede pegada al navbar */
+  padding: var(--esp-5);
+  /* Respeta el padding al calcular el ancho total */
+  box-sizing: border-box;
   /* Tipografía estándar del sistema con fallbacks */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--fuente);
 }
 
 /* Tarjeta blanca que contiene encabezado + formulario + pie */
@@ -54,6 +59,26 @@
   font-size: 32px;
   /* Fuente en negrita */
   font-weight: 700;
+}
+
+/* Distintivo "PRO" del logo dentro del encabezado */
+.auth-brand-pro {
+  /* Se alinea con el texto que lo rodea */
+  display: inline-block;
+  /* Separa la píldora del nombre de la marca */
+  margin-left: 6px;
+  /* Aire interno reducido para que no compita con el nombre */
+  padding: 2px 8px;
+  /* Forma de píldora */
+  border-radius: var(--radio-full);
+  /* Fondo blanco translúcido sobre el degradado del encabezado */
+  background: rgba(255, 255, 255, 0.22);
+  /* Tamaño menor: es un distintivo, no el nombre */
+  font-size: 12px;
+  /* Espaciado entre letras para que se lea como sello */
+  letter-spacing: 0.08em;
+  /* Alineación vertical centrada respecto del nombre */
+  vertical-align: middle;
 }
 
 /* Subtítulo debajo del nombre de la aplicación */
@@ -104,6 +129,82 @@
   font-weight: 500;
 }
 
+/* Aviso de seguridad en la pantalla de cambio obligatorio */
+.auth-warning {
+  /* Fondo amarillo suave: avisa sin confundirse con un error */
+  background: #fff8e1;
+  /* Borde cálido que refuerza el aviso */
+  border: 1px solid #f0c36d;
+  /* Texto oscuro para mantener el contraste */
+  color: #6b4e00;
+  /* Relleno cómodo para un párrafo corto */
+  padding: 12px 16px;
+  /* Esquinas redondeadas iguales al resto de los avisos */
+  border-radius: 8px;
+  /* Separación con el formulario */
+  margin-bottom: 20px;
+  /* Tamaño de letra legible */
+  font-size: 14px;
+  /* Altura de línea para que no quede apretado */
+  line-height: 1.45;
+}
+
+/* Interruptor "Entrar con DNI" */
+.auth-switch-group {
+  /* Menos aire que un campo normal: es una opción, no un dato más */
+  margin-bottom: 14px;
+}
+
+.form-group label.auth-switch {
+  /* La etiqueta envuelve checkbox + texto en una sola línea clickeable */
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+.auth-switch input {
+  /* Tamaño táctil cómodo en mobile */
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0 0;
+  flex-shrink: 0;
+  accent-color: var(--primario);
+  cursor: pointer;
+}
+
+.auth-switch-text {
+  line-height: 1.35;
+}
+
+/* Texto de ayuda debajo de un campo (ej: contraseña inicial = DNI) */
+.auth-hint {
+  margin: 6px 0 0 0;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* Botón que se ve como enlace, para acciones dentro del pie */
+.auth-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primario);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-link-button:hover {
+  color: var(--secundario);
+  text-decoration: underline;
+}
+
 /* Grupo de cada campo del formulario (label + input) */
 .form-group {
   /* Separación vertical entre grupos de campos */
@@ -143,6 +244,41 @@
   transition: border-color 0.3s;
   /* El box-sizing respeta el ancho total con padding + borde */
   box-sizing: border-box;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 118px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  min-height: 44px;
+  padding: 8px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--primario);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--primario);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Estado focus: cuando el usuario hace clic o tabula dentro de un campo.

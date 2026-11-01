@@ -100,11 +100,11 @@ export default function Configuracion() {
   // Mismo criterio que en la pantalla de reserva, y por la misma razón: cada
   // rol se vincula a una ficha distinta y el admin no se vincula a ninguna.
 
-  const sonFormulariosVacios = !actual || !nueva || nueva.length < 8;
-  // La validación de la longitud se repite acá, además de la que hace el
-  // backend. Se valida dos veces a propósito: en el cliente para dar el aviso
-  // al instante sin gastar un viaje de red, y en el servidor porque es la
-  // única validación de la que se puede confiar.
+  const sonFormulariosVacios = !actual || !nueva;
+  // La validación se repite acá, además de la que hace el backend. Se valida
+  // dos veces a propósito: en el cliente para dar el aviso al instante sin
+  // gastar un viaje de red, y en el servidor porque es la única validación de
+  // la que se puede confiar.
 
   // ==================================================================
   // Handlers
@@ -122,7 +122,7 @@ export default function Configuracion() {
     }
 
     if (sonFormulariosVacios) {
-      setErrorContrasena('La contraseña nueva debe tener al menos 8 caracteres.');
+      setErrorContrasena('Escribí una contraseña nueva (puede ser la que quieras).');
       return;
     }
 
@@ -245,7 +245,6 @@ export default function Configuracion() {
               value={nueva}
               onChange={(e) => setNueva(e.target.value)}
               autoComplete="new-password"
-              minLength="8"
               required
             />
           </div>
@@ -258,7 +257,6 @@ export default function Configuracion() {
               value={repetir}
               onChange={(e) => setRepetir(e.target.value)}
               autoComplete="new-password"
-              minLength="8"
               required
             />
           </div>

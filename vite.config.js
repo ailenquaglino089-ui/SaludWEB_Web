@@ -49,17 +49,22 @@ export default defineConfig(({ command, mode }) => {
     server: {
       // server: configuración del servidor de desarrollo de Vite (solo en "npm run dev")
       port: 5173,
+      // strictPort: si el 5173 está ocupado, falla en vez de saltar a otro
+      // puerto. Así el script de arranque y el firewall apuntan siempre al
+      // mismo lugar y no queda una web "fantasma" en un puerto inesperado.
+      strictPort: true,
       // port: fija el puerto en el que se levanta el dev server (http://localhost:5173)
-      // host: '127.0.0.1' ata el dev server a IPv4 de forma explícita.
+      // host: '0.0.0.0' hace que Vite escuche en TODAS las interfaces de la PC
+      // (WiFi, Ethernet y hotspot), no solo en localhost. Es lo que permite
+      // abrir la web desde un celular conectado a la misma red.
       //
-      // Sin esto Vite escucha solo en ::1 (IPv6), y en Windows "localhost"
-      // resuelve a ::1 y a 127.0.0.1 a la vez. Cuando una herramienta resuelve
-      // localhost a 127.0.0.1 primero (curl, Postman, algunos navegadores o
-      // el propio healthcheck) recibe conexión rechazada y la página parece
-      // caída aunque esté sirviendo. Fijar IPv4 hace que ambos caminos
-      // funcionen. No se usa host: true porque expondría el dev server en la
-      // red local.
-      host: '127.0.0.1',
+      // El firewall de Windows sigue limitando el acceso a la subred local
+      // (remoteip=localsubnet): la PC no queda publicada en Internet.
+      host: '0.0.0.0',
+      allowedHosts: [
+        'desktop-5f7743f.taileeeb72.ts.net',
+        '.ts.net',
+      ],
       proxy: {
         // proxy: redirige peticiones del frontend hacia el backend evitando problemas de CORS en desarrollo
         '/api': {

@@ -24,7 +24,7 @@
 //     tienen sentido sin sesión, mientras que login y register necesitan
 //     además expulsar a quien YA tiene sesión. Se explica al lado de cada
 //     ruta.
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx';
 import { useContext } from 'react';
 
@@ -145,9 +145,14 @@ function AdminRoute({ children }) {
 function AppContent() {
   // AppContent arma la estructura visual y la tabla de rutas.
   const { autenticado } = useContext(AuthContext);
+  // En mobile, el login y el registro se muestran sin la barra de navegación:
+  // la pantalla de acceso tiene que ser solo el formulario. En escritorio el
+  // navbar sigue visible porque no estorba y mantiene la navegación pública.
+  const location = useLocation();
+  const esRutaAuth = ['/login', '/register'].includes(location.pathname);
 
   return (
-    <div className="app">
+    <div className={`app${esRutaAuth ? ' app--auth' : ''}`}>
       {/* El Navbar va FUERA de <Routes> a propósito. Si estuviera adentro,
           cambiar de pantalla lo volvería a montar y perdería el estado; acá
           es una sola instancia que se mantiene durante toda la navegación. */}
@@ -174,11 +179,19 @@ function AppContent() {
 
           <Route
             path="/login"
-            element={autenticado ? <Navigate to="/dashboard" /> : <Login />}
+            element={
+              autenticado
+                ? <Navigate to="/dashboard" />
+                : <Login />
+            }
           />
           <Route
             path="/register"
-            element={autenticado ? <Navigate to="/dashboard" /> : <Register />}
+            element={
+              autenticado
+                ? <Navigate to="/dashboard" />
+                : <Register />
+            }
           />
 
           {/* ==========================================================
@@ -298,7 +311,14 @@ function AppContent() {
           {/* Raíz: decides a dónde va quien entra por el dominio sin ruta.
               No se deja en blanco para que una pantalla vacía no se confunda
               con un error de carga. */}
-          <Route path="/" element={<Navigate to={autenticado ? "/dashboard" : "/login"} />} />
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to={!autenticado ? "/login" : "/dashboard"}
+              />
+            }
+          />
 
           {/* Comodín: cualquier URL desconocida vuelve a la raíz. Con esto una
               ruta vieja o mal escrita no deja la app en blanco, que es lo

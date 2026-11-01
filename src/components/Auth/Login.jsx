@@ -13,6 +13,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   // Estado del input de contraseña (controlado).
   const [password, setPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
   // Estado del mensaje de error a mostrar al usuario (cadena vacía = sin error).
   const [error, setError] = useState('');
   // Estado de carga: deshabilita el formulario mientras se procesa el login.
@@ -53,7 +54,7 @@ export default function Login() {
       <div className="auth-card">
         {/* Encabezado visual con la marca de la aplicación */}
         <div className="auth-header">
-          <h1>🏥 SaludWEB</h1>
+          <h1>SaludWEB <span className="auth-brand-pro">PRO</span></h1>
           <p>Sistema de Gestión de Salud</p>
         </div>
 
@@ -83,16 +84,29 @@ export default function Login() {
           {/* Grupo del campo de contraseña */}
           <div className="form-group">
             <label htmlFor="password">Contraseña</label>
-            {/* type="password" enmascara los caracteres; el value proviene del estado password y cada tecla lo actualiza */}
-            <input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={cargando}
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="password"
+                type={verPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={cargando}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerPassword((visible) => !visible)}
+                disabled={cargando}
+                aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-controls="password"
+                aria-pressed={verPassword}
+              >
+                {verPassword ? 'Ocultar' : 'Ver contraseña'}
+              </button>
+            </div>
           </div>
 
           {/* Botón de envío: cambia su texto mientras carga y se deshabilita */}

@@ -119,7 +119,10 @@ export const AuthProvider = ({ children }) => {
       // Inicio del bloque de captura de errores
       setError(null);
       // Limpia errores previos antes de intentar el login
-      const response = await client.post('/api/auth/login', { email, password });
+      const response = await client.post('/api/auth/login', {
+        email,
+        password,
+      });
       // POST a /api/auth/login con las credenciales (email y contraseña); el backend responde con el token JWT y los datos del usuario
       const payload = response.data?.data ?? {};
       // Extrae el "data" de la respuesta de la API (objeto que contiene token y usuario); si falta, se usa un objeto vacío
@@ -188,6 +191,12 @@ export const AuthProvider = ({ children }) => {
         passwordNueva,
         // Nueva contraseña que reemplazará a la actual
       });
+
+      // Se vuelve a pedir /auth/me para mantener sincronizado el usuario.
+      const datos = await recargarSesion();
+      if (datos) {
+        localStorage.setItem('usuario', JSON.stringify(datos));
+      }
     } catch (err) {
       // Si el backend rechaza el cambio (contraseña actual incorrecta, política de seguridad, etc.)...
       const mensaje = err.response?.data?.mensaje || err.response?.data?.error || 'Error al cambiar contraseña';

@@ -36,7 +36,15 @@ import * as logger from '../utils/logger.js';
 //     orígenes del backend.
 const API_URL =
   import.meta.env?.VITE_API_URL ||
-  (import.meta.env?.DEV ? '' : 'http://127.0.0.1:8000');
+  (import.meta.env?.DEV
+    ? ''
+    : (() => {
+        if (typeof window === 'undefined') return 'http://127.0.0.1:8000';
+
+        const apiOrigin = new URL(window.location.origin);
+        if (apiOrigin.port === '5173') apiOrigin.port = '8000';
+        return apiOrigin.origin;
+      })());
 
 // Crear instancia de Axios
 const client = axios.create({

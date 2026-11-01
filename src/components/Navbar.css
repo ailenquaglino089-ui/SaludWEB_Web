@@ -58,6 +58,32 @@
   opacity: 0.9;
 }
 
+/* Saludo del usuario en la barra mobile. En escritorio queda oculto porque
+   el nombre ya se muestra en .navbar-user, junto al botón de cerrar sesión. */
+.navbar-saludo {
+  display: none;
+}
+
+/* Distintivo "PRO" del logo: una píldora clara que lo separa del nombre */
+.navbar-brand-pro {
+  /* Se alinea con el texto que lo rodea */
+  display: inline-block;
+  /* Separa la píldora del nombre de la marca */
+  margin-left: 6px;
+  /* Aire interno reducido para que no compita con el nombre */
+  padding: 2px 8px;
+  /* Forma de píldora */
+  border-radius: var(--radio-full);
+  /* Fondo blanco translúcido sobre el degradado del navbar */
+  background: rgba(255, 255, 255, 0.22);
+  /* Tamaño menor: es un distintivo, no el nombre */
+  font-size: 12px;
+  /* Espaciado entre letras para que se lea como sello */
+  letter-spacing: 0.08em;
+  /* Alineación vertical centrada respecto del nombre */
+  vertical-align: middle;
+}
+
 /* Botón "hamburguesa" para el menú en pantallas pequeñas */
 .navbar-toggle {
   /* Oculto por defecto en pantallas grandes (se muestra solo en móvil) */
@@ -231,6 +257,33 @@
     padding: 0 15px;
   }
 
+  /* Saludo en la barra: visible en mobile, con elipsis si el nombre es largo
+     para que nunca empuje ni tape la hamburguesa. */
+  .navbar-saludo {
+    display: block;
+    margin-left: auto;
+    margin-right: 12px;
+    max-width: calc(100% - 190px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+
+  /* La hamburguesa no se achica cuando el nombre ocupa su espacio. */
+  .navbar-toggle {
+    flex-shrink: 0;
+  }
+
+  /* En mobile el nombre ya está en la barra (.navbar-saludo). Se oculta el
+     bloque duplicado dentro del menú para que "Cerrar Sesión" quede solo,
+     dentro de las tres líneas, sin tapar el saludo. */
+  .navbar-user .user-name {
+    display: none;
+  }
+
   /* El menú se despliega como panel desplegable desde la barra */
   .navbar-menu {
     /* Posicionamiento absoluto respecto al contenedor más cercano */
@@ -248,8 +301,10 @@
     gap: 0;
     /* Quitamos el margen izquierdo que tenía en desktop */
     margin: 0;
-    /* Relleno interior del panel */
-    padding: 20px;
+    /* Sin relleno vertical cuando está cerrado. Si quedara padding, el panel
+       colapsado igual mediría 40px y dejaría asomar un pedazo de "Cerrar
+       Sesión" debajo de la barra. */
+    padding: 0 20px;
     /* Altura inicial 0: el panel está colapsado */
     max-height: 0;
     /* El contenido que exceda queda oculto mientras está colapsado */
@@ -279,6 +334,8 @@
        * si aun así no alcanza, el scroll interno hace el resto. */
     max-height: 80vh;
     overflow-y: auto;
+    /* El relleno vuelve solo cuando el panel está abierto. */
+    padding: 20px;
     /* Con la altura tope de 80vh, el 20% restante muestra que hay más
        contenido abajo en lugar de cortarlo sin aviso. */
   }
@@ -305,5 +362,12 @@
   /* El botón de logout ocupa todo el ancho en móvil */
   .btn-logout {
     width: 100%;
+  }
+
+  /* En el login y el registro, el teléfono muestra solo el formulario:
+     sin "Turnera", sin "Ingresar" y sin "Crear cuenta" arriba. En
+     escritorio el navbar sigue igual. */
+  .app--auth .navbar {
+    display: none;
   }
 }
