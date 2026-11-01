@@ -129,12 +129,17 @@ canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilit
 2. **Mantener disponible el servidor.** Para el enlace público, la PC queda encendida,
    conectada a Internet, con la API y la web iniciadas y Tailscale activo. La dirección
    local solo funciona mientras el teléfono y la PC estén en la misma red.
-3. **Crear una cuenta personal.** En “Regístrate aquí”, ingresar nombre, email (puede ser
-   Gmail) y una contraseña elegida por la persona. El email no se verifica como una cuenta
-   Google; “Gmail” aquí es el formato del email, no un inicio OAuth.
-4. **Volver a iniciar sesión.** Usar el mismo email y la misma contraseña elegida al
-   registrarse. El sistema no acepta una contraseña arbitraria en cada acceso: la API
-   verifica el hash de la contraseña guardada.
+3. **Cada persona crea su propia cuenta.** No hace falta que la administradora le cree una
+   cuenta ni que comparta sus credenciales: desde “Regístrate aquí”, cada persona ingresa
+   su nombre, email (puede ser Gmail) y la contraseña que elige. El alta pública no concede
+   rol de administradora; se debe seleccionar el tipo de cuenta normal correspondiente.
+   El email no se verifica con Google: escribir una dirección Gmail no es iniciar sesión
+   con Google ni demuestra que la persona controle esa dirección.
+4. **Iniciar sesión después del registro.** Usar el mismo email y la misma contraseña
+   elegida al crear la cuenta. No se puede poner una contraseña distinta o arbitraria en
+   cada acceso: la API comprueba la contraseña contra el hash guardado. Si aparece
+   “Email o contraseña inválidos” con un email nuevo, primero hay que registrarse; si ya
+   se registró, revisar que esté usando la misma contraseña.
 5. **Verificar lo que se escribe.** En `src/components/Auth/Login.jsx`, el botón cambia el
    campo entre texto oculto y visible; `Auth.css` le da espacio y un área táctil adecuada
    para pantalla chica. El mismo formulario responsive sirve en computadora y teléfono.
