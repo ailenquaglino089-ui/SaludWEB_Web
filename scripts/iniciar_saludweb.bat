@@ -17,7 +17,7 @@ REM    4) espera a que AMBOS respondan y abre Chrome en /turnera.
 REM
 REM  Con 0.0.0.0 la API y la web aceptan conexiones desde cualquier celular
 REM  conectado a la MISMA red que la PC. Para acceso desde cualquier red se
-REM  usa Tailscale Funnel: https://desktop-5f7743f.taileeeb72.ts.net
+REM  usa Tailscale Funnel, que publica la web y la API desde el mismo servidor.
 REM
 REM  Cada servidor vive en su propia ventana ("SaludWEB API" y "SaludWEB Web").
 REM  Esta ventana de arranque se CIERRA SOLA cuando termina.
@@ -100,7 +100,29 @@ if defined API_BIND (
   start "SaludWEB API" %START_MIN% /D "%BACKEND_DIR%" "%PHP%" -S 0.0.0.0:8000 index.php
 )
 
-REM --- 5) Levantar la web (Vite) ----------------------------------------------
+REM --- 5) Compilar la web y levantar la puerta de enlace publica --------------
+REM  Un router PHP en 127.0.0.1:8001 sirve la web compilada y deriva /api
+REM  al backend. La web y la API comparten origen a traves de Tailscale Funnel.
+pushd "%WEB_DIR%"
+call npm run build
+if errorlevel 1 (
+  popd
+  echo [ERROR] No se pudo compilar la web.
+  pause
+  exit /b 1
+)
+popd
+
+set "PUBLIC_BIND="
+for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 8001 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { $c.LocalAddress }"`) do set "PUBLIC_BIND=%%I"
+
+if defined PUBLIC_BIND (
+  echo La puerta de enlace publica ya estaba corriendo en %PUBLIC_BIND%:8001
+) else (
+  echo Levantando la puerta de enlace privada en 127.0.0.1:8001 ...
+  start "SaludWEB Funnel" %START_MIN% /D "%WEB_DIR%" "%PHP%" -S 127.0.0.1:8001 -t "%WEB_DIR%\dist" "%WEB_DIR%\scripts\servidor_publico.php"
+)
+
 set "WEB_BIND="
 for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { $c.LocalAddress }"`) do set "WEB_BIND=%%I"
 
@@ -121,15 +143,39 @@ if "%WEB_BIND%"=="LOCALHOST" (
 if defined WEB_BIND (
   echo La web ya estaba corriendo en %WEB_BIND%:5173
 ) else (
-  echo Levantando la web en 0.0.0.0:5173 ...
-  start "SaludWEB Web" %START_MIN% /D "%WEB_DIR%" cmd /k "npm run build && npm run preview -- --host 0.0.0.0 --port 5173 --strictPort"
+  echo Levantando la web con API integrada en 0.0.0.0:5173 ...
+  start "SaludWEB Web" %START_MIN% /D "%WEB_DIR%" "%PHP%" -S 0.0.0.0:5173 -t "%WEB_DIR%\dist" "%WEB_DIR%\scripts\servidor_publico.php"
 )
 
 REM --- 6) Esperar a que la API y la web respondan -----------------------------
 call :esperar "http://127.0.0.1:8000/api/health" 30
 call :esperar "http://127.0.0.1:5173/" 30
+call :esperar "http://127.0.0.1:8001/api/health" 30
 
-REM --- 7) Avisar si falta la regla de firewall --------------------------------
+REM --- 7) Configurar el Funnel publico de Tailscale ---------------------------
+REM  El gateway en 8001 enruta la web y /api; no se necesita una ruta adicional.
+REM  El Funnel solo se configura si la CLI de Tailscale esta instalada.
+set "TAILSCALE="
+if exist "%ProgramFiles%\Tailscale\tailscale.exe" set "TAILSCALE=%ProgramFiles%\Tailscale\tailscale.exe"
+if not defined TAILSCALE (
+  for /f "delims=" %%I in ('where.exe tailscale.exe 2^>nul') do if not defined TAILSCALE set "TAILSCALE=%%I"
+)
+
+if defined TAILSCALE (
+  "%TAILSCALE%" funnel --https=443 --set-path=/api off >nul 2>&1
+  echo Configurando Tailscale Funnel para la web y la API ...
+  "%TAILSCALE%" funnel --bg --https=443 http://127.0.0.1:8001
+  if errorlevel 1 (
+    echo [AVISO] No se pudo configurar Tailscale Funnel.
+    echo         Verifica que Tailscale este conectado y Funnel habilitado.
+  ) else (
+    echo Tailscale Funnel configurado correctamente.
+  )
+) else (
+  echo [AVISO] No se encontro Tailscale CLI; el acceso por datos moviles no funcionara.
+)
+
+REM --- 8) Avisar si falta la regla de firewall --------------------------------
 netsh advfirewall firewall show rule name="SaludWEB API 8000" >nul 2>&1
 if errorlevel 1 (
   echo.
@@ -146,7 +192,7 @@ if errorlevel 1 (
   echo         ..\SaludWEB_Mobile\scripts\permitir_firewall_saludweb.bat
 )
 
-REM --- 8) Abrir Chrome en la turnera ------------------------------------------
+REM --- 9) Abrir Chrome en la turnera ------------------------------------------
 if "%AUTOSTART%"=="1" goto :saltar_navegador
 set "CHROME="
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
@@ -165,7 +211,7 @@ echo ===========================================================================
 echo  En esta PC:      http://localhost:5173
 echo  Desde el celu:   http://%LAN_IP%:5173
 echo  API para el celu: http://%LAN_IP%:8000/api/health
-echo  Desde cualquier red (WiFi o datos móviles):
+echo  Desde cualquier red (WiFi o datos móviles; Tailscale activo):
 echo                   https://desktop-5f7743f.taileeeb72.ts.net
 echo.
 echo  En la misma red usá la IP local. Fuera de casa usá la URL de Tailscale;

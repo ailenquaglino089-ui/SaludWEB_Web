@@ -53,16 +53,23 @@ La SPA sola no alcanza: necesita la API. Hay **dos formas** de levantar todo.
 
 #### Opción 1 — Un solo doble clic (recomendada)
 
-En `SaludWEB_Web\scripts\` hay dos scripts para Windows, comentados línea por línea:
+En `SaludWEB_Web\scripts\` están los scripts de arranque y apagado para Windows, además
+del router PHP que usa el acceso público:
 
-- **`iniciar_saludweb.bat`** → detecta la IP local, levanta la API en `0.0.0.0:8000` y
-  compila/sirve la web en modo producción en `0.0.0.0:5173`, **espera a que las dos
-  respondan** y abre **Chrome en `http://localhost:5173/turnera`**. Al final muestra la
-  dirección para el celular (`http://<IP-DE-LA-PC>:5173`) y la URL fija de Tailscale para
-  acceder desde cualquier red. Detecta el PHP solo, **sin necesitar XAMPP ni MySQL**.
-  Deja **2 ventanas** abiertas (una por servidor); la ventana del lanzador se cierra sola.
-  Si volvés a hacer doble clic, no duplica servidores.
-- **`detener_saludweb.bat`** → apaga los dos servidores (libera los puertos 8000 y 5173).
+- **`iniciar_saludweb.bat`** → detecta la IP local; levanta la API PHP en `0.0.0.0:8000`;
+  compila los archivos de la web; sirve la web en `0.0.0.0:5173`; y arranca la puerta de
+  enlace en `127.0.0.1:8001`. Espera a que respondan los servicios, configura Tailscale
+  Funnel hacia la puerta de enlace y abre **Chrome en `http://localhost:5173/turnera`**.
+  La ventana del lanzador se cierra sola; quedan hasta **3 ventanas de servicio** (API,
+  web local y puerta de enlace). Si volvés a ejecutarlo, detecta los servicios existentes.
+- **`servidor_publico.php`** → es el router compartido por los servidores PHP de la web
+  local y del Funnel. Si la ruta empieza con `/api`, entrega la solicitud al front
+  controller del Backend. Para el resto, busca primero archivos existentes dentro de
+  `dist/`; si no existen y la URL es una ruta de la SPA (por ejemplo `/login`), devuelve
+  `index.html`. Así una recarga en una pantalla interna no da 404. Las rutas de assets
+  inexistentes sí devuelven 404.
+- **`detener_saludweb.bat`** → detiene los servicios que escuchan en los puertos 8000,
+  5173 y 8001.
 
 Requisito: el repo `SaludWEB_Backend` tiene que estar como carpeta **hermana** de
 `SaludWEB_Web` (así vienen en el workspace del proyecto). Si tu PHP no está en la ruta por
@@ -78,9 +85,21 @@ Tailscale en el celular:
 2. En Android: menú de Chrome → **Instalar app** o **Agregar a pantalla de inicio**.
    En iPhone: Compartir → **Agregar a pantalla de inicio**.
 3. La PC tiene que quedar **encendida y con Internet**; Tailscale corre como servicio de
-   Windows y mantiene la URL. La web se sirve con `npm run build && npm run preview`.
-4. La URL es **pública**: cualquiera que la conozca llega a la pantalla de login. Cambiá la
-   contraseña de demostración y no compartas el enlace.
+   Windows y mantiene la URL. El arranque sigue este recorrido, paso por paso:
+   - El servidor local del Backend atiende la API en el puerto `8000`.
+   - El servidor web local atiende la versión compilada en el puerto `5173`.
+   - Otro servidor PHP escucha solo en `127.0.0.1:8001`; no queda expuesto directamente a
+     la red local. Su router entrega `/api/...` al Backend y las demás rutas a la SPA.
+   - Tailscale Funnel publica por HTTPS el puerto `8001` bajo el dominio fijo. Como la web
+     y la API salen del mismo origen, el navegador puede iniciar sesión sin una URL de API
+     separada ni una configuración CORS adicional.
+   - Al volver a ejecutar el lanzador, actualiza la regla de Funnel para ese puerto; al
+     apagar SaludWEB, `detener_saludweb.bat` cierra los tres servidores.
+4. El enlace de Funnel es **público**: cualquiera que lo conozca puede abrir la web y
+   alcanzar las rutas públicas de la API. Las operaciones protegidas siguen validando
+   autenticación JWT y roles en el Backend; aun así, no compartas cuentas ni contraseñas
+   de demostración. Funnel cifra el transporte HTTPS, pero no convierte este equipo de
+   desarrollo en un despliegue de producción.
 5. El link anterior de `trycloudflare.com` era un túnel temporal y **ya no existe**. La app
    instalada desde ese link hay que desinstalarla y volver a instalarla desde esta URL.
 
