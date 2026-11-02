@@ -554,6 +554,145 @@ hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resu
   servidor de PHP atiende una petición por vez), así que en **desarrollo** el
   canal se simula con **sondeo cada 5 s**; el SSE real queda para producción.
   Web #21.
+- **01/11** - **Cierre de la iteración de pacientes, prescripciones, usuarios y
+  fichas**: se normalizó el estado activo del paciente, el formulario de
+  prescripciones pasó a recorrer todas las páginas de la API y a tratar los
+  vínculos como datos de solo lectura en edición, y se regeneraron las fichas
+  de demostración para que las diez cuentas queden consistentes. El detalle
+  línea por línea está en la sección siguiente.
+- **02/11** - **Estado activo/inactivo de médicos**: el alta ya respeta el
+  checkbox (un médico creado como inactivo queda inactivo), el formulario
+  normaliza el `1/0` de SQLite y el payload envía un booleano. Se aplicó el
+  mismo criterio en el backend para pacientes y médicos.
+
+## Última iteración verificada (02/11/2026)
+
+Esta sección explica **qué cambió, línea por línea**, en los archivos que se
+tocaron para cerrar los problemas de pacientes, prescripciones, usuarios,
+fichas y estados activo/inactivo. Los números de línea corresponden a los
+archivos de este repositorio.
+
+### 1. Paciente activo: de `0/1` a booleano
+
+Archivo: `src/components/Pacientes/FormularioPaciente.jsx`.
+
+- **Líneas 43-47** - Al precargar el formulario en edición se lee
+  `paciente.activo` y se normaliza:
+  - `paciente.activo === undefined || paciente.activo === null ? true` significa
+    que un paciente sin el campo (datos viejos) se considera activo, que es el
+    valor por defecto del backend.
+  - `Boolean(Number(paciente.activo))` convierte el `1`/`0` que devuelve SQLite
+    en `true`/`false`. Sin esta conversión el checkbox recibía un número y no
+    reflejaba el estado real.
+- **Líneas 112-114** - El payload que se envía al guardar ahora incluye
+  `activo: Boolean(formData.activo)`. Antes la clave no viajaba en el `PUT`, el
+  backend no modificaba la columna y el checkbox parecía no guardar. El valor se
+  envía como booleano, no como el string `"true"`.
+
+### 2. Prescripciones: todas las páginas y vínculos de solo lectura
+
+Archivo: `src/components/Prescripciones/FormularioPrescripcion.jsx`.
+
+- **Líneas 58-77** - `cargarListaCompleta(ruta)` recorre la API paginada:
+  - `const items = []` acumula los resultados de todas las páginas.
+  - `let pagina = 1` y `let totalPaginas = 1` arrancan el recorrido.
+  - `do { ... } while (pagina <= totalPaginas)` garantiza al menos una petición
+    y sigue mientras queden páginas.
+  - `params: { pagina, por_pagina: 100 }` pide el máximo permitido por el
+    backend en cada vuelta.
+  - `getDatos(response, { items: [], total_paginas: 1 })` desenvuelve la
+    respuesta y deja un valor seguro si falta la estructura.
+  - `Array.isArray(datos) ? datos : (datos.items || [])` acepta tanto un array
+    plano (contrato viejo) como el objeto paginado actual.
+  - `items.push(...itemsPagina)` agrega la página al acumulador.
+  - `Math.max(1, Number(datos.total_paginas) || 1)` calcula el total de páginas
+    y nunca deja un valor menor a 1.
+  - `pagina += 1` avanza a la siguiente página.
+- **Líneas 82-93** - `Promise.all` pide pacientes y médicos en paralelo y
+  guarda **arrays** en el estado. Antes se guardaba el objeto paginado completo
+  y la vista lo recorría con `.map()`, lo que producía
+  `TypeError: i.map is not a function` y dejaba los selectores vacíos.
+- **Líneas 103-105** - `const esEdicion = Boolean(prescripcion)` distingue alta
+  de edición una sola vez para no repetir la condición en cada validación y en
+  el render.
+- **Líneas 112-116** - El paciente se exige siempre; el médico solo en el alta.
+  Una receta histórica puede tener `id_medico = null` y aun así debe poder
+  editarse sin obligar a inventar un médico.
+- **Líneas 184-203** - El payload se arma en dos pasos:
+  - Se filtran las filas de medicamento sin nombre y se envía `null` cuando no
+    hay fecha, que es lo que espera el backend.
+  - Los `id_paciente` e `id_medico` se agregan **solo si `!esEdicion`**. En
+    edición se omiten a propósito: `PrescripcionService`/`PrescripcionRepository`
+    no actualizan esos campos en el `PUT`, así que enviarlos daría la falsa
+    impresión de que la receta se puede reasignar.
+- **Líneas 211-241** - Se calculan `pacienteActual` y `medicoActual`. Si la
+  ficha ya no está en la lista (dada de baja o fuera de las páginas cargadas),
+  se agrega como opción con el nombre que vino en la prescripción. Las listas
+  `opcionesPacientes` y `opcionesMedicos` evitan duplicar esa opción.
+- **Líneas 258-313** - En edición:
+  - Los `<select>` de paciente y médico llevan `disabled={esEdicion}`.
+  - El médico deja de ser obligatorio y la opción vacía dice
+    "Sin médico asignado".
+  - Se muestra un `texto-ayuda` que explica que el vínculo no se puede cambiar.
+  - El DNI y la especialidad se imprimen solo si existen
+    (`p.dni ? ... : ''`), para que una ficha incompleta no muestre `undefined`.
+
+### 3. Usuarios y fichas
+
+- Se ejecutó `php sembrar_datos_demo.php` en el backend. El script dejó las
+  **10 cuentas de demostración** con su rol y su ficha correctos; no borró
+  usuarios y no tocó ninguna contraseña.
+- La cuenta `alonso.tramposo@saludweb.com` (id `2`) tenía `rol = paciente` y
+  `id_medico = 10`. El seeder la pasó a **médico** y la vinculó a la ficha
+  `#10`; ahora la pantalla de usuarios la muestra como "Médico".
+- La ficha fantasma `pacientes #324` ("Dr. Alonso Tramposo") quedó **apagada**;
+  no se eliminó el registro.
+- La pantalla `src/components/Usuarios/Usuarios.jsx` lista las cuentas y permite
+  cambiar el rol con `PATCH /api/usuarios/{id}/rol`. La cuenta propia se marca
+  con "(vos)" y el backend responde **409** si se intenta degradar al último
+  admin o a uno mismo.
+- La pantalla `src/components/Configuracion/Configuracion.jsx` muestra el estado
+  de la ficha y permite vincularla con DNI (paciente) o matrícula (médico).
+  El DNI, el nombre y la especialidad no se editan desde ahí por seguridad.
+
+### 4. Médicos activo/inactivo: el alta ya no fuerza `activo = 1`
+
+Archivo: `src/components/Medicos/FormularioMedico.jsx`.
+
+- **Líneas 21-34** - Al precargar un médico en edición, `setFormData` ya no
+  copia el objeto crudo de la API. Se arma un objeto con `nombre`, `matricula`,
+  `especialidad` y `activo` normalizado:
+  - `medico.activo === undefined || medico.activo === null ? true` mantiene el
+    comportamiento histórico para registros sin el campo.
+  - `Boolean(Number(medico.activo))` convierte el `1`/`0` de SQLite en
+    `true`/`false`, para que el checkbox muestre el estado real.
+- **Líneas 76-84** - `onGuardar` recibe un payload explícito con
+  `activo: Boolean(formData.activo)`. Así el alta y la edición envían un
+  booleano, no un número ni un string.
+- El backend era la causa principal: `MedicoService::crear` y
+  `PacienteService::crear` tenían `'activo' => 1` fijo. Ahora respetan el valor
+  enviado (o usan `1` si la clave no viene) y `actualizar` normaliza con
+  `filter_var(..., FILTER_VALIDATE_BOOLEAN)`, que también entiende `"false"`.
+
+### 5. Verificación ejecutada
+
+- `npm test` en Web: **32/32** pruebas OK.
+- `npm run build`: **134 módulos** transformados, build OK.
+- E2E de pacientes y prescripciones: `PACIENTE_ACTIVO_OK`,
+  `PRESC_CRUD_MEDICO_OK`, `PRESC_CRUD_ADMIN_OK`, `ERRORES []`.
+  El selector de prescripciones mostró **224** opciones de paciente y **10** de
+  médico, es decir que ya no se limita a la primera página.
+- E2E de alta inactiva: `MEDICO_ALTA_INACTIVO_OK`,
+  `PACIENTE_ALTA_INACTIVO_OK`, `CLEANUP_OK`, `ERRORES []`. Se crearon desde la
+  UI con el checkbox desmarcado, se buscaron por matrícula/DNI y la fila mostró
+  **Inactivo**; los registros de prueba se borraron al terminar.
+- Prueba directa de la API: `POST /api/medicos` y `POST /api/pacientes` con
+  `activo: false` devolvieron `activo=0`; luego se eliminaron esos registros.
+- E2E de usuarios y configuración: **10** filas en `/usuarios`, Alonso como
+  Médico, cuenta propia marcada, filtro de médicos con **4** resultados y ficha
+  "Vinculada" para paciente y médico.
+- En el backend: `php tests/run.php` (50/50), `php probar_roles.php` y
+  `php probar_vinculacion.php` (15/15) pasaron después del seeder.
 
 ## Calidad del software
 

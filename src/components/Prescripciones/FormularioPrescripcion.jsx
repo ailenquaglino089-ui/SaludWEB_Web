@@ -55,19 +55,42 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
   }, [prescripcion]); // Dependencia: solo reacciona a cambios en 'prescripcion'
 
   // Función asíncrona que carga pacientes y médicos en paralelo.
+  const cargarListaCompleta = async (ruta) => {
+    const items = [];
+    let pagina = 1;
+    let totalPaginas = 1;
+
+    do {
+      const response = await client.get(ruta, {
+        params: { pagina, por_pagina: 100 }
+      });
+      const datos = getDatos(response, { items: [], total_paginas: 1 });
+      const itemsPagina = Array.isArray(datos) ? datos : (datos.items || []);
+      items.push(...itemsPagina);
+      totalPaginas = Array.isArray(datos)
+        ? 1
+        : Math.max(1, Number(datos.total_paginas) || 1);
+      pagina += 1;
+    } while (pagina <= totalPaginas);
+
+    return items;
+  };
+
   const cargarDatos = async () => {
     try {
       // Promise.all ejecuta ambas peticiones a la vez para acelerar la carga inicial.
-      const [pacResp, medResp] = await Promise.all([
-        // GET a /api/pacientes (para el selector de paciente)
-        client.get('/api/pacientes'),
-        // GET a /api/medicos (para el selector de médico)
-        client.get('/api/medicos')
+      const [listaPacientes, listaMedicos] = await Promise.all([
+        // GET a /api/pacientes (para el selector de paciente). El endpoint es
+        // paginado: se pide el máximo permitido y luego se lee data.items.
+        cargarListaCompleta('/api/pacientes'),
+        // GET a /api/medicos (para el selector de médico), también paginado.
+        cargarListaCompleta('/api/medicos')
       ]);
-      // Guardamos la lista de pacientes desempacando la respuesta.
-      setPacientes(getDatos(pacResp, []));
-      // Guardamos la lista de médicos desempacando la respuesta.
-      setMedicos(getDatos(medResp, []));
+      // getDatos devuelve la estructura paginada completa ({ items, total... }).
+      // Antes se guardaba ese objeto en un estado que después se recorría con
+      // .map(), lo que rompía el formulario y dejaba ambos selectores vacíos.
+      setPacientes(listaPacientes);
+      setMedicos(listaMedicos);
     } catch (err) {
       // Registramos el error en consola (no es crítico para el funcionamiento del form).
       console.error('Error cargando datos:', err);
@@ -77,6 +100,10 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
     }
   };
 
+  // En edición, paciente y médico son datos de la receta original y no se
+  // modifican: el backend ignora esos campos en el PUT. Solo se exigen al crear.
+  const esEdicion = Boolean(prescripcion);
+
   // Función de validación de los campos obligatorios del formulario.
   const validar = () => {
     // Objeto de errores nuevo (vacío = sin errores).
@@ -84,8 +111,9 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
     
     // Validación del paciente seleccionado.
     if (!formData.id_paciente) newErrores.id_paciente = 'Paciente requerido';
-    // Validación del médico seleccionado.
-    if (!formData.id_medico) newErrores.id_medico = 'Médico requerido';
+    // El médico solo es obligatorio en el alta. Las recetas antiguas pueden
+    // tener id_medico nulo y tienen que poder editarse sin completarlo.
+    if (!esEdicion && !formData.id_medico) newErrores.id_medico = 'Médico requerido';
     // Al menos un medicamento debe tener nombre (some comprueba si algún elemento lo cumple).
     const hayMedicamento = formData.medicamentos.some(m => m.nombre?.trim());
     // Si ninguna fila de medicamento tiene nombre, el formulario no es válido.
@@ -154,16 +182,24 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
     e.preventDefault();
     // Solo si pasa la validación invocamos onGuardar con un payload limpio.
     if (validar()) {
-      onGuardar({
-        id_paciente: formData.id_paciente,
-        id_medico: formData.id_medico,
+      const payload = {
         // Filtramos las filas de medicamento que quedaron sin nombre (vacías incompletas).
         medicamentos: formData.medicamentos.filter(m => m.nombre?.trim()),
         indicaciones: formData.indicaciones,
         // Si no hay fecha se envía null (no '' ), respetando el contrato del backend.
         fecha_vencimiento: formData.fecha_vencimiento || null,
         estado: formData.estado
-      });
+      };
+
+      // En el alta viajan los vínculos elegidos. En edición se omiten a
+      // propósito: el backend no los actualiza y enviarlos daría la falsa
+      // impresión de que el paciente o el médico se pueden reasignar.
+      if (!esEdicion) {
+        payload.id_paciente = formData.id_paciente;
+        payload.id_medico = formData.id_medico;
+      }
+
+      onGuardar(payload);
     }
   };
 
@@ -171,6 +207,38 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
   if (cargando) {
     return <div className="loading-container"><div className="spinner"></div></div>;
   }
+
+  // Si la receta se creó con un paciente o médico que ya no está en la lista
+  // (ficha dada de baja, o fuera de las primeras páginas), se agrega igual
+  // como opción usando el nombre que vino en la propia prescripción. Sin esto
+  // el <select> quedaría sin coincidencia y mostraría el placeholder.
+  const pacienteActual = prescripcion?.id_paciente
+    ? pacientes.find(p => Number(p.id) === Number(prescripcion.id_paciente))
+      || {
+        id: prescripcion.id_paciente,
+        nombre: prescripcion.nombre_paciente || 'Paciente actual',
+        dni: null
+      }
+    : null;
+
+  const medicoActual = prescripcion?.id_medico
+    ? medicos.find(m => Number(m.id) === Number(prescripcion.id_medico))
+      || {
+        id: prescripcion.id_medico,
+        nombre: prescripcion.nombre_medico || 'Médico actual',
+        especialidad: null
+      }
+    : null;
+
+  const opcionesPacientes = pacienteActual
+    && !pacientes.some(p => Number(p.id) === Number(pacienteActual.id))
+    ? [...pacientes, pacienteActual]
+    : pacientes;
+
+  const opcionesMedicos = medicoActual
+    && !medicos.some(m => Number(m.id) === Number(medicoActual.id))
+    ? [...medicos, medicoActual]
+    : medicos;
 
   return (
     // Contenedor con las mismas clases de lista para mantener coherencia visual.
@@ -188,44 +256,59 @@ export default function FormularioPrescripcion({ prescripcion, onGuardar, onCanc
           {/* htmlFor apunta al id del select: habilita el clic en el texto para
               enfocar el campo y la lectura de la etiqueta por lector de pantalla */}
           <label htmlFor="prescripcion-paciente">Paciente *</label>
-          {/* El value del select es el id del paciente seleccionado y cada cambio lo actualiza */}
+          {/* El value del select es el id del paciente seleccionado y cada cambio lo actualiza.
+              En edición queda deshabilitado: el vínculo pertenece a la receta original. */}
           <select
             id="prescripcion-paciente"
             name="id_paciente"
             value={formData.id_paciente}
             onChange={handleChange}
+            disabled={esEdicion}
             className={errores.id_paciente ? 'input-error' : ''}
           >
             {/* Opción placeholder: aún no hay paciente elegido */}
             <option value="">Selecciona un paciente</option>
             {/* Mapeamos los pacientes cargados a opciones del selector */}
-            {pacientes.map(p => (
+            {opcionesPacientes.map(p => (
               // key única por opción = id del paciente
-              <option key={p.id} value={p.id}>{p.nombre} (DNI: {p.dni})</option>
+              <option key={p.id} value={p.id}>
+                {p.nombre}{p.dni ? ` (DNI: ${p.dni})` : ''}
+              </option>
             ))}
           </select>
+          {esEdicion && (
+            <span className="texto-ayuda">El paciente no se puede cambiar al editar.</span>
+          )}
           {/* Renderizado condicional del mensaje de error del campo */}
           {errores.id_paciente && <span className="error-text">{errores.id_paciente}</span>}
         </div>
 
         {/* Grupo del selector de Médico */}
         <div className="form-grupo">
-          <label htmlFor="prescripcion-medico">Médico *</label>
+          <label htmlFor="prescripcion-medico">Médico {esEdicion ? '' : '*'}</label>
           <select
             id="prescripcion-medico"
             name="id_medico"
             value={formData.id_medico}
             onChange={handleChange}
+            disabled={esEdicion}
             className={errores.id_medico ? 'input-error' : ''}
           >
-            {/* Opción placeholder: aún no hay médico elegido */}
-            <option value="">Selecciona un médico</option>
+            {/* En edición, una receta histórica puede no tener médico. */}
+            <option value="">
+              {esEdicion ? 'Sin médico asignado' : 'Selecciona un médico'}
+            </option>
             {/* Mapeamos los médicos cargados a opciones del selector */}
-            {medicos.map(m => (
+            {opcionesMedicos.map(m => (
               // key única por opción = id del médico
-              <option key={m.id} value={m.id}>{m.nombre} ({m.especialidad})</option>
+              <option key={m.id} value={m.id}>
+                {m.nombre}{m.especialidad ? ` (${m.especialidad})` : ''}
+              </option>
             ))}
           </select>
+          {esEdicion && (
+            <span className="texto-ayuda">El médico no se puede cambiar al editar.</span>
+          )}
           {/* Renderizado condicional del mensaje de error del médico */}
           {errores.id_medico && <span className="error-text">{errores.id_medico}</span>}
         </div>

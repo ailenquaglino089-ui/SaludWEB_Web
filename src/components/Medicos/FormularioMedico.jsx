@@ -21,7 +21,16 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
   useEffect(() => {
     // Si llegó un médico (modo edición), cargamos sus datos en el formulario.
     if (medico) {
-      setFormData(medico);
+      setFormData({
+        nombre: medico.nombre || '',
+        matricula: medico.matricula || '',
+        especialidad: medico.especialidad || '',
+        // El backend devuelve 1/0: se normaliza a booleano para que el
+        // checkbox refleje el estado real (0 = inactivo) y no un entero.
+        activo: medico.activo === undefined || medico.activo === null
+          ? true
+          : Boolean(Number(medico.activo))
+      });
     }
   }, [medico]); // Dependencia: solo reacciona a cambios en 'medico'
 
@@ -64,9 +73,15 @@ export default function FormularioMedico({ medico, onGuardar, onCancelar }) {
   const handleSubmit = (e) => {
     // Evitamos la recarga de página por defecto del navegador.
     e.preventDefault();
-    // Solo si pasa la validación invocamos onGuardar con los datos del formulario.
+    // Solo si pasa la validación invocamos onGuardar con un payload limpio.
     if (validar()) {
-      onGuardar(formData);
+      onGuardar({
+        nombre: formData.nombre,
+        matricula: formData.matricula,
+        especialidad: formData.especialidad,
+        // El estado activo viaja como booleano en alta y edición.
+        activo: Boolean(formData.activo)
+      });
     }
   };
 

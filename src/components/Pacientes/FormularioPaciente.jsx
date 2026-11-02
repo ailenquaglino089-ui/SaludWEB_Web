@@ -40,8 +40,11 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
         dni: paciente.dni || '',
         // El operador ?? usa el valor de la derecha solo si es null/undefined (respeta '' y 0)
         id_obra_social: paciente.id_obra_social ?? '',
-        // Los valores booleanos no se pueden encadenar con ||, por eso usamos ??
-        activo: paciente.activo ?? true
+        // El backend devuelve 1/0: se normaliza a booleano para que el
+        // checkbox refleje el estado real y no un entero.
+        activo: paciente.activo === undefined || paciente.activo === null
+          ? true
+          : Boolean(Number(paciente.activo))
       });
     }
   }, [paciente]); // Dependencia: solo reacciona a cambios en 'paciente'
@@ -105,7 +108,10 @@ export default function FormularioPaciente({ paciente, onGuardar, onCancelar }) 
         nombre: formData.nombre,
         dni: formData.dni,
         // Si no se eligió obra social se envía null (no '' ), respetando el contrato del backend.
-        id_obra_social: formData.id_obra_social || null
+        id_obra_social: formData.id_obra_social || null,
+        // El estado activo también viaja al backend: sin esta clave el PUT
+        // no modificaba el campo y el checkbox parecía no guardar.
+        activo: Boolean(formData.activo)
       });
     }
   };
