@@ -77,7 +77,7 @@ defecto, definí la variable de entorno `SALUDWEB_PHP` con la ruta a tu `php.exe
 
 #### Acceso desde cualquier red (WiFi o datos móviles)
 
-La URL fija es **`https://desktop-5f7743f.taileeeb72.ts.net`**. Se publica con
+La URL fija es **`https://saludweb.taileeeb72.ts.net`**. Se publica con
 **Tailscale Funnel** y funciona desde cualquier WiFi o datos móviles, sin instalar
 Tailscale en el celular:
 
@@ -130,7 +130,7 @@ canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilit
    **http://localhost:5173/turnera** (la turnera es pública: se ve sin iniciar sesión).
    Desde un celular en la misma red, abrí la dirección que muestra el script:
    `http://<IP-DE-LA-PC>:5173`. Fuera de casa usá
-   `https://desktop-5f7743f.taileeeb72.ts.net` (ver “Acceso desde cualquier red”).
+   `https://saludweb.taileeeb72.ts.net` (ver “Acceso desde cualquier red”).
 2. En un clon nuevo **no hay ninguna cuenta**: usá **Registro** (`/register`) y creá una
    (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`. La contraseña
    puede ser la que quieras: solo se exige que no esté vacía (máximo 72 caracteres).
@@ -144,7 +144,7 @@ canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilit
 1. **Elegir cómo conectarse.** En la misma Wi‑Fi que la PC, usar la dirección local que
    muestra `iniciar_saludweb.bat` (`http://<IP-DE-LA-PC>:5173`); es el camino directo y
    normalmente más rápido. Desde otra Wi‑Fi o con datos móviles, abrir
-   <https://desktop-5f7743f.taileeeb72.ts.net>.
+   <https://saludweb.taileeeb72.ts.net>.
 2. **Mantener disponible el servidor.** Para el enlace público, la PC queda encendida,
    conectada a Internet, con la API y la web iniciadas y Tailscale activo. La dirección
    local solo funciona mientras el teléfono y la PC estén en la misma red.
@@ -408,7 +408,7 @@ La SPA es instalable y abre sin red cuando ya se visitó una vez:
 - El service worker se registra **solo en el build de producción** (`npm run build`), en
   `src/main.jsx`.
 - Requiere HTTPS (o `localhost`) para que el navegador active el service worker. La URL de
-  Tailscale (`https://desktop-5f7743f.taileeeb72.ts.net`) cumple ese requisito y sirve el
+  Tailscale (`https://saludweb.taileeeb72.ts.net`) cumple ese requisito y sirve el
   build con `npm run preview` en el puerto 5173.
 - En desarrollo (`npm run dev`) la app funciona, pero **no es instalable** porque el service
   worker no se registra; para probar la instalación usá el build de producción.
@@ -524,7 +524,7 @@ La cronología completa del trabajo está en
 hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resumen:
 
 - **01/11** - **Acceso remoto estable** con **Tailscale Funnel** en
-  `https://desktop-5f7743f.taileeeb72.ts.net`: la web compilada y `/api` salen
+  `https://saludweb.taileeeb72.ts.net`: la web compilada y `/api` salen
   por el mismo origen HTTPS, así funciona desde cualquier WiFi o datos móviles.
   La PWA se sirve en modo producción (`npm run build`) porque el service worker
   solo se registra en ese modo. El lanzador levantó la puerta de enlace en

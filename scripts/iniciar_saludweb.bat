@@ -212,7 +212,7 @@ echo  En esta PC:      http://localhost:5173
 echo  Desde el celu:   http://%LAN_IP%:5173
 echo  API para el celu: http://%LAN_IP%:8000/api/health
 echo  Desde cualquier red (WiFi o datos móviles; Tailscale activo):
-echo                   https://desktop-5f7743f.taileeeb72.ts.net
+echo                   https://saludweb.taileeeb72.ts.net
 echo.
 echo  En la misma red usá la IP local. Fuera de casa usá la URL de Tailscale;
 echo  la PC tiene que quedar encendida y con Internet.

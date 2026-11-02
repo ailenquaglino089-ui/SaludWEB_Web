@@ -62,7 +62,7 @@ export default defineConfig(({ command, mode }) => {
       // (remoteip=localsubnet): la PC no queda publicada en Internet.
       host: '0.0.0.0',
       allowedHosts: [
-        'desktop-5f7743f.taileeeb72.ts.net',
+        'saludweb.taileeeb72.ts.net',
         '.ts.net',
       ],
       proxy: {
