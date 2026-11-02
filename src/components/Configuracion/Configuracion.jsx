@@ -62,6 +62,12 @@ export default function Configuracion() {
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [repetir, setRepetir] = useState('');
+  // Un estado por campo para que cada botón muestre solo su propio texto.
+  // Si se compartiera un único estado, al ver la contraseña actual también
+  // se revelarían la nueva y la repetición sin que la persona lo pidiera.
+  const [verActual, setVerActual] = useState(false);
+  const [verNueva, setVerNueva] = useState(false);
+  const [verRepetir, setVerRepetir] = useState(false);
   // Tres campos y no dos. El tercero parece redundante, pero es la única
   // forma de detectar el error más común al cambiar una contraseña: elegir una
   // nueva que se haya tecleado mal. Con dos campos, la persona se encuentra
@@ -224,41 +230,77 @@ export default function Configuracion() {
         <form className="turnera-form" onSubmit={guardarContrasena}>
           <div className="form-campo">
             <label htmlFor="config-actual">Contraseña actual</label>
-            <input
-              id="config-actual"
-              type="password"
-              value={actual}
-              onChange={(e) => setActual(e.target.value)}
-              autoComplete="current-password"
-              // autoComplete no es decorativo: el gestor de contraseñas del
-              // navegador lo usa para proponer la contraseña correcta. Sin esto,
-              // el campo queda vacío y la persona tiene que buscarla a mano.
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="config-actual"
+                type={verActual ? 'text' : 'password'}
+                value={actual}
+                onChange={(e) => setActual(e.target.value)}
+                autoComplete="current-password"
+                // autoComplete no es decorativo: el gestor de contraseñas del
+                // navegador lo usa para proponer la contraseña correcta. Sin esto,
+                // el campo queda vacío y la persona tiene que buscarla a mano.
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerActual((visible) => !visible)}
+                aria-label={verActual ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}
+                aria-controls="config-actual"
+                aria-pressed={verActual}
+              >
+                {verActual ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </div>
 
           <div className="form-campo">
             <label htmlFor="config-nueva">Contraseña nueva</label>
-            <input
-              id="config-nueva"
-              type="password"
-              value={nueva}
-              onChange={(e) => setNueva(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="config-nueva"
+                type={verNueva ? 'text' : 'password'}
+                value={nueva}
+                onChange={(e) => setNueva(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerNueva((visible) => !visible)}
+                aria-label={verNueva ? 'Ocultar contraseña nueva' : 'Mostrar contraseña nueva'}
+                aria-controls="config-nueva"
+                aria-pressed={verNueva}
+              >
+                {verNueva ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </div>
 
           <div className="form-campo">
             <label htmlFor="config-repetir">Repetí la contraseña nueva</label>
-            <input
-              id="config-repetir"
-              type="password"
-              value={repetir}
-              onChange={(e) => setRepetir(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                id="config-repetir"
+                type={verRepetir ? 'text' : 'password'}
+                value={repetir}
+                onChange={(e) => setRepetir(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVerRepetir((visible) => !visible)}
+                aria-label={verRepetir ? 'Ocultar repetición de contraseña' : 'Mostrar repetición de contraseña'}
+                aria-controls="config-repetir"
+                aria-pressed={verRepetir}
+              >
+                {verRepetir ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </div>
 
           <button

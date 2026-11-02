@@ -434,6 +434,39 @@
   border-color: var(--primario);
 }
 
+/* Envoltorio de los campos de contraseña de Configuración.
+   El botón se posiciona sobre el borde derecho del input; el padding extra
+   evita que el texto escrito quede debajo del botón. */
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 108px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  min-height: 44px;
+  padding: 8px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--primario);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--primario);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ------------------------------------------------------------
    Resumen del turno elegido
    ------------------------------------------------------------ */

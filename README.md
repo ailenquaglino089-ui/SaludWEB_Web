@@ -159,9 +159,12 @@ canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilit
    cada acceso: la API comprueba la contraseña contra el hash guardado. Si aparece
    “Email o contraseña inválidos” con un email nuevo, primero hay que registrarse; si ya
    se registró, revisar que esté usando la misma contraseña.
-5. **Verificar lo que se escribe.** En `src/components/Auth/Login.jsx`, el botón cambia el
-   campo entre texto oculto y visible; `Auth.css` le da espacio y un área táctil adecuada
-   para pantalla chica. El mismo formulario responsive sirve en computadora y teléfono.
+5. **Verificar lo que se escribe.** En `Login.jsx`, `Register.jsx` y
+   `Configuracion.jsx`, cada campo de contraseña tiene su propio botón
+   **Mostrar/Ocultar**. El botón cambia solo ese campo entre texto oculto y
+   visible; `Auth.css` y `Turnera.css` le dan espacio y un área táctil adecuada
+   para pantalla chica. El mismo formulario responsive sirve en computadora y
+   teléfono.
 6. **Entender la conexión con la API.** `src/api/client.js` usa el origen de la página en
    un build publicado para que el navegador del teléfono llame a la API del mismo sitio;
    no intenta conectarse a `127.0.0.1`, que en un teléfono sería el propio teléfono.
@@ -520,6 +523,19 @@ La cronología completa del trabajo está en
 **[`REGISTRO_DE_CAMBIOS.md`](REGISTRO_DE_CAMBIOS.md)**, con el detalle de qué se
 hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resumen:
 
+- **01/11** - **Acceso remoto estable** con **Tailscale Funnel** en
+  `https://desktop-5f7743f.taileeeb72.ts.net`: la web compilada y `/api` salen
+  por el mismo origen HTTPS, así funciona desde cualquier WiFi o datos móviles.
+  La PWA se sirve en modo producción (`npm run build`) porque el service worker
+  solo se registra en ese modo. El lanzador levantó la puerta de enlace en
+  `127.0.0.1:8001` y dejó el arranque automático al iniciar Windows.
+- **01/11** - **Mostrar/ocultar contraseña** en Login, Registro y Configuración.
+  Cada campo tiene su propio estado y su propio botón con `aria-label`,
+  `aria-controls` y `aria-pressed`; ver una contraseña no revela las demás.
+- **01/11** - **Turnera sin especialidades repetidas**: se eliminó el duplicado
+  histórico `Cardiologia` / `Cardiología` y el backend incorporó
+  `limpiar_especialidades_duplicadas.php` para fusionar variantes por tildes o
+  mayúsculas sin perder médicos asociados.
 - **15/10** - Corrección de los incidentes de seguridad **INC-001** (`GET
   /api/pacientes` respondía sin sesión) e **INC-004** (el registro público
   aceptaba el rol `admin`). Backend #19, Web #17, Mobile #14.
