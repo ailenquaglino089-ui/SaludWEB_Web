@@ -701,20 +701,35 @@ Este repositorio se publica en
 `docs/access-connectivity`. Desde la carpeta `SaludWEB_Web`:
 
 ```bash
-git status                         # 1. Ver qué archivos cambiaron
-git diff                           # 2. Revisar el contenido antes de subirlo
-git add README.md src/components/Medicos/FormularioMedico.jsx
-git add src/components/Pacientes/FormularioPaciente.jsx
-git add src/components/Prescripciones/FormularioPrescripcion.jsx
-git commit -m "fix: normalizar estado activo y paginacion de prescripciones"
-git push origin docs/access-connectivity
-git log --oneline -1               # 6. Confirmar el commit publicado
-git status -sb                     # 7. Debe quedar sin cambios pendientes
+npm test                           # 1. Pruebas unitarias
+npm run build                      # 2. Compilar la SPA
+git status                         # 3. Ver qué archivos cambiaron
+git diff                           # 4. Revisar el contenido antes de subirlo
+git add README.md src/components/Medicos/FormularioMedico.jsx     # 5. Preparar archivos
+git add src/components/Pacientes/FormularioPaciente.jsx           # 6. Preparar archivos
+git add src/components/Prescripciones/FormularioPrescripcion.jsx  # 7. Preparar archivos
+git commit -m "fix: normalizar estado activo y paginacion de prescripciones"  # 8. Crear commit
+git push origin docs/access-connectivity                                  # 9. Subir a GitHub
+git log --oneline -1               # 10. Confirmar el commit publicado
+git status -sb                     # 11. Debe quedar sin cambios pendientes
 ```
 
-Antes de publicar, ejecutar `npm test` y `npm run build`. No subir
-`node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos por
-`.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
+Qué hace cada línea:
+
+1. `npm test`: corre las pruebas de Node antes de tocar el repositorio.
+2. `npm run build`: compila `dist/`; verifica que la app compila.
+3. `git status`: lista archivos modificados, nuevos y sin seguimiento.
+4. `git diff`: muestra el cambio exacto para revisar que no haya secretos ni archivos ajenos.
+5. `git add README.md ...`: prepara la documentación y el formulario de médicos.
+6. `git add ...FormularioPaciente.jsx`: prepara el formulario de pacientes.
+7. `git add ...FormularioPrescripcion.jsx`: prepara el formulario de prescripciones.
+8. `git commit`: crea el commit local con el mensaje del cambio.
+9. `git push`: sube la rama `docs/access-connectivity` al repositorio de GitHub.
+10. `git log --oneline -1`: confirma que el commit existe.
+11. `git status -sb`: confirma que la rama local quedó igual a `origin`.
+
+No subir `node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos
+por `.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
 GitHub que tiene permiso sobre el repositorio.
 
 ## Calidad del software
