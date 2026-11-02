@@ -694,6 +694,29 @@ Archivo: `src/components/Medicos/FormularioMedico.jsx`.
 - En el backend: `php tests/run.php` (50/50), `php probar_roles.php` y
   `php probar_vinculacion.php` (15/15) pasaron después del seeder.
 
+## Publicar cambios en GitHub (paso a paso)
+
+Este repositorio se publica en
+`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`, rama
+`docs/access-connectivity`. Desde la carpeta `SaludWEB_Web`:
+
+```bash
+git status                         # 1. Ver qué archivos cambiaron
+git diff                           # 2. Revisar el contenido antes de subirlo
+git add README.md src/components/Medicos/FormularioMedico.jsx
+git add src/components/Pacientes/FormularioPaciente.jsx
+git add src/components/Prescripciones/FormularioPrescripcion.jsx
+git commit -m "fix: normalizar estado activo y paginacion de prescripciones"
+git push origin docs/access-connectivity
+git log --oneline -1               # 6. Confirmar el commit publicado
+git status -sb                     # 7. Debe quedar sin cambios pendientes
+```
+
+Antes de publicar, ejecutar `npm test` y `npm run build`. No subir
+`node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos por
+`.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
+GitHub que tiene permiso sobre el repositorio.
+
 ## Calidad del software
 
 Aplicacion de "Calidad Profesional del Software": logging estructurado, identificador de
