@@ -795,8 +795,9 @@ responde `200` y el navegador carga el JS y el CSS desde la raíz.
 ## Publicar cambios en GitHub (paso a paso)
 
 Este repositorio se publica en
-`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`, rama `main`. Desde la
-carpeta `SaludWEB_Web`:
+`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`. La rama `main` está
+protegida: exige un **pull request**, así que no se puede empujar directo con
+`git push origin main`. Desde la carpeta `SaludWEB_Web`:
 
 ```bash
 npm test                           # 1. Pruebas unitarias
@@ -811,9 +812,12 @@ git add src/components/Turnera/MisTurnos.jsx                      # 9. Preparar 
 git add src/components/Turnera/AgendaMedico.jsx                   # 10. Preparar archivos
 git add src/components/Dashboard/Dashboard.jsx                    # 11. Preparar archivos
 git commit -m "fix: reserva publica con ficha automatica y rutas absolutas"  # 12. Crear commit
-git push origin main               # 13. Subir a GitHub
-git log --oneline -1               # 14. Confirmar el commit publicado
-git status -sb                     # 15. Debe quedar sin cambios pendientes
+git push origin docs/access-connectivity  # 13. Subir la rama de trabajo
+gh pr create --repo ailenquaglino089-ui/SaludWEB_Web --base main --head docs/access-connectivity --title "fix: reserva publica con ficha automatica y rutas absolutas" --body "Permite vincular o crear la ficha al reservar y corrige rutas profundas y nombres en Mis turnos."  # 14. Abrir PR
+gh pr merge --repo ailenquaglino089-ui/SaludWEB_Web --merge  # 15. Fusionar el PR en main
+git fetch origin                   # 16. Traer el merge publicado
+git log --oneline -1 origin/main   # 17. Confirmar el merge en main
+git status -sb                     # 18. Debe quedar sin cambios pendientes
 ```
 
 Qué hace cada línea:
@@ -836,9 +840,14 @@ Qué hace cada línea:
     `medico.especialidad`.
 11. `git add ...Dashboard.jsx`: prepara los próximos turnos del paciente.
 12. `git commit`: crea el commit local con el mensaje del cambio.
-13. `git push`: sube la rama `main` al repositorio de GitHub.
-14. `git log --oneline -1`: confirma que el commit existe.
-15. `git status -sb`: confirma que la rama local quedó igual a `origin`.
+13. `git push`: sube la rama de trabajo (no `main`) a GitHub.
+14. `gh pr create`: abre el pull request hacia `main`, que es la única vía
+    permitida por la protección de la rama.
+15. `gh pr merge`: fusiona el PR en `main`. Sin número porque el PR abierto es el
+    de la rama actual.
+16. `git fetch`: actualiza las referencias remotas sin cambiar los archivos.
+17. `git log origin/main`: confirma el commit de merge publicado.
+18. `git status -sb`: confirma que la rama local quedó igual a `origin`.
 
 No subir `node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos
 por `.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
