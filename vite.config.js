@@ -6,12 +6,9 @@ import react from '@vitejs/plugin-react'
 
 // export default defineConfig: expone la configuración de Vite (archivo CommonJS/ESM del proyecto, no de build)
 //
-// Se reciben `command` y `mode` porque hacen falta dos cosas que no se pueden
-// resolver con un valor único:
-//   - `command` -> `base` necesita ser distinto en desarrollo y en build.
-//   - `mode`    -> para que loadEnv() lea el archivo .env correcto
-//                  (.env, y además .env.development o .env.production según el caso).
-export default defineConfig(({ command, mode }) => {
+// Se recibe `mode` para que loadEnv() lea el archivo .env correcto
+// (.env, y además .env.development o .env.production según el caso).
+export default defineConfig(({ mode }) => {
   // loadEnv se llama A MANO y no se usa import.meta.env, porque import.meta.env
   // todavía no existe cuando se evalúa este archivo: la configuración de Vite se
   // ejecuta ANTES de que Vite prepare el entorno del código de la aplicación.
@@ -33,17 +30,18 @@ export default defineConfig(({ command, mode }) => {
     env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000'
 
   return {
-    // base: './' en BUILD hace que index.html referencie los assets con rutas
-    // RELATIVAS (./assets/...), lo que permite abrir la SPA desde cualquier
-    // subdirectorio de un servidor estático.
+    // base: '/' tanto en BUILD como en DEV SERVER.
     //
-    // Ese mismo './' en el DEV SERVER rompe el arranque: Vite necesita una base
-    // absoluta para resolver qué archivo servir en cada URL, y con una base
-    // relativa responde 404 en '/' y en '/login' (sí sirve '/index.html', por eso
-    // el síntoma confunde). Por eso el valor depende del comando:
-    //   - command === 'build'  -> './' (subdirectorios)
-    //   - command === 'serve'  -> '/'    (dev server en http://127.0.0.1:5173)
-    base: command === 'build' ? './' : '/',
+    // Antes el build usaba './'. Eso funciona en la raíz y en rutas de UN solo
+    // nivel, pero rompe en rutas anidadas como /turnera/mis-turnos: el navegador
+    // resuelve "./assets/..." contra /turnera/ y pide /turnera/assets/..., que
+    // no existe. El resultado es una página en blanco al refrescar o al entrar
+    // directo a una ruta profunda.
+    //
+    // La SPA se publica en la raíz del dominio, así que la base absoluta es la
+    // correcta. Además coincide con la del servidor de desarrollo y evita dos
+    // comportamientos distintos entre "npm run dev" y el build.
+    base: '/',
     plugins: [react()],
     // plugins: registra el plugin de React para poder compilar archivos .jsx/.tsx
     server: {

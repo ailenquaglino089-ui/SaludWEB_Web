@@ -358,7 +358,9 @@ export default function ReservarTurno() {
           <h1>Vincular tu ficha</h1>
           <p>
             Antes de reservar necesitamos vincular tu cuenta con tu ficha del
-            consultorio. Es un solo paso y se hace una sola vez.
+            consultorio. Es un solo paso y se hace una sola vez. Si todavía no
+            tenés ficha, la creamos automáticamente con tu DNI y el nombre de
+            tu cuenta.
           </p>
         </div>
 
@@ -389,7 +391,7 @@ export default function ReservarTurno() {
             className="btn-turnera btn-primario"
             disabled={vinculando}
           >
-            {vinculando ? 'Vinculando...' : 'Vincular mi ficha'}
+            {vinculando ? 'Vinculando...' : 'Vincular o crear mi ficha'}
           </button>
         </form>
       </div>

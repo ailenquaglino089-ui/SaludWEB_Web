@@ -236,14 +236,14 @@ export default function MisTurnos() {
                     {turno.fecha} · {turno.hora} hs
                   </p>
                   <p className="turno-profesional">
-                    Dr(a). {turno.medico_nombre}
-                    {turno.especialidad_nombre
-                      ? ` — ${turno.especialidad_nombre}`
+                    Dr(a). {turno.nombre_medico}
+                    {turno.especialidad
+                      ? ` — ${turno.especialidad}`
                       : ''}
                   </p>
-                  {turno.paciente_nombre && (
+                  {turno.nombre_paciente && (
                     <p className="turno-paciente">
-                      Paciente: {turno.paciente_nombre}
+                      Paciente: {turno.nombre_paciente}
                     </p>
                   )}
                   {turno.motivo && <p className="turno-motivo">{turno.motivo}</p>}

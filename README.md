@@ -569,8 +569,9 @@ hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resu
 
 Esta sección explica **qué cambió, línea por línea**, en los archivos que se
 tocaron para cerrar los problemas de pacientes, prescripciones, usuarios,
-fichas y estados activo/inactivo. Los números de línea corresponden a los
-archivos de este repositorio.
+fichas, estados activo/inactivo, reserva pública, nombres en "Mis turnos" y
+rutas profundas de la SPA. Los números de línea corresponden a los archivos de
+este repositorio.
 
 ### 1. Paciente activo: de `0/1` a booleano
 
@@ -652,8 +653,10 @@ Archivo: `src/components/Prescripciones/FormularioPrescripcion.jsx`.
   con "(vos)" y el backend responde **409** si se intenta degradar al último
   admin o a uno mismo.
 - La pantalla `src/components/Configuracion/Configuracion.jsx` muestra el estado
-  de la ficha y permite vincularla con DNI (paciente) o matrícula (médico).
-  El DNI, el nombre y la especialidad no se editan desde ahí por seguridad.
+  de la ficha y permite vincularla con DNI (paciente) o matrícula (médico). Si
+  el DNI del paciente no existe, el backend crea la ficha con el nombre de la
+  cuenta. El DNI, el nombre y la especialidad no se editan desde ahí por
+  seguridad.
 
 ### 4. Médicos activo/inactivo: el alta ya no fuerza `activo = 1`
 
@@ -674,7 +677,90 @@ Archivo: `src/components/Medicos/FormularioMedico.jsx`.
   enviado (o usan `1` si la clave no viene) y `actualizar` normaliza con
   `filter_var(..., FILTER_VALIDATE_BOOLEAN)`, que también entiende `"false"`.
 
-### 5. Verificación ejecutada
+### 5. Reserva pública: vincular o crear la ficha
+
+Problema: una persona se registraba desde `/register` y quedaba con sesión
+iniciada, pero al intentar reservar no tenía `id_paciente`. Si su DNI no estaba
+cargado en el consultorio, el vínculo fallaba y no había forma de completar la
+reserva desde la web.
+
+Archivos: `src/components/Turnera/ReservarTurno.jsx`,
+`src/components/Configuracion/Configuracion.jsx` y
+`src/components/Turnera/CatalogoTurnera.jsx`.
+
+- **`ReservarTurno.jsx` líneas 243-268** - `confirmarVinculacion()` envía el
+  documento con `vincularFicha(usuario.tipo_usuario, documento.trim())`.
+  Después llama a `recargarSesion()` para que `/api/auth/me` traiga el
+  `id_paciente` recién creado; sin esa recarga la pantalla seguiría mostrando el
+  formulario de vínculo y el paciente tendría que refrescar a mano.
+- **`ReservarTurno.jsx` líneas 351-364** - El estado "con sesión pero sin ficha"
+  ahora explica que, si la persona todavía no tiene ficha, se crea
+  automáticamente con su DNI y el nombre de su cuenta.
+- **`ReservarTurno.jsx` líneas 389-395** - El botón dice
+  "Vincular o crear mi ficha" en lugar de solo "Vincular": describe las dos
+  acciones posibles y evita que el paciente crea que necesita un trámite previo.
+- **`Configuracion.jsx` líneas 167-178** - La misma llamada a `vincularFicha()`
+  y la misma recarga de sesión desde la pantalla de configuración. El mensaje de
+  éxito confirma que la cuenta quedó vinculada.
+- **`Configuracion.jsx` líneas 331-336** - El texto avisa que la ficha se crea
+  con el DNI y el nombre de la cuenta si todavía no existe.
+- **`Configuracion.jsx` líneas 354-360** - El botón usa el mismo texto
+  "Vincular o crear mi ficha" para que la acción sea consistente en toda la app.
+- **`CatalogoTurnera.jsx` líneas 173-182** - El aviso de cuenta sin ficha se
+  muestra antes de elegir un horario y aclara que la ficha se crea
+  automáticamente. Antes el paciente descubría el problema recién al final del
+  flujo de reserva.
+
+Regla de seguridad: el frontend solo envía el DNI. La decisión de crear la ficha
+o rechazar el vínculo queda en el backend, que además compara el nombre cuando
+el DNI ya existe. La web no permite editar DNI, nombre ni especialidad desde
+"Configuración".
+
+### 6. "Mis turnos": nombres y especialidad con las claves reales de la API
+
+Problema: la API de citas devuelve `nombre_medico`, `nombre_paciente` y
+`especialidad`, pero la vista leía `medico_nombre`, `paciente_nombre` y
+`especialidad_nombre`. El turno aparecía como `Dr(a).` sin profesional y sin
+especialidad, aunque la reserva existía.
+
+- **`src/components/Turnera/MisTurnos.jsx` líneas 238-247** - Se usan
+  `turno.nombre_medico`, `turno.especialidad` y `turno.nombre_paciente`. Así el
+  paciente ve el profesional, la especialidad y, cuando corresponde, el nombre
+  del paciente de la ficha.
+- **`src/components/Dashboard/Dashboard.jsx` línea 501** - El panel de inicio
+  del paciente usa `turno.nombre_medico`, la misma clave que devuelve
+  `listarMisTurnos()`.
+- **`src/components/Turnera/AgendaMedico.jsx` líneas 440-442** - La cabecera de
+  la agenda usa `medico.especialidad`, que es el campo del médico en la API, en
+  lugar de `especialidad_nombre`.
+
+### 7. Rutas profundas y PWA: rutas absolutas
+
+Problema: al entrar directo o refrescar `/turnera/mis-turnos`, la página quedaba
+en blanco. El build usaba `base: './'`, así que el HTML pedía
+`./assets/index-...js`; el navegador lo resolvía contra `/turnera/` y buscaba
+`/turnera/assets/index-...js`, que no existe.
+
+Archivos: `vite.config.js`, `index.html` y `src/main.jsx`.
+
+- **`vite.config.js` líneas 35-44** - `base: '/'` reemplaza a `'./'`. La SPA se
+  publica en la raíz del dominio, así que los assets deben pedirse siempre como
+  `/assets/...` sin importar la profundidad de la ruta.
+- **`index.html` línea 13** - El manifest se pide como
+  `/manifest.webmanifest`; con `./manifest.webmanifest` se resolvía contra la
+  ruta actual y fallaba en páginas anidadas.
+- **`index.html` línea 16** - El ícono de iOS se pide como
+  `/apple-touch-icon.png`, por la misma razón.
+- **`src/main.jsx` líneas 16-24** - El service worker se registra con
+  `navigator.serviceWorker.register('/sw.js')` solo en producción. Con
+  `'./sw.js'` el navegador buscaba `/turnera/sw.js` en las rutas profundas y el
+  registro fallaba.
+
+Verificación: `npm run build` genera `dist/index.html` con `/assets/...`,
+`/manifest.webmanifest` y `/apple-touch-icon.png`; `GET /turnera/mis-turnos`
+responde `200` y el navegador carga el JS y el CSS desde la raíz.
+
+### 8. Verificación ejecutada
 
 - `npm test` en Web: **32/32** pruebas OK.
 - `npm run build`: **134 módulos** transformados, build OK.
@@ -691,42 +777,68 @@ Archivo: `src/components/Medicos/FormularioMedico.jsx`.
 - E2E de usuarios y configuración: **10** filas en `/usuarios`, Alonso como
   Médico, cuenta propia marcada, filtro de médicos con **4** resultados y ficha
   "Vinculada" para paciente y médico.
+- E2E de reserva desde el enlace público: registro, selección de la médica
+  Simona, horario `08:00`, vínculo con un DNI sin ficha, creación automática de
+  la ficha y reserva confirmada. Luego la pantalla "Mis turnos" mostró
+  `Dr(a). Simona — Medicina General`, el paciente y el motivo, y la cancelación
+  dejó la cita en estado `cancelada`.
+- Casos negativos de la API: DNI existente vinculó la ficha correcta; DNI ajeno
+  respondió `422` con "El nombre de la cuenta no coincide con el de la ficha del
+  DNI"; una cuenta ya vinculada no pudo crear otra ficha. Los usuarios, fichas y
+  citas de prueba se borraron al terminar.
+- Rutas profundas: `/turnera/mis-turnos` respondió `200` y cargó
+  `/assets/index-0d5d49e8.js` (hash del build de esta iteración) desde la raíz,
+  no desde `/turnera/`.
 - En el backend: `php tests/run.php` (50/50), `php probar_roles.php` y
   `php probar_vinculacion.php` (15/15) pasaron después del seeder.
 
 ## Publicar cambios en GitHub (paso a paso)
 
 Este repositorio se publica en
-`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`, rama
-`docs/access-connectivity`. Desde la carpeta `SaludWEB_Web`:
+`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`, rama `main`. Desde la
+carpeta `SaludWEB_Web`:
 
 ```bash
 npm test                           # 1. Pruebas unitarias
 npm run build                      # 2. Compilar la SPA
 git status                         # 3. Ver qué archivos cambiaron
 git diff                           # 4. Revisar el contenido antes de subirlo
-git add README.md src/components/Medicos/FormularioMedico.jsx     # 5. Preparar archivos
-git add src/components/Pacientes/FormularioPaciente.jsx           # 6. Preparar archivos
-git add src/components/Prescripciones/FormularioPrescripcion.jsx  # 7. Preparar archivos
-git commit -m "fix: normalizar estado activo y paginacion de prescripciones"  # 8. Crear commit
-git push origin docs/access-connectivity                                  # 9. Subir a GitHub
-git log --oneline -1               # 10. Confirmar el commit publicado
-git status -sb                     # 11. Debe quedar sin cambios pendientes
+git add README.md vite.config.js index.html src/main.jsx          # 5. Preparar archivos
+git add src/components/Turnera/ReservarTurno.jsx                  # 6. Preparar archivos
+git add src/components/Configuracion/Configuracion.jsx            # 7. Preparar archivos
+git add src/components/Turnera/CatalogoTurnera.jsx                # 8. Preparar archivos
+git add src/components/Turnera/MisTurnos.jsx                      # 9. Preparar archivos
+git add src/components/Turnera/AgendaMedico.jsx                   # 10. Preparar archivos
+git add src/components/Dashboard/Dashboard.jsx                    # 11. Preparar archivos
+git commit -m "fix: reserva publica con ficha automatica y rutas absolutas"  # 12. Crear commit
+git push origin main               # 13. Subir a GitHub
+git log --oneline -1               # 14. Confirmar el commit publicado
+git status -sb                     # 15. Debe quedar sin cambios pendientes
 ```
 
 Qué hace cada línea:
 
 1. `npm test`: corre las pruebas de Node antes de tocar el repositorio.
-2. `npm run build`: compila `dist/`; verifica que la app compila.
+2. `npm run build`: compila `dist/`; verifica que la app compila y que las rutas
+   de los assets quedan absolutas.
 3. `git status`: lista archivos modificados, nuevos y sin seguimiento.
 4. `git diff`: muestra el cambio exacto para revisar que no haya secretos ni archivos ajenos.
-5. `git add README.md ...`: prepara la documentación y el formulario de médicos.
-6. `git add ...FormularioPaciente.jsx`: prepara el formulario de pacientes.
-7. `git add ...FormularioPrescripcion.jsx`: prepara el formulario de prescripciones.
-8. `git commit`: crea el commit local con el mensaje del cambio.
-9. `git push`: sube la rama `docs/access-connectivity` al repositorio de GitHub.
-10. `git log --oneline -1`: confirma que el commit existe.
-11. `git status -sb`: confirma que la rama local quedó igual a `origin`.
+5. `git add README.md vite.config.js index.html src/main.jsx`: prepara la
+   documentación, la base del build, el manifest/íconos y el registro del service
+   worker.
+6. `git add ...ReservarTurno.jsx`: prepara el formulario de vínculo dentro de la
+   reserva.
+7. `git add ...Configuracion.jsx`: prepara el vínculo desde configuración.
+8. `git add ...CatalogoTurnera.jsx`: prepara el aviso previo a elegir horario.
+9. `git add ...MisTurnos.jsx`: prepara la vista con `nombre_medico` y
+   `especialidad`.
+10. `git add ...AgendaMedico.jsx`: prepara la cabecera de agenda con
+    `medico.especialidad`.
+11. `git add ...Dashboard.jsx`: prepara los próximos turnos del paciente.
+12. `git commit`: crea el commit local con el mensaje del cambio.
+13. `git push`: sube la rama `main` al repositorio de GitHub.
+14. `git log --oneline -1`: confirma que el commit existe.
+15. `git status -sb`: confirma que la rama local quedó igual a `origin`.
 
 No subir `node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos
 por `.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
