@@ -330,7 +330,9 @@ export default function Configuracion() {
             <>
               <p>
                 Todavía no vinculaste tu cuenta con tu ficha del consultorio.
-                Necesitás hacerlo para reservar turnos y ver tu historial.
+                Necesitás hacerlo para reservar turnos y ver tu historial. Si
+                todavía no tenés ficha, la creamos con tu DNI y el nombre de tu
+                cuenta.
               </p>
 
               <form className="turnera-form" onSubmit={guardarVinculo}>
@@ -354,7 +356,7 @@ export default function Configuracion() {
                   className="btn-turnera btn-primario"
                   disabled={vinculando}
                 >
-                  {vinculando ? 'Vinculando...' : 'Vincular mi ficha'}
+                  {vinculando ? 'Vinculando...' : 'Vincular o crear mi ficha'}
                 </button>
               </form>
             </>

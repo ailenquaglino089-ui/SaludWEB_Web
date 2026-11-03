@@ -177,7 +177,7 @@ export default function CatalogoTurnera() {
       {autenticado && usuario?.tipo_usuario === 'paciente' && !usuario?.id_paciente && (
         <Aviso
           tipo="info"
-          texto="Tu cuenta todavía no está vinculada a una ficha de paciente. Podés ver la agenda, pero para reservar un turno vas a necesitar vincular tu DNI."
+          texto="Tu cuenta todavía no está vinculada a una ficha de paciente. Podés ver la agenda, pero para reservar un turno vas a necesitar vincular tu DNI. Si todavía no tenés ficha, la creamos automáticamente."
         />
       )}
 

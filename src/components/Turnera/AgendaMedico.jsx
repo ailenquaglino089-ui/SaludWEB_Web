@@ -437,9 +437,9 @@ export default function AgendaMedico() {
       <div className="turnera-header">
         <div>
           <h1>Dr(a). {medico.nombre}</h1>
-          {medico.especialidad_nombre && (
+          {medico.especialidad && (
             <p className="turnera-subtitulo">
-              {medico.especialidad_nombre}
+              {medico.especialidad}
             </p>
           )}
         </div>

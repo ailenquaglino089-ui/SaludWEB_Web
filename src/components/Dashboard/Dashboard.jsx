@@ -498,7 +498,7 @@ export default function Dashboard() {
                     {turno.fecha} · {turno.hora} hs
                   </span>
                   <span className="proximo-medico">
-                    Dr(a). {turno.medico_nombre}
+                    Dr(a). {turno.nombre_medico}
                   </span>
                   <span className={`estado-badge estado-${turno.estado}`}>
                     {turno.estado}

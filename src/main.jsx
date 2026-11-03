@@ -12,12 +12,13 @@ import './App.css'
 // El service worker da el arranque offline (abrir la SPA sin red) y permite
 // instalarla como PWA. En desarrollo no se registra: Vite sirve los módulos
 // en vivo y un SW que cachee interferiría con el hot reload sin aportar nada
-// (además ./sw.js es un archivo del build, está en public/).
+// (además /sw.js es un archivo del build, está en public/).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  // Registro con ruta relativa: la app puede servirse desde un subdirectorio
-  // (p.ej. /saludweb/) y el alcance del SW queda en ese directorio.
+  // Registro con ruta absoluta porque la SPA vive en la raíz del dominio y
+  // usa rutas anidadas como /turnera/mis-turnos. Con './sw.js' el navegador
+  // buscaría /turnera/sw.js en esas páginas y el registro fallaría.
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((error) => {
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
       // La app funciona igual sin el SW; el fallo solo deja de dar PWA/offline.
       console.warn('Service Worker no se pudo registrar:', error)
     })
