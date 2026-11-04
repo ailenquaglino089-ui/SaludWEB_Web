@@ -564,8 +564,12 @@ hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resu
   checkbox (un médico creado como inactivo queda inactivo), el formulario
   normaliza el `1/0` de SQLite y el payload envía un booleano. Se aplicó el
   mismo criterio en el backend para pacientes y médicos.
+- **04/11** - **Turnera con profesionales activos**: el backend sembró médicos en
+  Cardiología, Dermatología y Clínica Médica, con agenda de lunes a viernes, y la
+  web dejó de ofrecer especialidades con `cantidad_medicos = 0`. Así desaparece el
+  caso de elegir una especialidad y ver "No encontramos profesionales...".
 
-## Última iteración verificada (02/11/2026)
+## Iteración verificada (02/11/2026)
 
 Esta sección explica **qué cambió, línea por línea**, en los archivos que se
 tocaron para cerrar los problemas de pacientes, prescripciones, usuarios,
@@ -791,6 +795,51 @@ responde `200` y el navegador carga el JS y el CSS desde la raíz.
   no desde `/turnera/`.
 - En el backend: `php tests/run.php` (50/50), `php probar_roles.php` y
   `php probar_vinculacion.php` (15/15) pasaron después del seeder.
+
+## Iteración 04/11/2026: turnera con profesionales activos
+
+La API pública de especialidades devolvía `cantidad_medicos = 0` para Cardiología y
+Dermatología. Al elegir esas opciones, `CatalogoTurnera` pedía profesionales y recibía una
+lista vacía, entonces mostraba "No encontramos profesionales con esos filtros...". El
+backend agregó tres profesionales activos con agenda y la web dejó de ofrecer las
+especialidades que no tienen ningún profesional activo.
+
+### `CatalogoTurnera.jsx`, línea por línea
+
+Archivo: `src/components/Turnera/CatalogoTurnera.jsx`, líneas 192-210.
+
+- **Líneas 192-196** - El `<select>` sigue controlado por `especialidad`; el valor elegido
+  se guarda con `setEspecialidad(e.target.value)` y dispara la recarga de médicos.
+- **Líneas 197-199** - La opción con `value=""` representa "Todas las especialidades" y el
+  backend la interpreta como que no hay filtro.
+- **Líneas 200-201** - Antes de pintar las opciones, filtra las especialidades cuyo
+  `cantidad_medicos` sea mayor que 0. `Number(...)` convierte el valor por si la API lo
+  entrega como texto.
+- **Líneas 202-203** - Solo las especialidades que pasan el filtro se recorren con
+  `.map()` para crear un `<option>` por cada una.
+- **Líneas 204-207** - Cada opción muestra `nombre (cantidad_medicos)`, por ejemplo
+  `Cardiología (1)`. El número viene del backend y cuenta únicamente médicos activos.
+- **Líneas 208-210** - Se cierra el `<option>`, el `.map()`, el bloque del selector y el
+  contenedor del filtro. La opción `Prueba` de la base ya no aparece porque tiene 0.
+
+El cambio no toca la carga de médicos ni la navegación a la agenda: cuando se elige una
+especialidad con profesionales, `listarMedicos()` sigue enviando `especialidad`, `q` y
+`activo: 1`, y la agenda recibe el médico por `state` o por el id de la URL.
+
+### Verificación de esta iteración
+
+- `GET /api/especialidades` devuelve seis especialidades con profesionales:
+  Cardiología `1`, Clínica Médica `2`, Dermatología `1`, Medicina General `2`,
+  Neurología `1` y Pediatría `1`. `Prueba` queda con `0` y no se muestra.
+- Playwright sobre `http://127.0.0.1:5173/turnera` leyó las opciones:
+  `Todas las especialidades`, `Cardiología (1)`, `Clínica Médica (2)`,
+  `Dermatología (1)`, `Medicina General (2)`, `Neurología (1)` y `Pediatría (1)`.
+- Al seleccionar Cardiología, la lista quedó con **Dr. Hernán Rivas** y no apareció el
+  mensaje de "No encontramos profesionales".
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **134 módulos** transformados, build OK.
+- La URL pública `https://saludweb.taileeeb72.ts.net/turnera` sirve el build nuevo
+  `index-7535f6a2.js`; la API pública devuelve los mismos conteos.
 
 ## Publicar cambios en GitHub (paso a paso)
 
