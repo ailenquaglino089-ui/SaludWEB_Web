@@ -197,14 +197,16 @@ export default function CatalogoTurnera() {
             {/* Opción "todas": valor vacío, que es lo que el backend
                 interpreta como "sin filtro" */}
             <option value="">Todas las especialidades</option>
-            {especialidades.map((esp) => (
-              <option key={esp.id} value={esp.nombre}>
-                {/* Se muestra cuántos profesionales atienden. El backend ya
-                    trae ese dato (cantidad_medicos) y solo cuenta los
-                    activos, así que el número es real y no una estimación. */}
-                {esp.nombre} ({esp.cantidad_medicos})
-              </option>
-            ))}
+            {especialidades
+              .filter((esp) => Number(esp.cantidad_medicos) > 0)
+              .map((esp) => (
+                <option key={esp.id} value={esp.nombre}>
+                  {/* Se muestra cuántos profesionales atienden. El backend ya
+                      trae ese dato (cantidad_medicos) y solo cuenta los
+                      activos, así que el número es real y no una estimación. */}
+                  {esp.nombre} ({esp.cantidad_medicos})
+                </option>
+              ))}
           </select>
         </div>
 
