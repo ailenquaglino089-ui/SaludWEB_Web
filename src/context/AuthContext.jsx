@@ -132,15 +132,19 @@ export const AuthProvider = ({ children }) => {
       // Guardar token y datos del usuario
       localStorage.setItem('token', newToken);
       // Persiste el token JWT en localStorage: así la sesión sobrevive al recargar/cerrar la pestaña
-      localStorage.setItem('usuario', JSON.stringify(usuarioData));
+
+      const datosCompletos = await recargarSesion();
+      const datosSesion = datosCompletos ?? usuarioData;
+
+      localStorage.setItem('usuario', JSON.stringify(datosSesion));
       // Guarda los datos del usuario serializados en JSON dentro de localStorage (los usa el interceptor o la UI)
-      
+
       setToken(newToken);
       // Actualiza el estado React "token" con el token recibido (dispara cuándo autenticado quede en true)
-      setUsuario(usuarioData);
+      setUsuario(datosSesion);
       // Actualiza el estado React "usuario" con los datos del usuario logueado
-      
-      return usuarioData;
+
+      return datosSesion;
       // Devuelve los datos del usuario para que el componente de Login pueda, por ejemplo, redirigir al dashboard
     } catch (err) {
       // Si las credenciales son inválidas o el servidor falla...
