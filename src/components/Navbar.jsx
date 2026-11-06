@@ -63,16 +63,16 @@ const ENLACES_SEGUN_ROL = {
     { a: '/dashboard', texto: 'Dashboard' },
     { a: '/medicos', texto: 'Médicos' },
     { a: '/pacientes', texto: 'Pacientes' },
-    { a: '/prescripciones', texto: 'Prescripciones' },
+    // Prescripciones es una pantalla clínica de uso exclusivo médico; el
+    // admin ya no tiene este enlace ni acceso al listado de recetas.
     { a: '/usuarios', texto: 'Usuarios' },
     { a: '/configuracion', texto: 'Configuración' },
   ],
   // "Usuarios" (la pantalla de permisos) es la ÚNICA entrada que el
-  // administrador tiene y el resto de los roles no. Va después de
-  // Prescripciones y antes de Configuración por una razón de uso, no de
-  // jerarquía: los tres primeros son los módulos de trabajo diario, este es
-  // una tarea de administración poco frecuente, y Configuración es el último
-  // lugar donde alguien busca algo.
+  // administrador tiene y el resto de los roles no. Va antes de Configuración
+  // por una razón de uso, no de jerarquía: los tres primeros son los módulos
+  // de trabajo diario, este es una tarea de administración poco frecuente, y
+  // Configuración es el último lugar donde alguien busca algo.
   //
   // Ocultarlo para los demás roles no es la defensa. La defensa son los
   // requireRol() del backend, y un token de médico contra /api/usuarios
@@ -85,15 +85,16 @@ const ENLACES_SEGUN_ROL = {
     { a: '/prescripciones', texto: 'Prescripciones' },
     { a: '/configuracion', texto: 'Configuración' },
   ],
-  // El médico ve los mismos módulos que el administrador en el menú, y la
-  // diferencia real la aplica el backend en cada endpoint: un médico solo ve
-  // su propia agenda y sus pacientes. Filtrar el menú con una granularidad más
-  // fina que la del backend escondería enlaces que sí funcionan, que es el
-  // error simétrico del que se quiere evitar acá.
+  // El médico conserva los módulos clínicos, incluido Prescripciones, que el
+  // administrador ya no ve. La diferencia real la aplica el backend en cada
+  // endpoint: un médico solo ve su propia agenda y sus pacientes. Filtrar el
+  // menú con una granularidad más fina que la del backend escondería enlaces
+  // que sí funcionan, que es el error simétrico del que se quiere evitar acá.
 
   paciente: [
     { a: '/dashboard', texto: 'Dashboard' },
     { a: '/turnera/mis-turnos', texto: 'Mis turnos' },
+    { a: '/mis-recetas', texto: 'Mis recetas' },
     { a: '/configuracion', texto: 'Configuración' },
   ],
   // El paciente sí tiene "Mis turnos" en el menú, a diferencia de la lista

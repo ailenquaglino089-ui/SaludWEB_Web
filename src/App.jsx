@@ -36,6 +36,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import ListaMedicos from './components/Medicos/ListaMedicos';
 import ListaPacientes from './components/Pacientes/ListaPacientes';
 import ListaPrescripciones from './components/Prescripciones/ListaPrescripciones';
+import MisPrescripciones from './components/Prescripciones/MisPrescripciones';
 import Configuracion from './components/Configuracion/Configuracion';
 import Usuarios from './components/Usuarios/Usuarios';
 import CatalogoTurnera from './components/Turnera/CatalogoTurnera';
@@ -142,6 +143,58 @@ function AdminRoute({ children }) {
   return children;
 }
 
+// ------------------------------------------------------------
+// MedicoRoute: ProtectedRoute + exigir rol médico
+// ------------------------------------------------------------
+// Prescripciones es una pantalla clínica de uso exclusivo médico. El backend
+// ya responde 403 a cualquier otro rol; esta guarda evita además que un admin
+// o un paciente lleguen a la pantalla escribiendo la URL a mano.
+function MedicoRoute({ children }) {
+  const { usuario, autenticado, cargando } = useContext(AuthContext);
+
+  if (cargando) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  if (!autenticado) {
+    return <Navigate to="/login" />;
+  }
+
+  if (usuario?.tipo_usuario !== 'medico') {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
+}
+
+function PacienteRoute({ children }) {
+  const { usuario, autenticado, cargando } = useContext(AuthContext);
+
+  if (cargando) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  if (!autenticado) {
+    return <Navigate to="/login" />;
+  }
+
+  if (usuario?.tipo_usuario !== 'paciente') {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
+}
+
 function AppContent() {
   // AppContent arma la estructura visual y la tabla de rutas.
   const { autenticado } = useContext(AuthContext);
@@ -233,9 +286,18 @@ function AppContent() {
           <Route
             path="/prescripciones"
             element={
-              <ProtectedRoute>
+              <MedicoRoute>
                 <ListaPrescripciones />
-              </ProtectedRoute>
+              </MedicoRoute>
+            }
+          />
+
+          <Route
+            path="/mis-recetas"
+            element={
+              <PacienteRoute>
+                <MisPrescripciones />
+              </PacienteRoute>
             }
           />
 

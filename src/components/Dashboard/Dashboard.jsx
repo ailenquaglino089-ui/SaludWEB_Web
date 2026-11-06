@@ -328,11 +328,15 @@ export default function Dashboard() {
         { icono: '📅', titulo: 'Turnera', texto: 'Reservá y gestioná turnos', enlace: '/turnera', textoEnlace: 'Ver turnera' },
         { icono: '👨‍⚕️', titulo: 'Médicos', texto: 'Gestioná médicos y especialistas', enlace: '/medicos', textoEnlace: 'Ver médicos' },
         { icono: '👤', titulo: 'Pacientes', texto: 'Administrá la información de pacientes', enlace: '/pacientes', textoEnlace: 'Ver pacientes' },
-        { icono: '💊', titulo: 'Prescripciones', texto: 'Gestioná recetas médicas', enlace: '/prescripciones', textoEnlace: 'Ver prescripciones' },
+        // Prescripciones es una pantalla clínica: la ve el médico, no el admin.
+        ...(rol === 'medico'
+          ? [{ icono: '💊', titulo: 'Prescripciones', texto: 'Gestioná recetas médicas', enlace: '/prescripciones', textoEnlace: 'Ver prescripciones' }]
+          : []),
       ]
     : [
         { icono: '📅', titulo: 'Turnera', texto: 'Reservá un turno con un profesional', enlace: '/turnera', textoEnlace: 'Reservar un turno' },
         { icono: '🗓', titulo: 'Mis turnos', texto: 'Confirmá o cancelá tus turnos', enlace: '/turnera/mis-turnos', textoEnlace: 'Ver mis turnos' },
+        { icono: '💊', titulo: 'Mis recetas', texto: 'Consultá tus recetas y su estado', enlace: '/mis-recetas', textoEnlace: 'Ver mis recetas' },
         { icono: '🔗', titulo: 'Ficha clínica', texto: 'Vinculá tu cuenta con tu ficha', enlace: '/configuracion', textoEnlace: 'Ir a configuración' },
       ];
   // El paciente recibe Configuración en vez de las tres tarjetas de gestión:

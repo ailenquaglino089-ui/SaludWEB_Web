@@ -11,6 +11,7 @@ Frontend moderno construido con **React + Vite**. Consume la API REST del backen
   no recupera ni expone contraseñas guardadas.
 - **Módulos de gestión**: médicos, pacientes y prescripciones (la app respeta las mismas
   reglas que el backend: un paciente no puede crear médicos, solo los médicos recetan, etc.).
+  El paciente tiene además **Mis recetas**, una vista de solo lectura con sus propias recetas.
 - **Turnera (citas online)**: catálogo de especialidades → profesionales → reserva de turno;
   mis turnos; agenda del profesional con *polling adaptativo*.
 - **Actualización automática del panel**: por defecto consulta cambios cada 15 segundos;
@@ -247,7 +248,7 @@ SaludWEB_Web/
 │   │   ├── Dashboard/       # panel en vivo por SSE (muestra el rol propio)
 │   │   ├── Medicos/         # listado/formulario/detalle
 │   │   ├── Pacientes/       # listado/formulario
-│   │   ├── Prescripciones/  # listado/formulario/cambio de estado
+│   │   ├── Prescripciones/  # listado médico, formulario, estado y Mis recetas
 │   │   ├── Turnera/         # catálogo, reservar, mis turnos, agenda
 │   │   ├── Usuarios/        # gestión de usuarios y roles (solo admin)
 │   │   ├── Configuracion/   # panel de configuración
@@ -349,6 +350,7 @@ paciente nunca recibe avisos de otro.
 
 - ✅ Autenticación con JWT (login/registro), misma API que la app móvil
 - ✅ CRUD de Médicos / Pacientes / Prescripciones con gating por rol
+- ✅ Prescripciones clínicas solo para médicos; el paciente consulta **Mis recetas**
 - ✅ Turnera: especialidades → profissionais → reserva, mis turnos y agenda del médico
 - ✅ Panel con actualización automática (sondeo cada 15 s por defecto; SSE opcional en servidores multi-worker)
 - ✅ Indicador del estado del canal (conectado / reconectando / sin conexión)
@@ -840,6 +842,113 @@ especialidad con profesionales, `listarMedicos()` sigue enviando `especialidad`,
 - `npm run build`: **134 módulos** transformados, build OK.
 - La URL pública `https://saludweb.taileeeb72.ts.net/turnera` sirve el build nuevo
   `index-7535f6a2.js`; la API pública devuelve los mismos conteos.
+
+## Iteración 05/11/2026: Mis recetas y prescripciones solo para médicos
+
+La pantalla `/prescripciones` se mostraba como un módulo de gestión más y el backend solo
+pedía token para leer recetas. En esta iteración el acceso clínico quedó reservado al rol
+`medico` y el paciente recibió una pantalla propia, **Mis recetas**, que consume
+`GET /api/prescripciones/paciente/{id_paciente}` y no permite crear, editar, cambiar el
+estado ni borrar nada.
+
+### Qué ve cada rol
+
+| Elemento | `admin` | `medico` | `paciente` |
+|---|---|---|---|
+| Enlace y tarjeta “Prescripciones” | No | Sí | No |
+| Ruta `/prescripciones` | Redirige a `/dashboard` | Sí | Redirige a `/dashboard` |
+| Enlace y tarjeta “Mis recetas” | No | No | Sí |
+| Ruta `/mis-recetas` | Redirige a `/dashboard` | Redirige a `/dashboard` | Sí |
+
+La UI oculta o redirige, pero la defensa real sigue siendo el backend: aunque alguien
+escriba la URL a mano, `requireRol()` responde `403` y la pantalla no recibe datos.
+
+### `src/App.jsx`, línea por línea
+
+- **Líneas 38-39** — Se importa `ListaPrescripciones` (la vista médica que ya existía) y se
+  agrega `MisPrescripciones` desde `components/Prescripciones/`.
+- **Líneas 146-173** — `MedicoRoute` replica el patrón de `ProtectedRoute` y agrega una
+  condición: mientras `cargando` sea verdadero muestra el spinner; sin sesión redirige a
+  `/login`; si `usuario.tipo_usuario` no es `medico`, redirige a `/dashboard`; solo entonces
+  devuelve `children`. El comentario deja explícito que el backend ya responde `403`, pero
+  la guarda evita que un admin o un paciente lleguen a la pantalla escribiendo la URL.
+- **Líneas 175-196** — `PacienteRoute` hace lo mismo para `paciente`. Un médico o un admin
+  que intente abrir `/mis-recetas` termina en `/dashboard`.
+- **Líneas 286-293** — La ruta `/prescripciones` cambia de `ProtectedRoute` a `MedicoRoute`;
+  `ListaPrescripciones` queda envuelta por la guarda médica.
+- **Líneas 295-302** — Se agrega `/mis-recetas` con `PacienteRoute` y `MisPrescripciones`.
+  La ruta es independiente de `/prescripciones`: no comparte formularios ni acciones de
+  escritura.
+
+### `src/context/AuthContext.jsx`, línea por línea
+
+- **Líneas 69-89** — `recargarSesion()` hace `GET /api/auth/me`, guarda los datos frescos en
+  el estado global y los devuelve. Si falla, registra el error y devuelve `null` sin borrar
+  la sesión: un fallo de red momentáneo no debe expulsar al usuario.
+- **Líneas 122-129** — `login()` hace `POST /api/auth/login` y separa `token` del resto del
+  payload (`usuarioData`).
+- **Línea 133** — El token se guarda en `localStorage` **antes** de llamar a
+  `recargarSesion()`. El cliente HTTP lee el token de `localStorage` para armar el
+  `Authorization: Bearer`, así que este orden es necesario para que `/api/auth/me` funcione.
+- **Líneas 136-137** — Se pide `/api/auth/me` y se usa su resultado (`datosCompletos`) como
+  fuente principal. Si la recarga falla, se conserva `usuarioData` del login para no romper
+  el acceso.
+- **Línea 139** — Se persiste en `localStorage` el usuario completo, ahora con
+  `id_paciente`/`id_medico` cuando el backend los devuelve.
+- **Líneas 142-147** — Se actualizan `token` y `usuario` en React y se devuelve `datosSesion`
+  para que `Login` pueda redirigir. Sin este cambio, el JWT no trae `id_paciente` y
+  `MisPrescripciones` no sabría qué id pedir hasta recargar la página.
+- **Límite conocido** — Si `/api/auth/me` falla justo después del login, se usa el payload
+  del login como respaldo; ese payload puede no incluir `id_paciente`, por lo que la vista
+  mostrará “cuenta no vinculada” hasta la próxima verificación de sesión.
+
+### `src/components/Prescripciones/MisPrescripciones.jsx`, línea por línea
+
+- **Líneas 1-5** — Imports de React/hooks, `client` (Axios con JWT), `useAuth`, helpers de
+  formato/errores y `Prescripciones.css`.
+- **Líneas 7-12** — El componente lee `usuario?.id_paciente`; si no existe, no hay consulta.
+  Declara `prescripciones`, `cargando` y `error`.
+- **Líneas 14-19** — El `useEffect` define `cargar()`. Si falta `idPaciente`, apaga el
+  spinner y devuelve sin llamar a la API: evita un `GET /paciente/null`.
+- **Líneas 21-25** — `client.get('/api/prescripciones/paciente/${idPaciente}')` usa el
+  interceptor que agrega el token. `getDatos(response, [])` extrae `data` del sobre de la API
+  y garantiza un array aunque la respuesta no traiga datos.
+- **Líneas 26-30** — `handleApiError` traduce el error para la UI; `finally` apaga el spinner
+  pase lo que pase.
+- **Línea 34** — La dependencia `[idPaciente]` repite la carga si cambia la ficha vinculada.
+- **Líneas 36-44** — Si la cuenta no está vinculada, muestra un aviso y no una tabla vacía.
+- **Líneas 46-52** — Encabezado “Mis recetas” y alerta de error.
+- **Líneas 54-62** — Spinner mientras carga; si el array está vacío, mensaje “No tenés
+  recetas registradas”.
+- **Líneas 63-97** — Tabla de solo lectura. `medicamentos` se une como
+  `Nombre (dosis), ...`; se muestran médico, fecha formateada y estado con
+  `getStatusColor()`/`getStatusBadge()`. No hay botones de alta, edición, cambio de estado
+  ni eliminación.
+
+### `src/components/Navbar.jsx` y `Dashboard.jsx`, línea por línea
+
+- **Navbar, líneas 62-70** — El menú `admin` ya no incluye `/prescripciones`; conserva
+  Dashboard, Médicos, Pacientes, Usuarios y Configuración. El comentario explica que ocultar
+  el enlace no es la defensa: lo es el `requireRol()` del backend.
+- **Navbar, líneas 81-87** — El menú `medico` conserva `/prescripciones`, porque es su módulo
+  clínico.
+- **Navbar, líneas 94-99** — El menú `paciente` agrega `/mis-recetas`, además de Dashboard,
+  Mis turnos y Configuración.
+- **Dashboard, líneas 326-335** — La tarjeta “Prescripciones” se agrega solo cuando
+  `rol === 'medico'`; para admin no se renderiza. Las tarjetas de Turnera, Médicos y
+  Pacientes siguen igual para los roles de gestión.
+- **Dashboard, líneas 336-341** — La rama del paciente agrega la tarjeta “Mis recetas”, que
+  enlaza a `/mis-recetas` y describe “Consultá tus recetas y su estado”.
+
+### Verificación ejecutada
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **135 módulos** transformados, build OK.
+- E2E por API del mismo flujo del backend: receta creada por médico `201`; paciente dueño
+  leyó la receta `200`; otro paciente recibió `403`; médico `200`; admin `403`; reserva del
+  paciente `201`; segundo intento sobre el mismo slot `409`; limpieza `200`.
+- No se abrió un navegador para una prueba visual manual en esta iteración. La validación de
+  la UI es el build, los tests existentes y el contrato HTTP consumido por la pantalla.
 
 ## Publicar cambios en GitHub (paso a paso)
 
