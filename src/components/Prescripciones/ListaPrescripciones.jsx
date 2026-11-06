@@ -318,7 +318,7 @@ export default function ListaPrescripciones() {
                 <th>Medicamentos</th>
                 <th>Paciente</th>
                 <th>Médico</th>
-                <th>Fecha Emisión</th>
+                <th>Fecha de Emisión</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -335,7 +335,7 @@ export default function ListaPrescripciones() {
                   <td data-label="Paciente">{prescripcion.nombre_paciente}</td>
                   <td data-label="Médico">{prescripcion.nombre_medico}</td>
                   {/* formatDate convierte la fecha ISO del backend al formato local dd/mm/aaaa */}
-                  <td data-label="Fecha Emisión">{formatDate(prescripcion.fecha_emision)}</td>
+                  <td data-label="Fecha de Emisión">{formatDate(prescripcion.fecha_emision)}</td>
                   <td data-label="Estado">
                     {/* Badge con color de fondo según el estado (getStatusColor) y texto con ícono (getStatusBadge) */}
                     <span 
