@@ -37,7 +37,7 @@ export default function MisPrescripciones() {
     return (
       <div className="lista-container">
         <div className="lista-vacia">
-          <p>Tu cuenta todavÃ­a no estÃ¡ vinculada a una ficha de paciente.</p>
+          <p>Tu cuenta todavía no está vinculada a una ficha de paciente.</p>
         </div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function MisPrescripciones() {
         </div>
       ) : prescripciones.length === 0 ? (
         <div className="lista-vacia">
-          <p>No tenÃ©s recetas registradas.</p>
+          <p>No tenés recetas registradas.</p>
         </div>
       ) : (
         <div className="tabla-container">
@@ -66,8 +66,8 @@ export default function MisPrescripciones() {
             <thead>
               <tr>
                 <th>Medicamentos</th>
-                <th>MÃ©dico</th>
-                <th>Fecha EmisiÃ³n</th>
+                <th>Médico</th>
+                <th>Fecha de Emisión</th>
                 <th>Estado</th>
               </tr>
             </thead>
@@ -79,8 +79,8 @@ export default function MisPrescripciones() {
                       .map((m) => `${m.nombre}${m.dosis ? ` (${m.dosis})` : ''}`)
                       .join(', ')}
                   </td>
-                  <td data-label="MÃ©dico">{prescripcion.nombre_medico}</td>
-                  <td data-label="Fecha EmisiÃ³n">{formatDate(prescripcion.fecha_emision)}</td>
+                  <td data-label="Médico">{prescripcion.nombre_medico}</td>
+                  <td data-label="Fecha de Emisión">{formatDate(prescripcion.fecha_emision)}</td>
                   <td data-label="Estado">
                     <span
                       className="status-badge"

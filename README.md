@@ -950,6 +950,47 @@ escriba la URL a mano, `requireRol()` responde `403` y la pantalla no recibe dat
 - No se abrió un navegador para una prueba visual manual en esta iteración. La validación de
   la UI es el build, los tests existentes y el contrato HTTP consumido por la pantalla.
 
+## Iteración 06/11/2026: etiquetas de recetas y corrección de codificación
+
+En **Mis recetas** los encabezados se veían como `MÃ©dico` y `Fecha EmisiÃ³n`. El texto
+estaba guardado con mojibake: los bytes UTF-8 se habían interpretado como Latin-1/Windows-1252.
+Además, “Fecha Emisión” no incluía la preposición “de”. La corrección es solo de
+presentación: no cambian la API, los permisos, las consultas ni los datos.
+
+### `src/components/Prescripciones/MisPrescripciones.jsx`, línea por línea
+
+- **Línea 40** — El aviso de cuenta sin ficha pasa de `Tu cuenta todavÃ­a no estÃ¡ vinculada...`
+  a `Tu cuenta todavía no está vinculada...`. Se corrigen las dos palabras dañadas y se
+  conserva el mismo mensaje funcional.
+- **Línea 61** — El estado vacío pasa de `No tenÃ©s recetas registradas.` a
+  `No tenés recetas registradas.`. Es el texto que ve el paciente cuando la API devuelve un
+  array vacío, no un error.
+- **Líneas 69-70** — Los encabezados de la tabla pasan de `MÃ©dico` y `Fecha EmisiÃ³n` a
+  `Médico` y `Fecha de Emisión`. La segunda etiqueta también gana la preposición “de” para
+  que se lea como una frase completa y coincida con la lista clínica.
+- **Líneas 82-83** — Se corrigen los mismos textos en `data-label`. Ese atributo no es
+  decorativo: la tabla responsive lo usa para mostrar el nombre de la columna cuando las
+  celdas se apilan en pantallas angostas. Si solo se cambiara el `<th>`, en mobile se
+  seguiría viendo el texto viejo.
+
+### `src/components/Prescripciones/ListaPrescripciones.jsx`, línea por línea
+
+- **Línea 321** — El encabezado de la tabla médica pasa de `Fecha Emisión` a
+  `Fecha de Emisión`.
+- **Línea 338** — Se actualiza el `data-label` de la celda con el mismo texto. Así la vista
+  de escritorio, la tabla responsive y “Mis recetas” usan la misma etiqueta.
+
+### Verificación ejecutada
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **135 módulos** transformados, build OK; el bundle servido queda como
+  `dist/assets/index-d73867e6.js`.
+- Se buscó `MÃ©dico`, `Fecha EmisiÃ³n` y `Fecha Emisión` en `src/`: no quedan coincidencias.
+- Se comprobó el bundle compilado: contiene `Médico` y `Fecha de Emisión`, y no contiene las
+  cadenas con mojibake.
+- No se abrió un navegador para una prueba visual manual; la validación es la suite, el build
+  y la inspección del contenido compilado.
+
 ## Publicar cambios en GitHub (paso a paso)
 
 Este repositorio se publica en
