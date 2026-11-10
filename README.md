@@ -991,6 +991,69 @@ presentación: no cambian la API, los permisos, las consultas ni los datos.
 - No se abrió un navegador para una prueba visual manual; la validación es la suite, el build
   y la inspección del contenido compilado.
 
+## Iteración 10/11/2026: logo para Canva y revisión de la agenda médica
+
+Se creó el paquete de identidad visual de SaludWEB para usar en Canva y se copiaron los
+SVG a `docs/brand/`. El logo mantiene la tipografía y los colores del proyecto, agrega un
+isotipo con signo más médico y suma la marca **SaludWEB PRO** en versión horizontal y
+cuadrada. No se modificó código de la SPA; esta iteración es de documentación y assets.
+
+También se revisó el recorrido de agenda del médico. El backend ya permite consultar la
+agenda propia, pero la Web no tiene hoy un enlace ni una pantalla específica de agenda para
+ese rol. Queda documentado como deuda funcional, no como un cambio de esta iteración.
+
+### `docs/brand/`, línea por línea
+
+- **`saludweb-logo-principal.svg`, líneas 1-3** — Declaración SVG, `viewBox` de 1000 × 400,
+  título accesible y descripción. El `role="img"` y `aria-labelledby` permiten que lectores
+  de pantalla anuncien el logo como una imagen con nombre.
+- **Líneas 4-13** — Dos degradados: `bg` para el isotipo y `marca` para la palabra “WEB”.
+  Los extremos son los mismos del proyecto: `#5a6fd0` y `#764ba2`.
+- **Líneas 15-19** — Isotipo: recuadro redondeado con degradado y dos rectángulos blancos
+  que forman el signo más. El centro queda en el medio del recuadro, no desplazado.
+- **Líneas 22-27** — Marca: “Salud” en `#30364f`, “WEB” con degradado, píldora “PRO” en
+  `#e0e7ff` y subtítulo “SISTEMA DE GESTIÓN DE SALUD” con espaciado entre letras.
+- **Líneas 29-30** — Cierre de los grupos y del SVG.
+- **`saludweb-isotipo.svg`, líneas 10-12** — Fondo cuadrado redondeado y los dos brazos
+  blancos del signo más. Es la versión sin texto, útil para perfil, app o marca de agua.
+- **`saludweb-cuadrado-saludweb-pro.svg`, líneas 11-24** — Fondo degradado completo, signo
+  más centrado, “SaludWEB” en blanco, píldora “PRO” y subtítulo. Es la versión 1:1 para
+  publicaciones o piezas cuadradas.
+- **`saludweb-horizontal-gradiente.svg`, líneas 10-15** — Banner con fondo degradado,
+  “SaludWEB” blanco, “PRO” y subtítulo. No tiene isotipo: sirve cuando la marca ya se
+  reconoce por el contexto.
+- **`saludweb-horizontal-claro.svg`, líneas 4-8** — Misma composición sin fondo, con texto
+  `#5669c6` y píldora `#e0e7ff` para fondos blancos.
+- **`saludweb-horizontal-blanco.svg`, líneas 4-8** — Todo en blanco para fondos oscuros o
+  fotografías, con la píldora translúcida para que “PRO” no desaparezca.
+
+### Revisión de la agenda médica, línea por línea
+
+- **`src/components/Navbar.jsx`, líneas 81-87** — El menú `medico` contiene Dashboard,
+  Médicos, Pacientes, Prescripciones y Configuración. No incluye Turnera ni una entrada de
+  agenda propia.
+- **`src/components/Dashboard/Dashboard.jsx`, líneas 173-175** — `veEstadisticas` es
+  verdadero para `admin` y `medico`; el médico ve indicadores, no una lista de turnos.
+- **Líneas 211-232** — `cargarTurnos()` se usa para el paciente. Para médico/admin se elige
+  `cargarEstadisticas()`, así que el Dashboard no lista las citas del profesional.
+- **Líneas 266-275** — El canal en vivo del médico es `tablero`, pensado para refrescar
+  indicadores. No hay un canal `mi-agenda` conectado a una pantalla Web de agenda.
+- **Conclusión** — El backend responde `GET /api/citas/agenda` con la agenda propia del
+  médico, pero la UI Web todavía no la muestra. Para cerrar la función falta una pantalla
+  “Mi agenda” y su enlace en el menú.
+
+### Verificación ejecutada
+
+- Los siete SVG se validaron como XML; no hay etiquetas abiertas ni atributos inválidos.
+- Los PNG se generaron desde los SVG con Chrome headless al doble de tamaño y fondo
+  transparente, salvo el banner degradado.
+- Se revisó el logo principal y el isotipo: el centro del signo más es blanco puro y el
+  recuadro conserva el degradado.
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: build OK.
+- No se abrió un navegador para una prueba visual manual; la validación de la UI es el
+  build y la revisión de las rutas/condiciones por rol.
+
 ## Publicar cambios en GitHub (paso a paso)
 
 Este repositorio se publica en
