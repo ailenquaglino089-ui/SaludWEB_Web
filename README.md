@@ -994,7 +994,7 @@ presentación: no cambian la API, los permisos, las consultas ni los datos.
 ## Iteración 10/11/2026: logo para Canva y revisión de la agenda médica
 
 Se creó el paquete de identidad visual de SaludWEB para usar en Canva y se copiaron los
-SVG a `docs/brand/`. El logo mantiene la tipografía y los colores del proyecto, agrega un
+SVG y PNG a `docs/brand/`. El logo mantiene la tipografía y los colores del proyecto, agrega un
 isotipo con signo más médico y suma la marca **SaludWEB PRO** en versión horizontal y
 cuadrada. No se modificó código de la SPA; esta iteración es de documentación y assets.
 
@@ -1044,6 +1044,7 @@ ese rol. Queda documentado como deuda funcional, no como un cambio de esta itera
 
 ### Verificación ejecutada
 
+- Los 14 assets (7 SVG y 7 PNG) quedaron en `docs/brand/`, junto con su README.
 - Los siete SVG se validaron como XML; no hay etiquetas abiertas ni atributos inválidos.
 - Los PNG se generaron desde los SVG con Chrome headless al doble de tamaño y fondo
   transparente, salvo el banner degradado.
