@@ -192,7 +192,7 @@ if errorlevel 1 (
   echo         ..\SaludWEB_Mobile\scripts\permitir_firewall_saludweb.bat
 )
 
-REM --- 9) Abrir Chrome en la turnera ------------------------------------------
+REM --- 9) Abrir Chrome en la HOME ---------------------------------------------
 if "%AUTOSTART%"=="1" goto :saltar_navegador
 set "CHROME="
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
@@ -200,9 +200,9 @@ if not defined CHROME if exist "%ProgramFiles(x86)%\Google\Chrome\Application\ch
 if not defined CHROME if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" set "CHROME=%LocalAppData%\Google\Chrome\Application\chrome.exe"
 
 if defined CHROME (
-  start "" "%CHROME%" "http://localhost:5173/turnera"
+  start "" "%CHROME%" "http://localhost:5173/"
 ) else (
-  start "" "http://localhost:5173/turnera"
+  start "" "http://localhost:5173/"
 )
 
 :saltar_navegador

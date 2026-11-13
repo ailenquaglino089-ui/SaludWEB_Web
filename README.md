@@ -51,6 +51,18 @@ no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
 - El navbar agrega **Inicio** y **Mi agenda** solo para el rol médico. La marca ahora
   navega a `/`, no a la turnera.
 
+### Enlace correcto para otros teléfonos
+
+- La HOME se publica en la raíz `/`. Para compartir por WhatsApp se usa
+  `https://saludweb.taileeeb72.ts.net/` (o `http://<IP-DE-LA-PC>:5173/` en la misma Wi‑Fi).
+- No se comparte `.../login` ni `.../register`: esos enlaces abren el formulario y no pasan
+  por la HOME.
+- `iniciar_saludweb.bat` ahora abre Chrome en la HOME, no en `/turnera`.
+- Login y registro agregan **Volver al inicio**, porque en mobile el navbar se oculta en
+  esas dos pantallas.
+- Si un teléfono conserva una PWA o un acceso viejo, hay que quitarlo y volver a agregarlo
+  desde la raíz, o borrar los datos del sitio.
+
 ### Archivos principales
 
 | Archivo | Qué hace |
@@ -61,6 +73,9 @@ no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
 | `src/components/Dashboard/Dashboard.jsx` | Resumen **Pacientes que reservaron** para médicos. |
 | `src/components/Turnera/MiAgenda.jsx` | Agenda completa del médico con polling. |
 | `src/components/Navbar.jsx` | Enlaces **Inicio** y **Mi agenda**; marca hacia `/`. |
+| `src/components/Auth/Login.jsx` y `Register.jsx` | Formularios de acceso con enlace **Volver al inicio**. |
+| `src/components/Auth/Auth.css` | Estilo del enlace de vuelta a la HOME en mobile. |
+| `scripts/iniciar_saludweb.bat` | Abre Chrome en la HOME (`/`) al iniciar. |
 | `docs/PRESENTACION.md` | Guion de demo con el nuevo recorrido HOME → paciente → médico → admin. |
 
 ### Comentarios en el código
@@ -83,6 +98,8 @@ aclaración por cada línea trivial:
 - `npm run build`: build OK.
 - Smoke test con Playwright en escritorio y mobile: HOME sin sesión, HOME con sesión,
   dashboard médico, Mi agenda y redirección del paciente fuera de la agenda médica.
+- Prueba del enlace público en viewport mobile: `/` muestra el flyer; `/login` y `/register`
+  muestran el formulario y ahora incluyen **Volver al inicio**.
 - Prueba de circuito completo: el paciente reservó un horario, el médico lo vio en su
   agenda y después el turno se canceló para dejar la base limpia.
 
@@ -147,7 +164,7 @@ del router PHP que usa el acceso público:
 - **`iniciar_saludweb.bat`** → detecta la IP local; levanta la API PHP en `0.0.0.0:8000`;
   compila los archivos de la web; sirve la web en `0.0.0.0:5173`; y arranca la puerta de
   enlace en `127.0.0.1:8001`. Espera a que respondan los servicios, configura Tailscale
-  Funnel hacia la puerta de enlace y abre **Chrome en `http://localhost:5173/turnera`**.
+  Funnel hacia la puerta de enlace y abre **Chrome en la HOME (`http://localhost:5173/`)**.
   La ventana del lanzador se cierra sola; quedan hasta **3 ventanas de servicio** (API,
   web local y puerta de enlace). Si volvés a ejecutarlo, detecta los servicios existentes.
 - **`servidor_publico.php`** → es el router compartido por los servidores PHP de la web
@@ -215,10 +232,12 @@ canal SSE que podría bloquear las consultas del teléfono. SSE se puede habilit
 #### Cómo entrar al sistema
 
 1. Ejecutá `iniciar_saludweb.bat` (o las dos terminales) y esperá a que abra **Chrome** en
-   **http://localhost:5173/turnera** (la turnera es pública: se ve sin iniciar sesión).
-   Desde un celular en la misma red, abrí la dirección que muestra el script:
-   `http://<IP-DE-LA-PC>:5173`. Fuera de casa usá
-   `https://saludweb.taileeeb72.ts.net` (ver “Acceso desde cualquier red”).
+   la **HOME**: **http://localhost:5173/**. Desde un celular en la misma red, abrí la
+   dirección que muestra el script: `http://<IP-DE-LA-PC>:5173`. Fuera de casa usá
+   `https://saludweb.taileeeb72.ts.net` (ver “Acceso desde cualquier red”). Para reservar
+   un turno se entra desde la HOME o directo a `/turnera`; la turnera es pública.
+   **Compartí siempre la raíz** (`https://saludweb.taileeeb72.ts.net/`), sin agregar
+   `/login` ni `/register`: esos enlaces abren el formulario y saltan la HOME.
 2. En un clon nuevo **no hay ninguna cuenta**: usá **Registro** (`/register`) y creá una
    (rol `paciente` o `medico`). El alta pública **no** permite crear `admin`. La contraseña
    puede ser la que quieras: solo se exige que no esté vacía (máximo 72 caracteres).
@@ -349,7 +368,7 @@ SaludWEB_Web/
 │   └── main.jsx             # registra el SW solo en producción
 ├── index.html               # meta + theme-color de la marca
 ├── scripts/
-│   ├── iniciar_saludweb.bat # levanta API + web y abre Chrome en /turnera (Windows, sin XAMPP)
+│   ├── iniciar_saludweb.bat # levanta API + web y abre Chrome en la HOME (Windows, sin XAMPP)
 │   └── detener_saludweb.bat # apaga los servidores (libera 8000 y 5173)
 ├── verificar_pwa.mjs        # verificación E2E de la PWA (Playwright)
 ├── verificar_tiempo_real.mjs # verificación E2E del canal en vivo
