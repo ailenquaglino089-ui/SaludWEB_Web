@@ -30,6 +30,7 @@ import { useContext } from 'react';
 
 import Navbar from './components/Navbar';
 import AvisoOffline from './components/common/AvisoOffline';
+import Home from './components/Home/Home';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -43,6 +44,7 @@ import CatalogoTurnera from './components/Turnera/CatalogoTurnera';
 import AgendaMedico from './components/Turnera/AgendaMedico';
 import ReservarTurno from './components/Turnera/ReservarTurno';
 import MisTurnos from './components/Turnera/MisTurnos';
+import MiAgenda from './components/Turnera/MiAgenda';
 import './App.css';
 
 // ------------------------------------------------------------
@@ -366,6 +368,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/turnera/mi-agenda"
+            element={
+              <MedicoRoute>
+                <MiAgenda />
+              </MedicoRoute>
+            }
+          />
+          <Route
             path="/turnera/agenda/:idMedico/reservar"
             element={<ReservarTurno />}
           />
@@ -373,14 +383,7 @@ function AppContent() {
           {/* Raíz: decides a dónde va quien entra por el dominio sin ruta.
               No se deja en blanco para que una pantalla vacía no se confunda
               con un error de carga. */}
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={!autenticado ? "/login" : "/dashboard"}
-              />
-            }
-          />
+          <Route path="/" element={<Home />} />
 
           {/* Comodín: cualquier URL desconocida vuelve a la raíz. Con esto una
               ruta vieja o mal escrita no deja la app en blanco, que es lo

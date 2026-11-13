@@ -3,6 +3,89 @@
 Frontend moderno construido con **React + Vite**. Consume la API REST del backend
 (`SaludWEB_Backend`) y proporciona la interfaz del sistema de gestión de salud.
 
+## Presentación y demo
+
+SaludWEB ya funciona de punta a punta: el paciente reserva un turno y elige el
+horario, el médico ve ese mismo turno en su agenda y el administrador tiene una
+vista general del consultorio. La HOME pública replica el flyer de presentación:
+fondo azul con patrón tecnológico, logo blanco, persona con anteojos, cuatro
+beneficios, robot con laptop y la integrante **Ailen Quaglino Fail**.
+
+El guion completo para una demo o defensa, con el orden paciente → médico →
+administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
+
+## Resumen de esta iteración (13/11/2026)
+
+Esta iteración se hizo en la SPA web. **El backend, la base de datos y los permisos
+no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
+
+### HOME pública con el flyer
+
+- La ruta `/` ya no redirige al login ni al dashboard: siempre muestra la HOME.
+  Si la persona tiene sesión, los botones cambian a **Ir al panel** y **Ver turnera**;
+  si no, ve **Conocer el sistema** e **Ingresar**.
+- La parte superior reproduce el flyer: fondo azul con líneas tecnológicas, logo
+  blanco centrado, persona con anteojos arriba a la derecha, título **Salud WEB PRO**,
+  eslogan, las cuatro barras celestes, CTA, firma **Ailen Quaglino Fail** y robot con
+  laptop abajo a la derecha.
+- La persona y el robot son **SVG inline** dentro de `Home.jsx`. No hay una foto ni
+  un asset recortado provisto por el flyer, así que se usaron ilustraciones vectoriales
+  que escalan sin perder nitidez.
+- Las cuatro funciones salen de `FUNCIONES_FLYER`; así el texto y el orden se cambian
+  en un solo lugar. La sección inferior conserva los beneficios, problemas, pasos y
+  roles para explicar el sistema con más detalle.
+- En mobile el flyer pasa a una columna, el logo se achica, la persona sigue arriba a
+  la derecha y el robot se centra. Los botones ocupan todo el ancho.
+- Se eliminaron de `Home.css` los estilos de la versión anterior de la HOME (hero con
+  tarjeta de ejemplo) para no publicar CSS muerto.
+
+### Agenda del médico
+
+- El Dashboard del médico suma **Pacientes que reservaron**: muestra hasta 5 turnos de
+  los próximos 30 días con fecha, hora, paciente, DNI y estado.
+- El enlace **Ver mi agenda completa** lleva a `/turnera/mi-agenda`, una pantalla nueva
+  protegida por `MedicoRoute`.
+- `MiAgenda` consulta `GET /api/turnos` con `desde`, `hasta` y `porPagina=100`, ordena
+  por fecha y hora y muestra la agenda completa. El backend sigue siendo el que limita
+  los datos al médico autenticado.
+- El navbar agrega **Inicio** y **Mi agenda** solo para el rol médico. La marca ahora
+  navega a `/`, no a la turnera.
+
+### Archivos principales
+
+| Archivo | Qué hace |
+| --- | --- |
+| `src/components/Home/Home.jsx` | Flyer, ilustraciones SVG, contenido explicativo y CTAs según sesión. |
+| `src/components/Home/Home.css` | Fondo tecnológico, composición del flyer y responsive. |
+| `src/App.jsx` | HOME siempre pública en `/` y ruta protegida `/turnera/mi-agenda`. |
+| `src/components/Dashboard/Dashboard.jsx` | Resumen **Pacientes que reservaron** para médicos. |
+| `src/components/Turnera/MiAgenda.jsx` | Agenda completa del médico con polling. |
+| `src/components/Navbar.jsx` | Enlaces **Inicio** y **Mi agenda**; marca hacia `/`. |
+| `docs/PRESENTACION.md` | Guion de demo con el nuevo recorrido HOME → paciente → médico → admin. |
+
+### Comentarios en el código
+
+Los archivos nuevos quedaron documentados con comentarios de bloque, no con una
+aclaración por cada línea trivial:
+
+- `Home.jsx`: propósito de la HOME, funciones del flyer, ilustraciones SVG y decisiones
+  de los CTAs según la sesión.
+- `Home.css`: separación entre flyer, patrón de fondo, contenido, responsive y
+  accesibilidad.
+- `MiAgenda.jsx`: alcance de la agenda, conversión de fechas, rango de 30 días y polling.
+- `Dashboard.jsx` y `Dashboard.css`: origen del resumen de pacientes y enlace a la agenda.
+- `App.jsx` y `Navbar.jsx`: por qué la HOME es pública, la ruta protegida del médico y
+  por qué la marca vuelve a `/`.
+
+### Verificación
+
+- `npm test`: 32/32 pruebas OK.
+- `npm run build`: build OK.
+- Smoke test con Playwright en escritorio y mobile: HOME sin sesión, HOME con sesión,
+  dashboard médico, Mi agenda y redirección del paciente fuera de la agenda médica.
+- Prueba de circuito completo: el paciente reservó un horario, el médico lo vio en su
+  agenda y después el turno se canceló para dejar la base limpia.
+
 ## Qué hacemos acá
 
 - **Web app profesional** (SPA) con login y registro JWT.
@@ -12,8 +95,12 @@ Frontend moderno construido con **React + Vite**. Consume la API REST del backen
 - **Módulos de gestión**: médicos, pacientes y prescripciones (la app respeta las mismas
   reglas que el backend: un paciente no puede crear médicos, solo los médicos recetan, etc.).
   El paciente tiene además **Mis recetas**, una vista de solo lectura con sus propias recetas.
-- **Turnera (citas online)**: catálogo de especialidades → profesionales → reserva de turno;
-  mis turnos; agenda del profesional con *polling adaptativo*.
+- **HOME pública**: presenta el sistema, los problemas que resuelve, los beneficios y el
+  acceso a la turnera. Es responsive y usa la identidad visual de `docs/brand/`.
+- **Turnera (citas online)**: catálogo de especialidades → profesionales → elección de día
+  y horario → reserva; mis turnos; agenda del profesional con *polling adaptativo*.
+- **Mi agenda para médico**: el profesional ve los turnos reservados con fecha, hora y
+  paciente; el backend limita la vista a su propio vínculo.
 - **Actualización automática del panel**: por defecto consulta cambios cada 15 segundos;
   puede usar **Server-Sent Events** cuando el backend tiene varios workers. No hace falta
   recargar la página. Se explica en [Actualización del panel](#actualización-del-panel).
@@ -998,9 +1085,10 @@ SVG y PNG a `docs/brand/`. El logo mantiene la tipografía y los colores del pro
 isotipo con signo más médico y suma la marca **SaludWEB PRO** en versión horizontal y
 cuadrada. No se modificó código de la SPA; esta iteración es de documentación y assets.
 
-También se revisó el recorrido de agenda del médico. El backend ya permite consultar la
-agenda propia, pero la Web no tiene hoy un enlace ni una pantalla específica de agenda para
-ese rol. Queda documentado como deuda funcional, no como un cambio de esta iteración.
+También se revisó el recorrido de agenda del médico. El backend ya permitía consultar la
+agenda propia, pero en esa iteración la Web no tenía un enlace ni una pantalla específica
+de agenda para ese rol. Quedó documentado como deuda funcional; se resolvió en la iteración
+del 13/11/2026 con **Mi agenda**.
 
 ### `docs/brand/`, línea por línea
 
@@ -1029,18 +1117,18 @@ ese rol. Queda documentado como deuda funcional, no como un cambio de esta itera
 
 ### Revisión de la agenda médica, línea por línea
 
-- **`src/components/Navbar.jsx`, líneas 81-87** — El menú `medico` contiene Dashboard,
-  Médicos, Pacientes, Prescripciones y Configuración. No incluye Turnera ni una entrada de
-  agenda propia.
+- **`src/components/Navbar.jsx` (estado de esa iteración)** — El menú `medico` contenía
+  Dashboard, Médicos, Pacientes, Prescripciones y Configuración. No incluía Turnera ni una
+  entrada de agenda propia; **Mi agenda** se agregó en la iteración del 13/11/2026.
 - **`src/components/Dashboard/Dashboard.jsx`, líneas 173-175** — `veEstadisticas` es
   verdadero para `admin` y `medico`; el médico ve indicadores, no una lista de turnos.
 - **Líneas 211-232** — `cargarTurnos()` se usa para el paciente. Para médico/admin se elige
   `cargarEstadisticas()`, así que el Dashboard no lista las citas del profesional.
 - **Líneas 266-275** — El canal en vivo del médico es `tablero`, pensado para refrescar
   indicadores. No hay un canal `mi-agenda` conectado a una pantalla Web de agenda.
-- **Conclusión** — El backend responde `GET /api/citas/agenda` con la agenda propia del
-  médico, pero la UI Web todavía no la muestra. Para cerrar la función falta una pantalla
-  “Mi agenda” y su enlace en el menú.
+- **Conclusión de esa iteración** — El backend respondía `GET /api/citas/agenda` con la
+  agenda propia del médico, pero la UI Web todavía no la mostraba. En la iteración del
+  13/11/2026 se agregó la pantalla **Mi agenda** y su enlace en el menú del médico.
 
 ### Verificación ejecutada
 
@@ -1054,6 +1142,111 @@ ese rol. Queda documentado como deuda funcional, no como un cambio de esta itera
 - `npm run build`: build OK.
 - No se abrió un navegador para una prueba visual manual; la validación de la UI es el
   build y la revisión de las rutas/condiciones por rol.
+
+## Iteración 13/11/2026: HOME pública, Mi agenda y guion de presentación
+
+Se agregó una HOME pública para presentar el sistema antes del login y se cerró la
+deuda funcional de la agenda del médico. La HOME también queda accesible con sesión
+iniciada y adapta sus botones a **Ir al panel** o **Ver turnera**. El Dashboard del
+médico ahora muestra los pacientes que reservaron, además de la pantalla completa
+**Mi agenda**. También se armó el guion de presentación pedido para la demo:
+introducción, problemas de las turneras, paciente, médico, administrador y cierre.
+
+### HOME pública, línea por línea
+
+- **`src/components/Home/Home.jsx`, líneas 10-20** — Bloque de documentación que
+  explica para qué existe la HOME y por qué es pública aunque cambien los botones.
+- **Líneas 22-27** — Las cuatro funciones del flyer: gestión de turnos, creación de
+  recetas, información organizada y ahorrar tiempo.
+- **Líneas 29-123** — Beneficios, problemas, pasos y roles que se mantienen debajo
+  del flyer. El contenido separa la promesa del sistema de los errores habituales:
+  llamadas en horario limitado, turnos duplicados, poca confirmación e información
+  dispersa.
+- **Líneas 125-172** — Ilustración SVG de la persona con anteojos y ropa roja,
+  documentada como reemplazo vectorial de la imagen original.
+- **Líneas 174-215** — Ilustración SVG del robot amigable con laptop.
+- **Líneas 217-290** — Home y flyer principal: logo blanco centrado, persona arriba a
+  la derecha, título **Salud WEB PRO**, eslogan, cuatro barras celestes con tilde, CTA,
+  integrante **Ailen Quaglino Fail** y robot abajo a la derecha.
+- **Líneas 292-405** — Franja de indicadores, problemas, solución, cómo funciona, roles
+  y cierre. La idea es que alguien que no conoce el sistema entienda el beneficio sin
+  leer código.
+- **`src/components/Home/Home.css`, líneas 1-232** — Fondo azul con gradientes y
+  patrón de líneas tecnológicas, logo blanco, barras celestes, persona, CTA y robot.
+  Las secciones están separadas con comentarios para ubicar cada bloque.
+- **`src/components/Home/Home.css`, líneas 532-644** — Ajustes responsive: el flyer
+  pasa a una columna, el logo se achica, la persona queda arriba a la derecha y el
+  robot se centra. También respeta `prefers-reduced-motion`.
+- **`src/App.jsx`, línea 33** — Importa `Home`.
+- **`src/App.jsx`, línea 386** — La raíz `/` siempre muestra la HOME pública, con o
+  sin sesión. Si la persona ya está autenticada, los botones cambian a **Ir al
+  panel** y **Ver turnera**.
+- **`src/components/Navbar.jsx`, línea 27** — Agrega **Inicio** a los enlaces
+  públicos.
+- **`src/components/Navbar.jsx`, línea 178** — La marca ahora vuelve a la HOME en
+  lugar de saltar directo a la turnera.
+
+### Mi agenda para médico, línea por línea
+
+- **`src/components/Turnera/MiAgenda.jsx`, líneas 10-18** — Bloque de documentación:
+  aclara que el backend es el que limita los turnos al médico autenticado.
+- **Líneas 19-24** — Arma el rango de los próximos 30 días en fecha local, sin usar
+  `toISOString()`, para evitar el corrimiento de un día por UTC.
+- **Líneas 27-35** — Formatea la fecha en lenguaje natural para que la agenda sea
+  legible sin interpretar `YYYY-MM-DD`.
+- **Líneas 39-72** — Carga la agenda con `listarTurnos()` y configura el polling. El
+  backend decide el alcance por rol: para un médico devuelve solo sus propios turnos.
+- **Líneas 74-143** — Muestra fecha, hora, paciente, DNI, especialidad, motivo y
+  estado. Usa `usePolling` para que la agenda se actualice sin recargar la página.
+- **`src/App.jsx`, línea 47** — Importa `MiAgenda`.
+- **`src/App.jsx`, línea 371** — Ruta `/turnera/mi-agenda`, protegida con
+  `MedicoRoute`: un paciente o un admin no pueden abrirla escribiendo la URL.
+- **`src/components/Navbar.jsx`, línea 84** — Enlace **Mi agenda** dentro del menú
+  del médico.
+- **`src/api/turnera.js`, líneas 299-321** — `listarTurnos()` ya existía y se reutiliza;
+  no se agregó un endpoint nuevo en el backend.
+
+### Dashboard médico: pacientes que reservaron
+
+- **`src/components/Dashboard/Dashboard.jsx`, línea 90** — Importa `listarTurnos`.
+- **Línea 175** — Nuevo estado `agenda`, separado de `turnos` (que sigue siendo del
+  paciente).
+- **Líneas 199-214** — `cargarAgendaMedico()` consulta los próximos 30 días con
+  `listarTurnos({ desde, hasta, porPagina: 100 })`. El backend filtra por el médico
+  del token.
+- **Líneas 224-232** — `cargarEstadisticas()` carga también la agenda cuando el rol
+  es `medico`. Si falla, se muestra el aviso sin ocultar los indicadores.
+- **Líneas 524-566** — Sección **Pacientes que reservaron**: fecha, hora, nombre del
+  paciente, DNI y estado. Muestra los primeros cinco y enlaza a **Mi agenda** para
+  ver el resto.
+- **`src/components/Dashboard/Dashboard.css`** — El enlace de la cabecera usa el
+  color primario y subrayado al pasar el mouse.
+
+### Guion de presentación
+
+- **`docs/PRESENTACION.md`** — Guion completo con introducción, problema de las
+  turneras, demo como paciente (con elección de horario), demo como médico, paneo del
+  administrador, cierre y referencia al aprendizaje de la Tecnicatura y al uso de
+  inteligencia artificial.
+
+### Verificación ejecutada
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: build OK, **140 módulos** transformados. Los dos SVG de marca
+  usados por la HOME se copian al build como assets.
+- Smoke test con Playwright: la HOME carga sin sesión y también con sesión iniciada,
+  el Dashboard del médico muestra **Pacientes que reservaron**, el médico entra a
+  **Mi agenda** y un paciente que intenta abrir `/turnera/mi-agenda` es redirigido
+  al dashboard.
+- Layout del flyer verificado en escritorio (1440×1000) y mobile (390×844): las
+  cuatro barras están presentes, el logo no se superpone con la persona y no hay
+  desborde horizontal.
+- Prueba de circuito completo contra la API local: el paciente reservó un horario,
+  el médico lo vio en su agenda con la misma fecha y hora, y después se canceló el
+  turno para dejar la base limpia.
+- No se modificó el backend, la base de datos ni los permisos.
+- La HOME se armó a partir de la descripción del flyer y de la identidad de
+  `docs/brand/`; no se comparó píxel por píxel con la imagen original.
 
 ## Publicar cambios en GitHub (paso a paso)
 
@@ -1220,14 +1413,22 @@ consultorio se actualiza sola en cuanto alguien reserva o cancela.
 | ¿Es seguro? | Cada persona entra con su usuario y contraseña, y el sistema respeta el rol de cada una: un paciente solo ve sus propios turnos. |
 | ¿Cuánto cuesta? | El software no tiene licencias: está hecho con tecnología libre (PHP, SQLite, React) y corre en una computadora común. |
 
-**Demo de 3 minutos (guion para mostrarlo en vivo):**
+**Demo de 5 minutos (guion para mostrarlo en vivo):**
 
-1. Abrir la turnera (`/turnera`) sin iniciar sesión: es pública y se ve de entrada.
-2. Registrarse como paciente y reservar un turno (elegir especialidad, profesional y horario).
-3. Entrar como administrador y abrir el panel (`/dashboard`): el contador de
-   turnos cambia solo, sin recargar la página.
-4. Si hay un celular a mano, repetir la reserva desde la app móvil y verla
-   aparecer en la web.
+1. Abrir la HOME (`/`) y presentar el problema de las turneras tradicionales y las
+   bondades del sistema.
+2. Entrar a la turnera pública (`/turnera`) y mostrar especialidades y profesionales.
+3. Iniciar sesión como paciente, elegir especialidad, profesional, **día y horario**, y
+   confirmar la reserva. Abrir **Mis turnos** para ver el turno registrado.
+4. Cerrar sesión, entrar como médico y abrir **Mi agenda**: el turno aparece con la
+   misma fecha, hora y paciente.
+5. Cerrar sesión, entrar como administrador y abrir el panel (`/dashboard`): hacer un
+   paneo de estadísticas, médicos, pacientes y usuarios.
+6. Si hay un celular a mano, repetir la reserva desde la app móvil y verla aparecer en
+   la web.
+
+El guion detallado, con frases de acompañamiento y cierre, está en
+[`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 
 **Analogía que funciona:** para el paciente, SaludWEB es como reservar un asiento
 de cine en línea: elige la sala (el profesional), el día y la hora, y listo.

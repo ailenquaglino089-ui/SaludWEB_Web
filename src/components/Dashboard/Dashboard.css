@@ -421,6 +421,17 @@
   margin: 0;
 }
 
+/* Enlace de la sección médica hacia la agenda completa. */
+a.stats-actualizado {
+  color: var(--primario);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.stats-actualizado:hover {
+  text-decoration: underline;
+}
+
 /* ------------------------------------------------------------
    DETALLE DE CADA INDICADOR
    ------------------------------------------------------------ */
