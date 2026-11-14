@@ -117,7 +117,7 @@ const ROLES = [
 
 /**
  * Mujer del flyer: cabello largo y claro, flequillo recto, anteojos de armazón
- * claro y ropa roja.
+ * claro, remera roja de mangas largas y collar gris en forma de luna.
  *
  * Se dibuja con SVG inline porque el diseño no incluye una foto recortada ni
  * un asset independiente. Así la ilustración escala sin perder nitidez y no
@@ -129,7 +129,7 @@ function PersonaFlyer() {
       viewBox="0 0 220 260"
       className="home-flyer__person-svg"
       role="img"
-      aria-label="Mujer de cabello largo y claro, flequillo recto, anteojos de armazón claro y ropa roja"
+      aria-label="Mujer de cabello largo y claro, flequillo recto, anteojos de armazón claro, remera roja de mangas largas y collar gris en forma de luna"
     >
       <defs>
         <linearGradient id="personaFondo" x1="0" y1="0" x2="1" y2="1">
@@ -145,6 +145,15 @@ function PersonaFlyer() {
           <stop offset="55%" stopColor="#dfc187" />
           <stop offset="100%" stopColor="#b98e4f" />
         </linearGradient>
+        <linearGradient id="personaCollar" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="45%" stopColor="#c6ced6" />
+          <stop offset="100%" stopColor="#7f8b96" />
+        </linearGradient>
+        <radialGradient id="personaCollarBrillo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
         <clipPath id="personaRecorte">
           <circle cx="110" cy="118" r="104" />
         </clipPath>
@@ -157,7 +166,17 @@ function PersonaFlyer() {
         {/* El cuello va detrás de la prenda: el escote tapa su base y evita una mancha clara sobre el rojo. */}
         <path d="M88 150v22c0 10 10 18 22 18s22-8 22-18v-22z" fill="#f4c7aa" />
         <path d="M88 164c8 8 36 8 44 0" fill="none" stroke="#d89c84" strokeWidth="3" opacity="0.45" />
-        <path d="M28 260c8-58 38-92 82-92s74 34 82 92z" fill="url(#personaRopa)" />
+        {/* Remera roja de mangas largas: las mangas van primero y el torso tapa la unión. */}
+        <path d="M80 174C60 181 48 196 42 216" fill="none" stroke="url(#personaRopa)" strokeWidth="30" strokeLinecap="round" />
+        <path d="M140 174c20 7 32 22 38 42" fill="none" stroke="url(#personaRopa)" strokeWidth="30" strokeLinecap="round" />
+        <path d="M46 208l-8 14M174 208l8 14" fill="none" stroke="#a31827" strokeWidth="30" strokeLinecap="butt" />
+        <path d="M74 170c10-6 62-6 72 0l10 44c1 7-4 12-11 12H75c-7 0-12-5-11-12z" fill="url(#personaRopa)" />
+        <path d="M77 184c4 12 7 25 8 38M143 184c-4 12-7 25-8 38" fill="none" stroke="#8f1d2a" strokeWidth="3" opacity="0.35" strokeLinecap="round" />
+        {/* Collar gris con forma de luna y un brillo suave sobre el escote. */}
+        <path d="M90 168c7 10 33 10 40 0" fill="none" stroke="#aab4be" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="110" cy="184" r="13" fill="url(#personaCollarBrillo)" />
+        <path d="M110 174a11 11 0 1 0 8 19 9 9 0 1 1-8-19z" fill="url(#personaCollar)" stroke="#7f8b96" strokeWidth="1" />
+        <path d="M112 177a7 7 0 0 0 5 14" fill="none" stroke="#ffffff" strokeWidth="1" strokeLinecap="round" opacity="0.65" />
         <circle cx="110" cy="108" r="54" fill="#f4c7aa" />
         {/* Flequillo recto: el borde inferior es una línea horizontal sobre la frente. */}
         <path d="M62 88c0-34 20-54 48-54s48 20 48 54z" fill="url(#personaPelo)" />

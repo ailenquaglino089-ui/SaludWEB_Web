@@ -9,7 +9,8 @@ SaludWEB ya funciona de punta a punta: el paciente reserva un turno y elige el
 horario, el médico ve ese mismo turno en su agenda y el administrador tiene una
 vista general del consultorio. La HOME pública replica el flyer de presentación:
 fondo azul con patrón tecnológico, logo blanco, mujer de cabello largo y claro
-con flequillo recto, anteojos de armazón claro y ropa roja, cuatro beneficios,
+con flequillo recto, anteojos de armazón claro, remera roja de mangas largas y
+collar gris en forma de luna, cuatro beneficios,
 robot con laptop y la integrante **Ailen Quaglino Fail**.
 
 El guion completo para una demo o defensa, con el orden paciente → médico →
@@ -27,7 +28,8 @@ no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
   si no, ve **Conocer el sistema** e **Ingresar**.
 - La parte superior reproduce el flyer: fondo azul con líneas tecnológicas, logo
   blanco centrado, mujer de cabello largo y claro con flequillo recto, anteojos de
-  armazón claro y ropa roja arriba a la derecha, título **Salud WEB PRO**, eslogan,
+  armazón claro, remera roja de mangas largas y collar gris en forma de luna
+  arriba a la derecha, título **Salud WEB PRO**, eslogan,
   las cuatro barras celestes, CTA, firma **Ailen Quaglino Fail** y robot con laptop
   abajo a la derecha.
 - La persona y el robot son **SVG inline** dentro de `Home.jsx`. No hay una foto ni
@@ -1183,11 +1185,11 @@ introducción, problemas de las turneras, paciente, médico, administrador y cie
   del flyer. El contenido separa la promesa del sistema de los errores habituales:
   llamadas en horario limitado, turnos duplicados, poca confirmación e información
   dispersa.
-- **Líneas 118-192** — Ilustración SVG de la mujer con cabello largo y claro,
-  flequillo recto, anteojos de armazón claro y ropa roja, documentada como reemplazo
-  vectorial de la imagen original.
-- **Líneas 194-241** — Ilustración SVG del robot amigable con laptop.
-- **Líneas 243-315** — Home y flyer principal: logo blanco centrado, mujer arriba a
+- **Líneas 118-211** — Ilustración SVG de la mujer con cabello largo y claro,
+  flequillo recto, anteojos de armazón claro, remera roja de mangas largas y collar
+  gris en forma de luna, documentada como reemplazo vectorial de la imagen original.
+- **Líneas 213-260** — Ilustración SVG del robot amigable con laptop.
+- **Líneas 262-334** — Home y flyer principal: logo blanco centrado, mujer arriba a
   la derecha, título **Salud WEB PRO**, eslogan, cuatro barras celestes con tilde, CTA,
   integrante **Ailen Quaglino Fail** y robot abajo a la derecha.
 - **Líneas 292-405** — Franja de indicadores, problemas, solución, cómo funciona, roles
