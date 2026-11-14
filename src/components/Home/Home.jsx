@@ -116,8 +116,8 @@ const ROLES = [
 ];
 
 /**
- * Mujer del flyer: cabello largo y claro, flequillo recto, anteojos de armazón
- * claro, remera roja de mangas largas y collar gris en forma de luna.
+ * Mujer del flyer: cabello largo y claro, flequillo recto, anteojos con bordes
+ * violeta oscuro, remera roja de mangas largas y collar gris en forma de luna.
  *
  * Se dibuja con SVG inline porque el diseño no incluye una foto recortada ni
  * un asset independiente. Así la ilustración escala sin perder nitidez y no
@@ -129,7 +129,7 @@ function PersonaFlyer() {
       viewBox="0 0 220 260"
       className="home-flyer__person-svg"
       role="img"
-      aria-label="Mujer de cabello largo y claro, flequillo recto, anteojos de armazón claro, remera roja de mangas largas y collar gris en forma de luna"
+      aria-label="Mujer de cabello largo y claro, flequillo recto, anteojos con bordes violeta oscuro, remera roja de mangas largas y collar gris en forma de luna"
     >
       <defs>
         <linearGradient id="personaFondo" x1="0" y1="0" x2="1" y2="1">
@@ -185,8 +185,8 @@ function PersonaFlyer() {
         <path d="M58 88c-6 26-5 50 3 68 3 7 7 12 12 16-2-15-1-34 4-50-9-4-15-12-19-34z" fill="url(#personaPelo)" />
         <path d="M162 88c6 26 5 50-3 68-3 7-7 12-12 16 2-15 1-34-4-50 9-4 15-12 19-34z" fill="url(#personaPelo)" />
         <path d="M57 104c1 22 4 40 11 56M163 104c-1 22-4 40-11 56" fill="none" stroke="#b98e4f" strokeWidth="4" strokeLinecap="round" opacity="0.45" />
-        {/* Lentes con armazón claro, ojos y sonrisa. */}
-        <g fill="#f8fcff" opacity="0.32">
+        {/* Lentes con bordes violeta oscuro, ojos y sonrisa. */}
+        <g fill="#f1eaff" opacity="0.32">
           <rect x="68" y="96" width="38" height="28" rx="12" />
           <rect x="116" y="96" width="38" height="28" rx="12" />
         </g>
@@ -194,12 +194,12 @@ function PersonaFlyer() {
         <circle cx="135" cy="110" r="4" fill="#4a3828" />
         <circle cx="88.5" cy="108.5" r="1.2" fill="#ffffff" opacity="0.8" />
         <circle cx="136.5" cy="108.5" r="1.2" fill="#ffffff" opacity="0.8" />
-        <g fill="none" stroke="#c9b08a" strokeWidth="7">
+        <g fill="none" stroke="#4a2a6a" strokeWidth="7">
           <rect x="68" y="96" width="38" height="28" rx="12" />
           <rect x="116" y="96" width="38" height="28" rx="12" />
           <path d="M106 108h10M68 104l-9-4M152 104l9-4" />
         </g>
-        <g fill="none" stroke="#f5ead7" strokeWidth="3">
+        <g fill="none" stroke="#b9a6d9" strokeWidth="2.2" opacity="0.75">
           <rect x="68" y="96" width="38" height="28" rx="12" />
           <rect x="116" y="96" width="38" height="28" rx="12" />
         </g>
