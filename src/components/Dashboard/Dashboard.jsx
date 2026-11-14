@@ -87,7 +87,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 // Para saber el rol, que decide qué versión del panel se muestra.
 
-import { obtenerEstadisticas, listarMisTurnos, mensajeDeError } from '../../api/turnera';
+import { obtenerEstadisticas, listarMisTurnos, listarTurnos, mensajeDeError } from '../../api/turnera';
 // Importa SOLO las funciones de la API.
 //
 // IMPORTANTE: los DATOS siguen viniendo por REST. El canal de tiempo real no
@@ -155,12 +155,26 @@ function periodoDe(estadisticas) {
   return `Entre el ${desde} y el ${hasta}`;
 }
 
+/** Convierte una fecha local al formato que espera la API (`YYYY-MM-DD`). */
+function aISO(fecha) {
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
+/** Deja primero el turno más próximo en la lista del médico. */
+function ordenarTurnos(a, b) {
+  return `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`);
+}
+
 export default function Dashboard() {
   const { usuario } = useAuth();
 
   const [estadisticas, setEstadisticas] = useState(null);
   const [error, setError] = useState(null);
   const [turnos, setTurnos] = useState(null);
+  const [agenda, setAgenda] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null);
   // turnos arranca en null y no en []: la diferencia entre "todavía no se
@@ -184,6 +198,23 @@ export default function Dashboard() {
   // motivo aparente.
   const recargandoRef = useRef(false);
 
+  // El dashboard del médico muestra un resumen de los próximos 30 días. La
+  // lista completa vive en /turnera/mi-agenda; acá alcanza con los primeros 5.
+  const cargarAgendaMedico = useCallback(async () => {
+    const hoy = new Date();
+    const desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 30);
+
+    const datos = await listarTurnos({
+      desde: aISO(desde),
+      hasta: aISO(hasta),
+      porPagina: 100,
+    });
+
+    setAgenda(Array.isArray(datos) ? [...datos].sort(ordenarTurnos) : []);
+    return datos;
+  }, []);
+
   /** Carga las estadísticas del consultorio. */
   const cargarEstadisticas = useCallback(async () => {
     if (!veEstadisticas) {
@@ -196,6 +227,15 @@ export default function Dashboard() {
       const datos = await obtenerEstadisticas();
       setEstadisticas(datos);
       setError(null);
+
+      if (rol === 'medico') {
+        try {
+          await cargarAgendaMedico();
+        } catch (err) {
+          setError(mensajeDeError(err, 'No se pudieron cargar los turnos reservados'));
+        }
+      }
+
       setUltimaActualizacion(new Date());
       // La marca de tiempo se actualiza en cada respuesta correcta, sin
       // importar si vino del canal o de una recarga manual. El indicador
@@ -206,7 +246,7 @@ export default function Dashboard() {
       setError(mensajeDeError(err, 'No se pudieron cargar las estadísticas'));
       return null;
     }
-  }, [veEstadisticas]);
+  }, [veEstadisticas, rol, cargarAgendaMedico]);
 
   /** Carga los próximos turnos del paciente. */
   const cargarTurnos = useCallback(async () => {
@@ -481,6 +521,50 @@ export default function Dashboard() {
                 />
               </>
             )
+          )}
+        </section>
+      )}
+
+      {rol === 'medico' && (
+        <section className="dashboard-stats" aria-busy={cargando}>
+          <div className="stats-encabezado">
+            <h2>Pacientes que reservaron</h2>
+            <Link to="/turnera/mi-agenda" className="stats-actualizado">
+              Ver mi agenda completa
+            </Link>
+          </div>
+
+          {cargando && !agenda ? (
+            <Cargando texto="Buscando turnos reservados..." />
+          ) : agenda?.length ? (
+            <ul className="proximos-turnos">
+              {agenda.slice(0, 5).map((turno) => (
+                <li key={turno.id} className="proximo-turno">
+                  <span className="proximo-fecha">
+                    {turno.fecha} · {turno.hora} hs
+                  </span>
+                  <span className="proximo-medico">
+                    {turno.nombre_paciente || 'Paciente'}
+                    {turno.dni ? ` · DNI ${turno.dni}` : ''}
+                  </span>
+                  <span className={`estado-badge estado-${turno.estado}`}>
+                    {turno.estado}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : agenda ? (
+            <p className="sin-turnos">
+              No hay turnos reservados en los próximos 30 días.{' '}
+              <Link to="/turnera/mi-agenda">Ver mi agenda</Link>.
+            </p>
+          ) : null}
+
+          {agenda?.length > 5 && (
+            <p className="sin-turnos">
+              Hay {agenda.length} turnos reservados.{' '}
+              <Link to="/turnera/mi-agenda">Verlos todos en Mi agenda</Link>.
+            </p>
           )}
         </section>
       )}

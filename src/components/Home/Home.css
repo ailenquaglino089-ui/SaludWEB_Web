@@ -1,0 +1,652 @@
+/*
+ * HOME pública de SaludWEB.
+ *
+ * La parte superior reproduce el flyer de presentación; el resto son secciones
+ * explicativas con la misma identidad visual. Los colores salen de tokens.css
+ * para que la HOME no invente una paleta paralela.
+ */
+.home {
+  --home-max: 1180px;
+  overflow: hidden;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+/* Flyer: fondo azul tecnológico con logo, persona, funciones y robot. */
+.home-flyer {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 36px) var(--esp-4) clamp(48px, 7vw, 88px);
+  background:
+    radial-gradient(circle at 82% 68%, rgba(73, 192, 255, 0.3) 0%, transparent 32%),
+    radial-gradient(circle at 16% 16%, rgba(90, 111, 208, 0.42) 0%, transparent 38%),
+    linear-gradient(135deg, #06142e 0%, #0a2a56 55%, #06142e 100%);
+  color: #fff;
+}
+
+/* Grilla y líneas diagonales que dan el aire tecnológico del flyer. */
+.home-flyer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(127, 199, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 199, 255, 0.12) 1px, transparent 1px),
+    repeating-linear-gradient(115deg, transparent 0 72px, rgba(127, 199, 255, 0.06) 72px 73px);
+  background-size: 64px 64px, 64px 64px, auto;
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.65) 75%, transparent 100%);
+  pointer-events: none;
+}
+
+.home-flyer::after {
+  content: '';
+  position: absolute;
+  right: -160px;
+  bottom: -220px;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(93, 208, 255, 0.28) 0%, transparent 68%);
+  pointer-events: none;
+}
+
+/* Contenedor común: mantiene logo y contenido alineados sobre el fondo. */
+.home-flyer__top,
+.home-flyer__main {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.home-flyer__top {
+  display: flex;
+  justify-content: center;
+  min-height: 84px;
+  padding: 0 150px;
+}
+
+.home-flyer__logo {
+  display: block;
+  width: min(440px, 100%);
+  height: auto;
+  filter: drop-shadow(0 10px 24px rgba(2, 15, 40, 0.35));
+}
+
+.home-flyer__person {
+  position: absolute;
+  z-index: 2;
+  top: clamp(12px, 2.4vw, 28px);
+  right: clamp(10px, 4vw, 54px);
+  width: clamp(88px, 12vw, 148px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(2, 15, 40, 0.35);
+}
+
+.home-flyer__person-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Dos columnas: texto a la izquierda y robot a la derecha. */
+.home-flyer__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 320px);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: end;
+  padding-top: clamp(18px, 4vw, 44px);
+}
+
+.home-flyer__content {
+  max-width: 660px;
+}
+
+.home-flyer__kicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 12px;
+  border: 1px solid rgba(155, 231, 255, 0.38);
+  border-radius: var(--radio-full);
+  background: rgba(155, 231, 255, 0.12);
+  color: #c9f4ff;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.02em;
+}
+
+.home-flyer h1 {
+  margin: var(--esp-5) 0 0;
+  color: #fff;
+  font-size: clamp(3.2rem, 7.4vw, 6.4rem);
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  text-shadow: 0 12px 34px rgba(2, 15, 40, 0.32);
+}
+
+.home-flyer h1 span {
+  color: #eafaff;
+}
+
+.home-flyer__slogan {
+  max-width: 24ch;
+  margin-top: clamp(18px, 3vw, 30px);
+  color: #e8f7ff;
+  font-size: clamp(1.25rem, 2.6vw, 2rem);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.2;
+}
+
+/* Barras celestes con tilde: las cuatro funciones del flyer. */
+.home-flyer__features {
+  display: grid;
+  gap: 10px;
+  max-width: 540px;
+  margin-top: clamp(22px, 3vw, 34px);
+  padding: 0;
+  list-style: none;
+}
+
+.home-flyer__features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #e3f8ff 0%, #9bdcff 100%);
+  box-shadow: 0 10px 24px rgba(2, 15, 40, 0.16);
+  color: #06234a;
+  font-weight: var(--peso-fuerte);
+}
+
+.home-flyer__check {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0b3c6e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: var(--peso-negro);
+}
+
+/* CTA y firma de la integrante. */
+.home-flyer__bottom {
+  margin-top: clamp(26px, 4vw, 42px);
+}
+
+.home-flyer__cta-text {
+  max-width: 460px;
+  color: #e8f7ff;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.5;
+}
+
+.home-flyer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  margin-top: var(--esp-4);
+}
+
+.home-flyer__credit {
+  margin-top: var(--esp-5);
+  color: rgba(232, 247, 255, 0.72);
+  font-size: var(--texto-sm);
+}
+
+.home-flyer__credit strong {
+  color: #fff;
+}
+
+/* Robot decorativo con laptop, alineado al borde inferior del texto. */
+.home-flyer__robot {
+  width: min(100%, 320px);
+  justify-self: end;
+  filter: drop-shadow(0 20px 40px rgba(2, 15, 40, 0.32));
+}
+
+.home-flyer__robot-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Etiquetas de sección reutilizadas debajo del flyer. */
+.home-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: var(--radio-full);
+  background: var(--primario-suave);
+  color: var(--primario-fuerte);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.02em;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  margin-top: var(--esp-8);
+}
+
+.home-actions--center {
+  justify-content: center;
+}
+
+/* Franja de indicadores rápidos. */
+.home-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--esp-4);
+  max-width: var(--home-max);
+  margin: 0 auto;
+  padding: var(--esp-5);
+  border: 1px solid var(--borde-tenue);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+.home-strip > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+  padding: var(--esp-2) var(--esp-4);
+  border-right: 1px solid var(--borde-tenue);
+}
+
+.home-strip > div:last-child {
+  border-right: 0;
+}
+
+.home-strip strong {
+  color: var(--primario-fuerte);
+  font-size: var(--texto-lg);
+  letter-spacing: -0.02em;
+}
+
+.home-strip span {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.4;
+}
+
+/* Secciones explicativas que aparecen debajo del flyer. */
+.home-section {
+  max-width: var(--home-max);
+  margin: 0 auto;
+  padding: clamp(56px, 8vw, 96px) var(--esp-4);
+}
+
+.home-section--split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+}
+
+.home-section--soft {
+  margin-top: var(--esp-5);
+  border: 1px solid var(--borde-tenue);
+  border-radius: 28px;
+  background: var(--superficie);
+}
+
+.home-section--roles {
+  padding-top: 0;
+}
+
+.home-section__head {
+  max-width: 620px;
+}
+
+.home-section__head--center {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-section__head h2 {
+  margin-top: var(--esp-4);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.home-section__head p {
+  margin-top: var(--esp-4);
+  color: var(--texto-medio);
+  font-size: var(--texto-base);
+  line-height: 1.65;
+}
+
+.home-grid {
+  display: grid;
+  gap: var(--esp-4);
+  margin-top: var(--esp-8);
+}
+
+.home-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.home-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-problem,
+.home-benefit,
+.home-role {
+  border: 1px solid var(--borde-tenue);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  box-shadow: var(--sombra-sm);
+}
+
+.home-problem {
+  padding: var(--esp-5);
+}
+
+.home-problem__number {
+  display: inline-block;
+  margin-bottom: var(--esp-4);
+  color: var(--primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-negro);
+  letter-spacing: 0.08em;
+}
+
+.home-problem h3,
+.home-benefit h3,
+.home-step h3,
+.home-role h3 {
+  font-size: var(--texto-md);
+  line-height: 1.3;
+}
+
+.home-problem p,
+.home-benefit p,
+.home-step p,
+.home-role p {
+  margin-top: var(--esp-2);
+  color: var(--texto-medio);
+  font-size: var(--texto-sm);
+  line-height: 1.6;
+}
+
+.home-benefit {
+  padding: var(--esp-6);
+  transition: transform var(--transicion), box-shadow var(--transicion);
+}
+
+.home-benefit:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-lg);
+}
+
+.home-benefit__mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: var(--esp-4);
+  border-radius: 12px;
+  background: var(--primario-suave);
+  color: var(--primario-fuerte);
+  font-size: 22px;
+  font-weight: var(--peso-negro);
+}
+
+.home-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-4);
+  margin-top: var(--esp-8);
+  padding: 0;
+  list-style: none;
+}
+
+.home-step {
+  position: relative;
+  padding: var(--esp-6);
+  border: 1px solid var(--borde-tenue);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+}
+
+.home-step__number {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--esp-4);
+  border-radius: 50%;
+  background: var(--degradado-marca);
+  color: var(--superficie);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-negro);
+}
+
+.home-role {
+  display: flex;
+  flex-direction: column;
+  padding: var(--esp-6);
+  border-top: 4px solid var(--primario);
+}
+
+.home-role__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  width: fit-content;
+  margin-top: auto;
+  padding-top: var(--esp-5);
+  color: var(--primario-fuerte);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  text-decoration: none;
+}
+
+.home-role__link:hover {
+  text-decoration: underline;
+}
+
+.home-role__link:focus-visible,
+.home-cta .btn:focus-visible {
+  outline: 3px solid var(--primario);
+  outline-offset: 3px;
+}
+
+.home-cta {
+  max-width: var(--home-max);
+  margin: 0 auto var(--esp-10);
+  padding: clamp(36px, 6vw, 64px) var(--esp-4);
+  border-radius: 28px;
+  background: var(--degradado-marca);
+  color: var(--superficie);
+  text-align: center;
+}
+
+.home-cta__isotipo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--esp-5);
+  padding: 8px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.home-kicker--light {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--superficie);
+}
+
+.home-cta h2 {
+  max-width: 760px;
+  margin: var(--esp-4) auto 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.home-cta > p {
+  max-width: 680px;
+  margin: var(--esp-4) auto 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--texto-base);
+  line-height: 1.65;
+}
+
+.btn-light {
+  background: var(--superficie);
+  color: var(--primario-fuerte);
+}
+
+.btn-light:hover:not(:disabled) {
+  background: var(--primario-suave);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-lg);
+}
+
+.btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: transparent;
+  color: var(--superficie);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* En tablet y mobile el flyer pasa a una columna y el robot se centra. */
+@media (max-width: 900px) {
+  .home-flyer__main {
+    grid-template-columns: 1fr;
+  }
+
+  .home-flyer__content {
+    max-width: 720px;
+  }
+
+  .home-flyer__robot {
+    width: min(70%, 280px);
+    justify-self: center;
+  }
+
+  .home-section--split {
+    grid-template-columns: 1fr;
+  }
+
+  .home-grid--3,
+  .home-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-section--roles {
+    padding-top: var(--esp-10);
+  }
+}
+
+/* Ajustes finos para celular: logo más chico, CTA a ancho completo y menos aire. */
+@media (max-width: 640px) {
+  .home-flyer {
+    padding-top: 14px;
+  }
+
+  .home-flyer__top {
+    justify-content: center;
+    min-height: 54px;
+    padding: 0 76px 0 70px;
+  }
+
+  .home-flyer__logo {
+    width: min(250px, calc(100vw - 150px));
+  }
+
+  .home-flyer__person {
+    top: 10px;
+    right: 8px;
+    width: 62px;
+  }
+
+  .home-flyer__main {
+    padding-top: 18px;
+  }
+
+  .home-flyer h1 {
+    font-size: clamp(2.7rem, 15vw, 4rem);
+  }
+
+  .home-flyer__slogan,
+  .home-flyer__features {
+    max-width: 100%;
+  }
+
+  .home-flyer__actions {
+    flex-direction: column;
+  }
+
+  .home-flyer__actions .btn {
+    width: 100%;
+  }
+
+  .home-flyer__robot {
+    width: min(80%, 250px);
+  }
+
+  .home-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-strip > div {
+    border-right: 0;
+  }
+
+  .home-strip > div:nth-child(odd) {
+    border-right: 1px solid var(--borde-tenue);
+  }
+
+  .home-grid--2,
+  .home-grid--3,
+  .home-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .home-actions {
+    flex-direction: column;
+  }
+
+  .home-actions .btn {
+    width: 100%;
+  }
+
+  .home-section,
+  .home-section--soft,
+  .home-cta {
+    border-radius: var(--radio-lg);
+  }
+}
+
+/* Respeta la preferencia del sistema de reducir animaciones. */
+@media (prefers-reduced-motion: reduce) {
+  .home-benefit,
+  .btn-light,
+  .btn-ghost {
+    transition: none;
+  }
+
+  .home-benefit:hover,
+  .btn-light:hover:not(:disabled) {
+    transform: none;
+  }
+}

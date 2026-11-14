@@ -378,6 +378,23 @@
   color: var(--secundario);
 }
 
+/* Segundo enlace del pie: vuelve a la HOME desde login/registro */
+.auth-home-link {
+  /* Separa la vuelta al inicio del enlace de cambio de formulario */
+  margin: 10px 0 0;
+  /* Tamaño menor: es una salida secundaria, no la acción principal */
+  font-size: 13px;
+}
+
+/* La vuelta al inicio se muestra más discreta que el enlace principal */
+.auth-home-link a {
+  color: #666;
+}
+
+.auth-home-link a:hover {
+  color: var(--primario);
+}
+
 /* Responsive: en pantallas muy angostas (móviles) se ajustan los tamaños */
 @media (max-width: 480px) {
   /* La tarjeta ocupa casi todo el ancho */

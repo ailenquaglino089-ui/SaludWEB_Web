@@ -124,6 +124,9 @@ export default function Login() {
         <div className="auth-footer">
           {/* Link de react-router navega sin recargar la página */}
           <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
+          {/* En mobile el navbar se oculta en login/registro; este enlace permite
+              volver a la HOME sin depender del botón Atrás del navegador. */}
+          <p className="auth-home-link"><Link to="/">← Volver al inicio</Link></p>
         </div>
       </div>
     </div>

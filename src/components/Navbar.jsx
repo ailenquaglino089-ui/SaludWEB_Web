@@ -19,11 +19,12 @@ import './Navbar.css';
 /**
  * Enlaces que se muestran a cualquiera, con o sin sesión.
  *
- * "Turnera" va primero a propósito, y no por un capricho de orden: es la única
- * parte de la aplicación que una persona sin cuenta puede usar. Todo lo demás
- * es el interior de la herramienta de gestión, y sin sesión no existe.
+ * "Inicio" presenta el sistema y "Turnera" es la parte que una persona sin
+ * cuenta puede usar de inmediato. Todo lo demás es el interior de la
+ * herramienta de gestión, y sin sesión no existe.
  */
 const ENLACES_PUBLICOS = [
+  { a: '/', texto: 'Inicio' },
   { a: '/turnera', texto: 'Turnera' },
 ];
 
@@ -80,6 +81,7 @@ const ENLACES_SEGUN_ROL = {
   // ser rechazado, que es el mismo criterio que aplica al resto del archivo.
   medico: [
     { a: '/dashboard', texto: 'Dashboard' },
+    { a: '/turnera/mi-agenda', texto: 'Mi agenda' },
     { a: '/medicos', texto: 'Médicos' },
     { a: '/pacientes', texto: 'Pacientes' },
     { a: '/prescripciones', texto: 'Prescripciones' },
@@ -169,13 +171,11 @@ export default function Navbar() {
           ciclo de vida de React y no hay que acordarse de quitarlo. */}
 
       <div className="navbar-container">
-        {/* La marca navega al catálogo de la turnera, no al dashboard. Quien
-            no tiene sesión igual puede ver profesionales, y la marca es el
-            único elemento visible en todas las pantallas. Mandarla al
-            dashboard mandaría a alguien sin sesión directo al login, que es
-            una mala primera impresión: la persona solo quería mirar la
-            cartilla de profesionales y de golpe le piden contraseña. */}
-        <Link to="/turnera" className="navbar-brand">
+        {/* La marca navega a la HOME, no al dashboard. Quien no tiene sesión
+            puede recorrer la presentación del sistema y desde ahí entrar a la
+            turnera o al login. Mandarla al dashboard expulsaría a esa persona
+            a un formulario de acceso sin haber visto la propuesta. */}
+        <Link to="/" className="navbar-brand">
           SaludWEB <span className="navbar-brand-pro">PRO</span>
         </Link>
 
