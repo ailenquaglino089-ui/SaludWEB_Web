@@ -16,7 +16,18 @@ robot con laptop y la integrante **Ailen Quaglino Fail**.
 El guion completo para una demo o defensa, con el orden paciente → médico →
 administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 
-## Resumen de esta iteración (13/11/2026)
+## Estado de publicación (14/11/2026)
+
+- Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>.
+- Rama publicada: `main`. La iteración entra por el PR #68 desde
+  `docs/access-connectivity`; `main` está protegida y no acepta pushes directos.
+- Demo pública: <https://saludweb.taileeeb72.ts.net/>. Compartir la raíz, no
+  `/login` ni `/register`.
+- Verificación: `npm test` 32/32 y `npm run build` OK (140 módulos).
+- Últimos ajustes visuales: anteojos con bordes violeta oscuro, remera roja de
+  mangas largas y collar gris en forma de luna en la mujer del flyer.
+
+## Resumen de esta iteración (13-14/11/2026)
 
 Esta iteración se hizo en la SPA web. **El backend, la base de datos y los permisos
 no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
@@ -104,6 +115,9 @@ aclaración por cada línea trivial:
   dashboard médico, Mi agenda y redirección del paciente fuera de la agenda médica.
 - Prueba del enlace público en viewport mobile: `/` muestra el flyer; `/login` y `/register`
   muestran el formulario y ahora incluyen **Volver al inicio**.
+- Verificación final del SVG en la URL pública: la mujer muestra anteojos con bordes
+  violeta oscuro, mangas largas y collar luna; el crédito **Ailen Quaglino Fail** sigue
+  presente.
 - Prueba de circuito completo: el paciente reservó un horario, el médico lo vio en su
   agenda y después el turno se canceló para dejar la base limpia.
 
@@ -680,6 +694,12 @@ hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resu
   Cardiología, Dermatología y Clínica Médica, con agenda de lunes a viernes, y la
   web dejó de ofrecer especialidades con `cantidad_medicos = 0`. Así desaparece el
   caso de elegir una especialidad y ver "No encontramos profesionales...".
+- **13-14/11** - **HOME estilo flyer, agenda médica y publicación**: la HOME pública
+  reemplazó el hero anterior, el médico sumó **Pacientes que reservaron** y
+  **Mi agenda**, y se corrigieron el lanzador y los enlaces de vuelta. Los ajustes
+  finales dejaron a la mujer con anteojos de bordes violeta oscuro, remera roja de
+  mangas largas y collar gris en forma de luna. Se publicó en Web PR #68, Mobile
+  PR #49 y Backend PR #53; el backend y la app móvil no cambiaron de código.
 
 ## Iteración verificada (02/11/2026)
 
@@ -1273,66 +1293,56 @@ introducción, problemas de las turneras, paciente, médico, administrador y cie
 - La HOME se armó a partir de la descripción del flyer y de la identidad de
   `docs/brand/`; no se comparó píxel por píxel con la imagen original.
 
-## Publicar cambios en GitHub (paso a paso)
+## Publicar cambios en GitHub
 
-Este repositorio se publica en
-`https://github.com/ailenquaglino089-ui/SaludWEB_Web.git`. La rama `main` está
-protegida: exige un **pull request**, así que no se puede empujar directo con
-`git push origin main`. Desde la carpeta `SaludWEB_Web`:
+Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>. La rama `main`
+está protegida: exige un **pull request**, así que no se puede publicar con
+`git push origin main`.
+
+### PR de esta iteración
+
+- **#68** — `feat: HOME estilo flyer y agenda de turnos reservados`.
+- Incluye la HOME pública, **Pacientes que reservaron**, **Mi agenda**, los enlaces
+  **Volver al inicio**, el lanzador en `/` y los ajustes finales del flyer
+  (mangas largas, collar luna y anteojos con bordes violeta oscuro).
+- Verificación antes de publicar: `npm test` 32/32 y `npm run build` OK.
+
+### Flujo recomendado
+
+Desde `SaludWEB_Web`:
 
 ```bash
-npm test                           # 1. Pruebas unitarias
-npm run build                      # 2. Compilar la SPA
-git status                         # 3. Ver qué archivos cambiaron
-git diff                           # 4. Revisar el contenido antes de subirlo
-git add README.md vite.config.js index.html src/main.jsx          # 5. Preparar archivos
-git add src/components/Turnera/ReservarTurno.jsx                  # 6. Preparar archivos
-git add src/components/Configuracion/Configuracion.jsx            # 7. Preparar archivos
-git add src/components/Turnera/CatalogoTurnera.jsx                # 8. Preparar archivos
-git add src/components/Turnera/MisTurnos.jsx                      # 9. Preparar archivos
-git add src/components/Turnera/AgendaMedico.jsx                   # 10. Preparar archivos
-git add src/components/Dashboard/Dashboard.jsx                    # 11. Preparar archivos
-git commit -m "fix: reserva publica con ficha automatica y rutas absolutas"  # 12. Crear commit
-git push origin docs/access-connectivity  # 13. Subir la rama de trabajo
-gh pr create --repo ailenquaglino089-ui/SaludWEB_Web --base main --head docs/access-connectivity --title "fix: reserva publica con ficha automatica y rutas absolutas" --body "Permite vincular o crear la ficha al reservar y corrige rutas profundas y nombres en Mis turnos."  # 14. Abrir PR
-gh pr merge --repo ailenquaglino089-ui/SaludWEB_Web --merge  # 15. Fusionar el PR en main
-git fetch origin                   # 16. Traer el merge publicado
-git log --oneline -1 origin/main   # 17. Confirmar el merge en main
-git status -sb                     # 18. Debe quedar sin cambios pendientes
+npm test
+npm run build
+git status
+git diff --check
+git add README.md docs/PRESENTACION.md src/components/Home/Home.jsx
+git commit -m "docs: actualizar README y flyer de la HOME"
+git push origin HEAD
+gh pr create --repo ailenquaglino089-ui/SaludWEB_Web --base main --head docs/access-connectivity --title "docs: actualizar README y flyer de la HOME" --body "Documenta la iteración y los ajustes visuales del flyer."
+gh pr merge --repo ailenquaglino089-ui/SaludWEB_Web --merge
+git fetch origin
+git log --oneline -1 origin/main
 ```
 
-Qué hace cada línea:
+Qué hace cada paso:
 
-1. `npm test`: corre las pruebas de Node antes de tocar el repositorio.
-2. `npm run build`: compila `dist/`; verifica que la app compila y que las rutas
-   de los assets quedan absolutas.
-3. `git status`: lista archivos modificados, nuevos y sin seguimiento.
-4. `git diff`: muestra el cambio exacto para revisar que no haya secretos ni archivos ajenos.
-5. `git add README.md vite.config.js index.html src/main.jsx`: prepara la
-   documentación, la base del build, el manifest/íconos y el registro del service
-   worker.
-6. `git add ...ReservarTurno.jsx`: prepara el formulario de vínculo dentro de la
-   reserva.
-7. `git add ...Configuracion.jsx`: prepara el vínculo desde configuración.
-8. `git add ...CatalogoTurnera.jsx`: prepara el aviso previo a elegir horario.
-9. `git add ...MisTurnos.jsx`: prepara la vista con `nombre_medico` y
-   `especialidad`.
-10. `git add ...AgendaMedico.jsx`: prepara la cabecera de agenda con
-    `medico.especialidad`.
-11. `git add ...Dashboard.jsx`: prepara los próximos turnos del paciente.
-12. `git commit`: crea el commit local con el mensaje del cambio.
-13. `git push`: sube la rama de trabajo (no `main`) a GitHub.
-14. `gh pr create`: abre el pull request hacia `main`, que es la única vía
-    permitida por la protección de la rama.
-15. `gh pr merge`: fusiona el PR en `main`. Sin número porque el PR abierto es el
-    de la rama actual.
-16. `git fetch`: actualiza las referencias remotas sin cambiar los archivos.
-17. `git log origin/main`: confirma el commit de merge publicado.
-18. `git status -sb`: confirma que la rama local quedó igual a `origin`.
+1. `npm test`: ejecuta las pruebas antes de tocar el repositorio.
+2. `npm run build`: compila `dist/` y confirma que la SPA compila.
+3. `git status` y `git diff --check`: revisan archivos cambiados, espacios sobrantes
+   y que no se cuele ningún secreto.
+4. `git add`: prepara solo los archivos revisados. Ajustar la lista si el cambio
+   toca otros archivos.
+5. `git commit`: crea el commit local.
+6. `git push origin HEAD`: sube la rama de trabajo, nunca `main`.
+7. `gh pr create`: abre el PR hacia `main`. Si la rama ya tiene un PR abierto, se
+   omite este paso y se sigue con `gh pr merge`.
+8. `gh pr merge`: fusiona el PR en `main`, que es la versión publicada.
+9. `git fetch origin` y `git log origin/main`: confirman el merge publicado.
 
-No subir `node_modules/`, `dist/` ni archivos con secretos; ya están cubiertos
-por `.gitignore`. Si el push pide credenciales, iniciar sesión con la cuenta de
-GitHub que tiene permiso sobre el repositorio.
+No subir `node_modules/`, `dist/`, `.env` ni archivos con secretos; ya están
+cubiertos por `.gitignore`. Si el push pide credenciales, iniciar sesión con la
+cuenta de GitHub que tiene permiso sobre el repositorio.
 
 ## Calidad del software
 
