@@ -116,7 +116,8 @@ const ROLES = [
 ];
 
 /**
- * Persona con anteojos y ropa roja del flyer.
+ * Mujer del flyer: cabello largo y claro, flequillo recto, anteojos de armazón
+ * claro y ropa roja.
  *
  * Se dibuja con SVG inline porque el diseño no incluye una foto recortada ni
  * un asset independiente. Así la ilustración escala sin perder nitidez y no
@@ -128,7 +129,7 @@ function PersonaFlyer() {
       viewBox="0 0 220 260"
       className="home-flyer__person-svg"
       role="img"
-      aria-label="Persona con anteojos y ropa roja"
+      aria-label="Mujer de cabello largo y claro, flequillo recto, anteojos de armazón claro y ropa roja"
     >
       <defs>
         <linearGradient id="personaFondo" x1="0" y1="0" x2="1" y2="1">
@@ -139,27 +140,52 @@ function PersonaFlyer() {
           <stop offset="0%" stopColor="#ef5350" />
           <stop offset="100%" stopColor="#b51f2f" />
         </linearGradient>
+        <linearGradient id="personaPelo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#f5e5bc" />
+          <stop offset="55%" stopColor="#dfc187" />
+          <stop offset="100%" stopColor="#b98e4f" />
+        </linearGradient>
         <clipPath id="personaRecorte">
           <circle cx="110" cy="118" r="104" />
         </clipPath>
       </defs>
       <circle cx="110" cy="118" r="104" fill="url(#personaFondo)" opacity="0.22" />
       <g clipPath="url(#personaRecorte)">
+        {/* Melena larga detrás de los hombros: enmarca el rostro sin tapar la prenda. */}
+        <path d="M52 104c-8-44 18-74 58-74s66 30 58 74c7 42 1 79-13 105-11 20-27 30-45 30s-34-10-45-30c-14-26-20-63-13-105z" fill="url(#personaPelo)" />
+        <path d="M62 100c0-34 20-56 48-56s48 22 48 56c0 22-7 45-18 62-8 12-18 18-30 18s-22-6-30-18c-11-17-18-40-18-62z" fill="#c49a5c" opacity="0.55" />
+        {/* El cuello va detrás de la prenda: el escote tapa su base y evita una mancha clara sobre el rojo. */}
+        <path d="M88 150v22c0 10 10 18 22 18s22-8 22-18v-22z" fill="#f4c7aa" />
+        <path d="M88 164c8 8 36 8 44 0" fill="none" stroke="#d89c84" strokeWidth="3" opacity="0.45" />
         <path d="M28 260c8-58 38-92 82-92s74 34 82 92z" fill="url(#personaRopa)" />
-        <path d="M78 166c10 14 54 14 64 0l-7 36H85z" fill="#f4c7aa" />
         <circle cx="110" cy="108" r="54" fill="#f4c7aa" />
-        <path d="M56 104c0-40 22-66 56-66 28 0 50 18 54 48-14-8-28-12-48-12-24 0-42 8-54 24z" fill="#3a2a34" />
-        <path d="M62 82c8-24 28-36 50-36 24 0 42 12 48 34-18-8-32-10-50-10-18 0-34 4-48 12z" fill="#4a3340" />
-        <g fill="none" stroke="#20304d" strokeWidth="6">
+        {/* Flequillo recto: el borde inferior es una línea horizontal sobre la frente. */}
+        <path d="M62 88c0-34 20-54 48-54s48 20 48 54z" fill="url(#personaPelo)" />
+        <path d="M76 60c10-12 22-18 34-18 12 0 24 6 34 18-12-4-22-6-34-6s-22 2-34 6z" fill="#f7e7bd" opacity="0.65" />
+        {/* Mechones delanteros que terminan a la altura del hombro, sin invadir la prenda. */}
+        <path d="M58 88c-6 26-5 50 3 68 3 7 7 12 12 16-2-15-1-34 4-50-9-4-15-12-19-34z" fill="url(#personaPelo)" />
+        <path d="M162 88c6 26 5 50-3 68-3 7-7 12-12 16 2-15 1-34-4-50 9-4 15-12 19-34z" fill="url(#personaPelo)" />
+        <path d="M57 104c1 22 4 40 11 56M163 104c-1 22-4 40-11 56" fill="none" stroke="#b98e4f" strokeWidth="4" strokeLinecap="round" opacity="0.45" />
+        {/* Lentes con armazón claro, ojos y sonrisa. */}
+        <g fill="#f8fcff" opacity="0.32">
           <rect x="68" y="96" width="38" height="28" rx="12" />
           <rect x="116" y="96" width="38" height="28" rx="12" />
-          <path d="M106 108h10" />
         </g>
-        <circle cx="87" cy="110" r="4" fill="#20304d" />
-        <circle cx="135" cy="110" r="4" fill="#20304d" />
-        <path d="M96 134c8 7 20 7 28 0" fill="none" stroke="#a35353" strokeWidth="4" strokeLinecap="round" />
-        <path d="M94 146c10 10 22 10 32 0" fill="none" stroke="#8f3f48" strokeWidth="4" strokeLinecap="round" />
-        <path d="M50 252c5-53 31-84 60-84s55 31 60 84" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="4" />
+        <circle cx="87" cy="110" r="4" fill="#4a3828" />
+        <circle cx="135" cy="110" r="4" fill="#4a3828" />
+        <circle cx="88.5" cy="108.5" r="1.2" fill="#ffffff" opacity="0.8" />
+        <circle cx="136.5" cy="108.5" r="1.2" fill="#ffffff" opacity="0.8" />
+        <g fill="none" stroke="#c9b08a" strokeWidth="7">
+          <rect x="68" y="96" width="38" height="28" rx="12" />
+          <rect x="116" y="96" width="38" height="28" rx="12" />
+          <path d="M106 108h10M68 104l-9-4M152 104l9-4" />
+        </g>
+        <g fill="none" stroke="#f5ead7" strokeWidth="3">
+          <rect x="68" y="96" width="38" height="28" rx="12" />
+          <rect x="116" y="96" width="38" height="28" rx="12" />
+        </g>
+        <path d="M110 116c-2 6-4 10-7 13" fill="none" stroke="#c98f79" strokeWidth="3" strokeLinecap="round" />
+        <path d="M96 138c9 8 20 8 29 0" fill="none" stroke="#a35353" strokeWidth="4" strokeLinecap="round" />
       </g>
     </svg>
   );

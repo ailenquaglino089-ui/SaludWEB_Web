@@ -8,8 +8,9 @@ Frontend moderno construido con **React + Vite**. Consume la API REST del backen
 SaludWEB ya funciona de punta a punta: el paciente reserva un turno y elige el
 horario, el médico ve ese mismo turno en su agenda y el administrador tiene una
 vista general del consultorio. La HOME pública replica el flyer de presentación:
-fondo azul con patrón tecnológico, logo blanco, persona con anteojos, cuatro
-beneficios, robot con laptop y la integrante **Ailen Quaglino Fail**.
+fondo azul con patrón tecnológico, logo blanco, mujer de cabello largo y claro
+con flequillo recto, anteojos de armazón claro y ropa roja, cuatro beneficios,
+robot con laptop y la integrante **Ailen Quaglino Fail**.
 
 El guion completo para una demo o defensa, con el orden paciente → médico →
 administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
@@ -25,9 +26,10 @@ no cambiaron**: se reutilizaron los endpoints de turnos que ya existían.
   Si la persona tiene sesión, los botones cambian a **Ir al panel** y **Ver turnera**;
   si no, ve **Conocer el sistema** e **Ingresar**.
 - La parte superior reproduce el flyer: fondo azul con líneas tecnológicas, logo
-  blanco centrado, persona con anteojos arriba a la derecha, título **Salud WEB PRO**,
-  eslogan, las cuatro barras celestes, CTA, firma **Ailen Quaglino Fail** y robot con
-  laptop abajo a la derecha.
+  blanco centrado, mujer de cabello largo y claro con flequillo recto, anteojos de
+  armazón claro y ropa roja arriba a la derecha, título **Salud WEB PRO**, eslogan,
+  las cuatro barras celestes, CTA, firma **Ailen Quaglino Fail** y robot con laptop
+  abajo a la derecha.
 - La persona y el robot son **SVG inline** dentro de `Home.jsx`. No hay una foto ni
   un asset recortado provisto por el flyer, así que se usaron ilustraciones vectoriales
   que escalan sin perder nitidez.
@@ -1177,14 +1179,15 @@ introducción, problemas de las turneras, paciente, médico, administrador y cie
   explica para qué existe la HOME y por qué es pública aunque cambien los botones.
 - **Líneas 22-27** — Las cuatro funciones del flyer: gestión de turnos, creación de
   recetas, información organizada y ahorrar tiempo.
-- **Líneas 29-123** — Beneficios, problemas, pasos y roles que se mantienen debajo
+- **Líneas 21-116** — Funciones, beneficios, problemas, pasos y roles que se mantienen debajo
   del flyer. El contenido separa la promesa del sistema de los errores habituales:
   llamadas en horario limitado, turnos duplicados, poca confirmación e información
   dispersa.
-- **Líneas 125-172** — Ilustración SVG de la persona con anteojos y ropa roja,
-  documentada como reemplazo vectorial de la imagen original.
-- **Líneas 174-215** — Ilustración SVG del robot amigable con laptop.
-- **Líneas 217-290** — Home y flyer principal: logo blanco centrado, persona arriba a
+- **Líneas 118-192** — Ilustración SVG de la mujer con cabello largo y claro,
+  flequillo recto, anteojos de armazón claro y ropa roja, documentada como reemplazo
+  vectorial de la imagen original.
+- **Líneas 194-241** — Ilustración SVG del robot amigable con laptop.
+- **Líneas 243-315** — Home y flyer principal: logo blanco centrado, mujer arriba a
   la derecha, título **Salud WEB PRO**, eslogan, cuatro barras celestes con tilde, CTA,
   integrante **Ailen Quaglino Fail** y robot abajo a la derecha.
 - **Líneas 292-405** — Franja de indicadores, problemas, solución, cómo funciona, roles

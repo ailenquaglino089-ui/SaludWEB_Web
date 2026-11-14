@@ -25,9 +25,9 @@ confirma, el turno aparece en la agenda del médico en el mismo horario. No hay
 dos versiones de la verdad.
 
 La HOME del sistema replica el flyer de presentación: fondo azul con patrón
-tecnológico, logo blanco, persona con anteojos y ropa roja, las cuatro funciones
-principales, un robot con laptop y el nombre de la integrante. Desde ahí se accede
-a la turnera pública.
+tecnológico, logo blanco, mujer de cabello largo y claro con flequillo recto,
+anteojos de armazón claro y ropa roja, las cuatro funciones principales, un robot
+con laptop y el nombre de la integrante. Desde ahí se accede a la turnera pública.
 
 ## 2. Demo como paciente
 
