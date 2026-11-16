@@ -59,7 +59,7 @@ export default function Login() {
         </div>
 
         {/* Formulario de login: al enviarse ejecuta handleSubmit */}
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" autoComplete="on">
           <h2>Iniciar Sesión</h2>
 
           {/* Renderizado condicional: si hay error lo mostramos en un bloque rojo */}
@@ -72,7 +72,9 @@ export default function Login() {
             {/* El value proviene del estado email (input controlado); cada tecla lo actualiza y se deshabilita mientras carga */}
             <input
               id="email"
+              name="email"
               type="email"
+              autoComplete="username"
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -87,6 +89,7 @@ export default function Login() {
             <div className="password-input-wrapper">
               <input
                 id="password"
+                name="password"
                 type={verPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
