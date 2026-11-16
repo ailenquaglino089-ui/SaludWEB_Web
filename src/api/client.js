@@ -89,6 +89,23 @@ function avisarConConexion() {
   }
 }
 
+// Rutas que tienen sentido sin sesión. Si un token viejo o vencido falla
+// mientras el usuario está en una de ellas, no hay que expulsarlo al login:
+// se limpia la sesión local y la página pública sigue visible. Es el caso de
+// abrir la raíz (Home) después de haber usado el sistema en otra sesión.
+function esRutaPublica() {
+  if (typeof window === 'undefined') return false;
+
+  const ruta = window.location.pathname;
+  return (
+    ruta === '/' ||
+    ruta === '/login' ||
+    ruta === '/register' ||
+    ruta === '/turnera' ||
+    ruta.startsWith('/turnera/agenda/')
+  );
+}
+
 // Interceptor: agregar token a cada request
 client.interceptors.request.use(
   // interceptors.request.use: "intercepta" cada petición saliente para modificarla antes de enviarse
@@ -184,8 +201,13 @@ client.interceptors.response.use(
         // ...se elimina el token del localStorage: se invalida la sesión local del navegador
         localStorage.removeItem('usuario');
         // ...también se eliminan los datos del usuario guardados (sesión completamente limpia)
-        window.location.href = '/login';
-        // Se redirige el navegador completa al login (recarga de página) para que el usuario vuelva a autenticarse
+
+        if (!esRutaPublica()) {
+          // Solo se fuerza la salida en páginas que necesitan sesión. En Home,
+          // turnera o login, el usuario puede seguir viendo la página pública.
+          window.location.href = '/login';
+          // Se redirige el navegador completa al login (recarga de página) para que el usuario vuelva a autenticarse
+        }
       }
     } else if (!error.response) {
       // Un error SIN respuesta tiene una sola causa: la petición salió y nunca
