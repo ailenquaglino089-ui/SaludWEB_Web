@@ -362,6 +362,22 @@ Se ajustó la HOME pública de la SPA web:
 
 Publicado en: **Web #69**.
 
+## 31. Guardado de contraseña en el navegador (16/11/2026)
+
+Se ajustó el formulario de login para que Chrome, Edge y otros navegadores
+ofrezcan guardar las credenciales:
+
+- En `src/components/Auth/Login.jsx` se agregó `autoComplete="on"` al `<form>`.
+- El email ahora declara `name="email"` y `autoComplete="username"`.
+- La contraseña ahora declara `name="password"` y conserva
+  `autoComplete="current-password"`.
+- Con Playwright se verificó que los atributos llegan al DOM y que el login de la
+  administradora abre `/dashboard`.
+- `npm test` 32/32 y `npm run build` OK (140 módulos).
+- No se tocaron usuarios, contraseñas, backend, base de datos ni app móvil.
+
+Publicado en: **Web #70**.
+
 ---
 
 ## Dónde mirar para revisar

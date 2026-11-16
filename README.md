@@ -19,15 +19,18 @@ administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 ## Estado de publicación (16/11/2026)
 
 - Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>.
-- Rama publicada: `main`. La iteración 16/11/2026 se publica desde
-  `docs/robot-programador` mediante el
-  [PR #69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69);
+- Rama publicada: `main`. La iteración del robot se publicó con el
+  [PR #69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69); el
+  ajuste para guardar la contraseña se publica con el
+  [PR #70](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/70).
   `main` está protegida y no acepta pushes directos.
 - Demo pública: <https://saludweb.taileeeb72.ts.net/>. Compartir la raíz, no
   `/login` ni `/register`.
 - Verificación: `npm test` 32/32 y `npm run build` OK (140 módulos).
 - Últimos ajustes: robot con netbook, pantalla con código, teclado y manos
-  apoyadas; la HOME ya no redirige a `/login` cuando hay un token vencido.
+  apoyadas; la HOME ya no redirige a `/login` cuando hay un token vencido; el
+  formulario de login declara `name` y `autocomplete` para que el navegador
+  ofrezca guardar la contraseña.
 
 ## Iteración 16/11/2026: robot programador con netbook y HOME estable
 
@@ -79,6 +82,55 @@ móvil no cambiaron**: se reutilizaron los mismos endpoints y permisos.
 
 - Repositorio web: `docs/robot-programador`.
 - Pull Request: [#69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69).
+- El README general del workspace enlaza este PR y el merge en `main`.
+
+## Iteración 16/11/2026: guardado de contraseña en el navegador
+
+El navegador no ofrecía guardar las credenciales del login porque el formulario
+no tenía `name` ni todos los atributos `autocomplete` que usan los gestores de
+contraseñas. **No se tocaron usuarios, contraseñas, backend ni base de datos**:
+el cambio es solo de marcado HTML en la SPA.
+
+### Paso a paso de lo que se hizo
+
+1. **Revisar el formulario.** Se abrió `src/components/Auth/Login.jsx` y se
+   verificó que el campo de contraseña ya tenía `autoComplete="current-password"`,
+   pero el email y el formulario no declaraban todos los datos que espera el
+   navegador.
+2. **Marcar el formulario.** Se agregó `autoComplete="on"` al `<form>`.
+3. **Identificar el usuario.** El email ahora tiene `name="email"` y
+   `autoComplete="username"`, el valor estándar para el nombre de usuario.
+4. **Identificar la contraseña.** El campo suma `name="password"` y conserva
+   `autoComplete="current-password"`, incluso cuando se muestra u oculta con el
+   botón "Ver contraseña".
+5. **Verificar en el navegador.** Con Playwright se comprobó que el formulario
+   expone `autocomplete="on"`, el email `username`, la contraseña
+   `current-password`, y que el login de la administradora llega a `/dashboard`.
+6. **Ejecutar las pruebas.** `npm test` y `npm run build`.
+7. **Documentar y publicar.** Se actualizó este README, el registro de cambios y
+   el README general del workspace; después se publicó por Pull Request.
+
+### Archivos tocados
+
+| Archivo | Cambio |
+| --- | --- |
+| `src/components/Auth/Login.jsx` | `name` y `autocomplete` para que el navegador reconozca el login. |
+| `README.md` | Esta explicación paso a paso y el estado de publicación. |
+| `REGISTRO_DE_CAMBIOS.md` | Entrada 31 con el detalle del ajuste. |
+| `../README.md` (workspace) | Resumen y enlace al PR. |
+
+### Verificación
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **OK, 140 módulos**.
+- Playwright: formulario con `autocomplete="on"`, email `username`, contraseña
+  `current-password`; login de administradora hasta `/dashboard` sin errores.
+- No se modificaron usuarios, contraseñas, backend, base de datos ni mobile.
+
+### Publicación
+
+- Repositorio web: `fix/guardado-password`.
+- Pull Request: [#70](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/70).
 - El README general del workspace enlaza este PR y el merge en `main`.
 
 ## Resumen de esta iteración (13-14/11/2026)
