@@ -211,10 +211,12 @@ function PersonaFlyer() {
 }
 
 /**
- * Robot amigable con laptop que acompaña el flyer.
+ * Robot amigable con netbook que acompaña el flyer.
  *
  * Igual que la persona, es un SVG inline para conservar el estilo ilustrado y
- * evitar depender de una imagen externa.
+ * evitar depender de una imagen externa. La netbook tiene marco grueso, pantalla
+ * compacta, código, teclado y manos apoyadas para que el robot se lea como un
+ * pequeño programador.
  */
 function RobotFlyer() {
   return (
@@ -222,7 +224,7 @@ function RobotFlyer() {
       viewBox="0 0 320 280"
       className="home-flyer__robot-svg"
       role="img"
-      aria-label="Robot amigable usando una laptop"
+      aria-label="Robot amigable programando en una netbook"
     >
       <defs>
         <linearGradient id="robotCabeza" x1="0" y1="0" x2="1" y2="1">
@@ -237,6 +239,9 @@ function RobotFlyer() {
           <stop offset="0%" stopColor="#0b3c6e" />
           <stop offset="100%" stopColor="#041b3d" />
         </linearGradient>
+        <clipPath id="robotPantallaClip">
+          <rect x="103" y="182" width="114" height="46" rx="4" />
+        </clipPath>
       </defs>
       <ellipse cx="160" cy="252" rx="108" ry="18" fill="rgba(2,15,40,0.35)" />
       <line x1="160" y1="38" x2="160" y2="20" stroke="#9ee8ff" strokeWidth="5" />
@@ -249,12 +254,31 @@ function RobotFlyer() {
       <rect x="74" y="148" width="172" height="72" rx="26" fill="url(#robotCuerpo)" stroke="#bfefff" strokeWidth="5" />
       <circle cx="160" cy="184" r="18" fill="#06234a" stroke="#7ef0ff" strokeWidth="4" />
       <path d="M160 174v20M150 184h20" stroke="#7ef0ff" strokeWidth="4" strokeLinecap="round" />
-      <path d="M86 160c-26 10-38 28-40 50" fill="none" stroke="#bfefff" strokeWidth="14" strokeLinecap="round" />
-      <path d="M234 160c26 10 38 28 40 50" fill="none" stroke="#bfefff" strokeWidth="14" strokeLinecap="round" />
-      <path d="M32 230h256l-18 22H50z" fill="#d8f4ff" />
-      <path d="M82 184h156l-16 46H98z" fill="url(#robotPantalla)" stroke="#7ef0ff" strokeWidth="5" />
-      <path d="M110 196h100l-8 22H118z" fill="#7ef0ff" opacity="0.65" />
-      <circle cx="160" cy="232" r="4" fill="#7ef0ff" />
+      <path d="M86 160c-22 16-28 44-12 70" fill="none" stroke="#bfefff" strokeWidth="14" strokeLinecap="round" />
+      <path d="M234 160c22 16 28 44 12 70" fill="none" stroke="#bfefff" strokeWidth="14" strokeLinecap="round" />
+      <path d="M78 236h164l-12 16H90z" fill="#bfe9f8" stroke="#7ec8e8" strokeWidth="2" />
+      <path d="M88 239h144l-8 9H96z" fill="#d8f4ff" />
+      <g stroke="#5ba8c9" strokeWidth="1.8" strokeLinecap="round" opacity="0.9">
+        <path d="M100 242h10M114 242h10M128 242h10M142 242h10M156 242h10M170 242h10M184 242h10M198 242h10" />
+        <path d="M104 247h10M118 247h10M132 247h10M146 247h10M160 247h10M174 247h10M188 247h10" />
+      </g>
+      <rect x="142" y="248" width="36" height="3" rx="1.5" fill="#8fcde6" />
+      <rect x="94" y="174" width="132" height="64" rx="9" fill="#d8f4ff" stroke="#7ef0ff" strokeWidth="4" />
+      <circle cx="160" cy="177.5" r="1.8" fill="#06234a" />
+      <rect x="103" y="182" width="114" height="46" rx="4" fill="url(#robotPantalla)" />
+      <g clipPath="url(#robotPantallaClip)">
+        <circle cx="111" cy="190" r="2" fill="#ff8fa3" />
+        <circle cx="118" cy="190" r="2" fill="#ffd166" />
+        <circle cx="125" cy="190" r="2" fill="#7cf29c" />
+        <path d="M111 198h29M146 198h24M176 198h33" fill="none" stroke="#7ff0ff" strokeWidth="3" strokeLinecap="round" />
+        <path d="M111 205h19M136 205h44" fill="none" stroke="#7cf29c" strokeWidth="3" strokeLinecap="round" />
+        <path d="M111 212h39M156 212h34" fill="none" stroke="#ff8fb1" strokeWidth="3" strokeLinecap="round" />
+        <path d="M111 219l-4 4 4 4M124 216l-5 14M132 219l4 4-4 4" fill="none" stroke="#7ef0ff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="196" y="217" width="7" height="5" rx="1" fill="#7ef0ff" />
+      </g>
+      <rect x="150" y="232" width="20" height="3" rx="1.5" fill="#8fcde6" />
+      <circle cx="80" cy="238" r="7" fill="#bfefff" stroke="#7ef0ff" strokeWidth="3" />
+      <circle cx="240" cy="238" r="7" fill="#bfefff" stroke="#7ef0ff" strokeWidth="3" />
     </svg>
   );
 }
