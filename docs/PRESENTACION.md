@@ -28,7 +28,7 @@ La HOME del sistema replica el flyer de presentación: fondo azul con patrón
 tecnológico, logo blanco, mujer de cabello largo y claro con flequillo recto,
 anteojos con bordes violeta oscuro, remera roja de mangas largas y collar gris en
 forma de luna, las cuatro funciones principales, un robot
-con laptop y el nombre de la integrante. Desde ahí se accede a la turnera pública.
+con netbook y el nombre de la integrante. Desde ahí se accede a la turnera pública.
 
 ## 2. Demo como paciente
 

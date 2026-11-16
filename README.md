@@ -11,21 +11,75 @@ vista general del consultorio. La HOME pública replica el flyer de presentació
 fondo azul con patrón tecnológico, logo blanco, mujer de cabello largo y claro
 con flequillo recto, anteojos con bordes violeta oscuro, remera roja de mangas
 largas y collar gris en forma de luna, cuatro beneficios,
-robot con laptop y la integrante **Ailen Quaglino Fail**.
+robot con netbook y la integrante **Ailen Quaglino Fail**.
 
 El guion completo para una demo o defensa, con el orden paciente → médico →
 administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 
-## Estado de publicación (14/11/2026)
+## Estado de publicación (16/11/2026)
 
 - Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>.
-- Rama publicada: `main`. La iteración entra por el PR #68 desde
-  `docs/access-connectivity`; `main` está protegida y no acepta pushes directos.
+- Rama publicada: `main`. La iteración 16/11/2026 se publica desde
+  `docs/robot-programador` mediante el
+  [PR #69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69);
+  `main` está protegida y no acepta pushes directos.
 - Demo pública: <https://saludweb.taileeeb72.ts.net/>. Compartir la raíz, no
   `/login` ni `/register`.
 - Verificación: `npm test` 32/32 y `npm run build` OK (140 módulos).
-- Últimos ajustes visuales: anteojos con bordes violeta oscuro, remera roja de
-  mangas largas y collar gris en forma de luna en la mujer del flyer.
+- Últimos ajustes: robot con netbook, pantalla con código, teclado y manos
+  apoyadas; la HOME ya no redirige a `/login` cuando hay un token vencido.
+
+## Iteración 16/11/2026: robot programador con netbook y HOME estable
+
+Esta iteración tocó solo la SPA web. **El backend, la base de datos y la app
+móvil no cambiaron**: se reutilizaron los mismos endpoints y permisos.
+
+### Paso a paso de lo que se hizo
+
+1. **Revisar el componente del robot.** Se abrió `src/components/Home/Home.jsx`
+   y se ubicó `RobotFlyer`, el SVG inline que acompaña el flyer de la HOME.
+2. **Rehacer la netbook.** Se reemplazó la laptop por una netbook compacta:
+   marco grueso, pantalla chica con `clipPath`, cámara, bisagra, teclado y
+   touchpad. La pantalla muestra una ventana de código con puntos de color,
+   líneas, llaves `</>` y un cursor.
+3. **Acomodar el cuerpo del robot.** Se ajustaron los brazos para que terminen
+   sobre el teclado y se agregaron manos visibles a los costados de la netbook.
+4. **Actualizar accesibilidad y comentarios.** El `aria-label` ahora dice
+   "Robot amigable programando en una netbook" y el bloque de comentarios
+   explica que la netbook tiene marco grueso, pantalla compacta y teclado.
+5. **Corregir la estabilidad de la HOME.** En `src/api/client.js` se agregó
+   `esRutaPublica()` y se cambió el interceptor de 401: si la ruta es pública
+   (`/`, `/login`, `/register`, `/turnera`, etc.), se limpia la sesión vencida
+   pero **no** se redirige a `/login`; en rutas protegidas se mantiene la
+   redirección.
+6. **Verificar.** Se ejecutaron `npm test` y `npm run build`, y una prueba con
+   Playwright sobre `http://127.0.0.1:5173/` con un token inválido para
+   confirmar que la HOME se mantiene visible.
+7. **Documentar y publicar.** Se actualizó este README y el README general del
+   workspace; después se hizo commit, push y Pull Request a `main`.
+
+### Archivos tocados
+
+| Archivo | Cambio |
+| --- | --- |
+| `src/components/Home/Home.jsx` | Robot con netbook, pantalla de código, teclado, touchpad y manos. |
+| `src/api/client.js` | `esRutaPublica()` y 401 sin redirección en rutas públicas. |
+| `README.md` | Esta explicación paso a paso y el estado de publicación. |
+| `../README.md` (workspace) | Resumen de la iteración y enlace al PR. |
+
+### Verificación
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **OK, 140 módulos**.
+- Playwright: la raíz `/` con token inválido se queda en la HOME, limpia el
+  token y no muestra el login; `/dashboard` sigue redirigiendo a `/login`.
+- No se modificaron archivos de backend, base de datos ni mobile.
+
+### Publicación
+
+- Repositorio web: `docs/robot-programador`.
+- Pull Request: [#69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69).
+- El README general del workspace enlaza este PR y el merge en `main`.
 
 ## Resumen de esta iteración (13-14/11/2026)
 
@@ -700,6 +754,11 @@ hizo, por qué y en qué Pull Request de cada repositorio quedó publicado. Resu
   finales dejaron a la mujer con anteojos de bordes violeta oscuro, remera roja de
   mangas largas y collar gris en forma de luna. Se publicó en Web PR #68, Mobile
   PR #49 y Backend PR #53; el backend y la app móvil no cambiaron de código.
+- **16/11** - **Robot programador con netbook y HOME estable**: el robot del
+  flyer pasó a tener una netbook compacta con marco grueso, pantalla de código,
+  teclado, touchpad y manos apoyadas. También se corrigió el interceptor de 401
+  para que una ruta pública con token vencido no expulse a la persona de la
+  HOME. Verificación: `npm test` 32/32 y `npm run build` OK (140 módulos).
 
 ## Iteración verificada (02/11/2026)
 
