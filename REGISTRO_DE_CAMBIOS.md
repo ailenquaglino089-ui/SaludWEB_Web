@@ -342,6 +342,26 @@ Publicado en: **Backend #43**, **Web #58**, **Mobile #39**.
 
 El cierre administrativo, sin placeholders y con los datos de cátedra remitidos a la carátula oficial, se publicó en: **Backend #44**, **Web #59**, **Mobile #40**.
 
+## 30. Robot con netbook y HOME estable (16/11/2026)
+
+Se ajustó la HOME pública de la SPA web:
+
+- El robot del flyer pasó de una laptop genérica a una **netbook compacta** con
+  marco grueso, pantalla chica, cámara, bisagra, teclado, touchpad y manos
+  apoyadas. La pantalla muestra una ventana de código con puntos de color,
+  líneas, llaves `</>` y cursor.
+- El SVG sigue siendo inline en `src/components/Home/Home.jsx`; se actualizó el
+  `aria-label` a "Robot amigable programando en una netbook".
+- En `src/api/client.js` se agregó `esRutaPublica()` y se corrigió el interceptor
+  de 401: una ruta pública con token vencido limpia la sesión pero no expulsa a
+  la persona de la HOME; las rutas protegidas siguen redirigiendo a `/login`.
+- Verificación: `npm test` 32/32, `npm run build` OK (140 módulos) y prueba con
+  Playwright con token inválido en `/`.
+- Se actualizaron `README.md` y `docs/PRESENTACION.md`; el backend, la base de
+  datos y la app móvil no cambiaron.
+
+Publicado en: **Web #69**.
+
 ---
 
 ## Dónde mirar para revisar

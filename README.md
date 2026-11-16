@@ -20,8 +20,9 @@ administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 
 - Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>.
 - Rama publicada: `main`. La iteración 16/11/2026 se publica desde
-  `docs/robot-programador` mediante Pull Request; `main` está protegida y no
-  acepta pushes directos.
+  `docs/robot-programador` mediante el
+  [PR #69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69);
+  `main` está protegida y no acepta pushes directos.
 - Demo pública: <https://saludweb.taileeeb72.ts.net/>. Compartir la raíz, no
   `/login` ni `/register`.
 - Verificación: `npm test` 32/32 y `npm run build` OK (140 módulos).
@@ -77,8 +78,8 @@ móvil no cambiaron**: se reutilizaron los mismos endpoints y permisos.
 ### Publicación
 
 - Repositorio web: `docs/robot-programador`.
-- Pull Request: se completa al publicar y queda enlazado en el README general
-  del workspace.
+- Pull Request: [#69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69).
+- El README general del workspace enlaza este PR y el merge en `main`.
 
 ## Resumen de esta iteración (13-14/11/2026)
 
