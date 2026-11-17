@@ -64,6 +64,9 @@ import { Cargando, Aviso } from './PiezasTurnera';
 import './Turnera.css';
 // Estilos del módulo.
 
+// Paciente que debe aparecer primero en el selector de Turnera (DNI sin puntos).
+const DNI_PACIENTE_PRIORITARIO = '18007721';
+
 export default function ReservarTurno() {
   const { idMedico } = useParams();
   // Profesional elegido. Llega como string desde la URL.
@@ -274,6 +277,19 @@ export default function ReservarTurno() {
   // ==================================================================
   // Resumen del turno (se usa en los tres estados)
   // ==================================================================
+  // Silvina (DNI 18007721) queda primera para encontrarla rápido en la demo.
+  // Se copia el array para no modificar el estado original que vino de la API.
+  const pacientesOrdenados = [...pacientes].sort((a, b) => {
+    // Se comparan solo los dígitos del DNI: acepta "18007721" o "18.007.721".
+    const aPrioritario = String(a.dni ?? '').replace(/\D/g, '') === DNI_PACIENTE_PRIORITARIO;
+    // Se hace la misma normalización para el segundo paciente de la comparación.
+    const bPrioritario = String(b.dni ?? '').replace(/\D/g, '') === DNI_PACIENTE_PRIORITARIO;
+    // Si los dos son Silvina o ninguno lo es, se conserva el orden de la API.
+    if (aPrioritario === bPrioritario) return 0;
+    // Si solo uno es prioritario, ese va antes que el resto.
+    return aPrioritario ? -1 : 1;
+  });
+
   const resumen = (
     <div className="resumen-turno">
       {/* dl / dt / dd es la semántica correcta para un conjunto de
@@ -425,7 +441,8 @@ export default function ReservarTurno() {
               required
             >
               <option value="">Elegí un paciente</option>
-              {pacientes.map((p) => (
+              {/* Se recorre la copia ordenada para mostrar a Silvina primero. */}
+              {pacientesOrdenados.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.nombre} (DNI: {p.dni})
                 </option>
