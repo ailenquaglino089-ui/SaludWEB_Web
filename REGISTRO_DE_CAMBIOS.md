@@ -378,6 +378,27 @@ ofrezcan guardar las credenciales:
 
 Publicado en: **Web #70**.
 
+## 32. Silvina primera en el selector de Turnera (16/11/2026)
+
+Se ajustó el selector **"Paciente para el que es el turno"** del flujo de médico
+→ Turnera → profesional → día y horario:
+
+- Silvina, DNI `18007721`, aparece inmediatamente después de "Elegí un paciente"
+  y antes de "Acosta, Ana".
+- En `src/components/Turnera/ReservarTurno.jsx` se agregó la constante
+  `DNI_PACIENTE_PRIORITARIO = '18007721'`.
+- Se ordena una copia de la lista (`pacientesOrdenados`) para no modificar el
+  estado original; el resto conserva el orden de la API.
+- La comparación normaliza el DNI a solo dígitos, así acepta `18007721` o
+  `18.007.721`.
+- El `<select>` ahora recorre `pacientesOrdenados`.
+- Con Playwright se recorrió el flujo real y se verificaron las primeras
+  opciones: "Elegí un paciente", "Silvina (DNI: 18007721)" y "Acosta, Ana".
+- `npm test` 32/32 y `npm run build` OK (140 módulos).
+- No se tocaron usuarios, DNI, contraseñas, backend, base de datos ni app móvil.
+
+Publicado en: **Web #71**.
+
 ---
 
 ## Dónde mirar para revisar

@@ -21,8 +21,10 @@ administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 - Repositorio: <https://github.com/ailenquaglino089-ui/SaludWEB_Web>.
 - Rama publicada: `main`. La iteración del robot se publicó con el
   [PR #69](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/69); el
-  ajuste para guardar la contraseña se publica con el
-  [PR #70](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/70).
+  ajuste para guardar la contraseña con el
+  [PR #70](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/70); y el
+  orden de Silvina en Turnera con el
+  [PR #71](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/71).
   `main` está protegida y no acepta pushes directos.
 - Demo pública: <https://saludweb.taileeeb72.ts.net/>. Compartir la raíz, no
   `/login` ni `/register`.
@@ -30,7 +32,8 @@ administrador, está en [`docs/PRESENTACION.md`](docs/PRESENTACION.md).
 - Últimos ajustes: robot con netbook, pantalla con código, teclado y manos
   apoyadas; la HOME ya no redirige a `/login` cuando hay un token vencido; el
   formulario de login declara `name` y `autocomplete` para que el navegador
-  ofrezca guardar la contraseña.
+  ofrezca guardar la contraseña; Silvina (DNI 18007721) aparece primera en el
+  selector de paciente de Turnera.
 
 ## Iteración 16/11/2026: robot programador con netbook y HOME estable
 
@@ -131,6 +134,96 @@ el cambio es solo de marcado HTML en la SPA.
 
 - Repositorio web: `fix/guardado-password`.
 - Pull Request: [#70](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/70).
+- El README general del workspace enlaza este PR y el merge en `main`.
+
+## Iteración 16/11/2026: Silvina primera en el selector de Turnera
+
+Cuando un médico o administrador reserva un turno para otra persona, el selector
+**"Paciente para el que es el turno"** traía a Silvina en la posición 89 de la
+lista. Ahora aparece inmediatamente después de **"Elegí un paciente"**, antes de
+**"Acosta, Ana"**. El resto conserva el orden que devuelve la API.
+
+**No se modificaron usuarios, DNI, contraseñas, backend, base de datos ni app
+móvil**: Silvina ya existía como paciente con DNI `18007721`; el cambio es solo
+de orden visual en la SPA.
+
+### Paso a paso de lo que se hizo
+
+1. **Ingresar como médico.** Se abrió la aplicación con una cuenta de médico.
+2. **Entrar a Turnera.** Desde la barra superior se eligió **Turnera**.
+3. **Elegir un profesional.** Se presionó **Ver horarios** en un profesional.
+4. **Elegir día y horario.** Se seleccionó un día con horarios libres y después
+   un horario disponible.
+5. **Llegar a la confirmación.** La pantalla **Confirmar turno** mostró el
+   selector **"Paciente para el que es el turno"**.
+6. **Ubicar el código exacto.** El selector está en
+   `src/components/Turnera/ReservarTurno.jsx`, no en el formulario de
+   prescripciones.
+7. **Declarar el DNI prioritario.** Se agregó la constante
+   `DNI_PACIENTE_PRIORITARIO = '18007721'`.
+8. **Ordenar una copia de la lista.** Se creó `pacientesOrdenados` con
+   `[...pacientes].sort(...)` para no modificar el estado original.
+9. **Comparar DNI normalizados.** El orden compara solo los dígitos del DNI, así
+   funciona tanto con `18007721` como con `18.007.721`.
+10. **Renderizar la lista ordenada.** El `<select>` recorre
+    `pacientesOrdenados` en lugar de `pacientes`.
+11. **Verificar el flujo real.** Con Playwright se recorrió médico → Turnera →
+    profesional → día y horario, y se comprobó que las primeras opciones son
+    "Elegí un paciente", "Silvina (DNI: 18007721)" y "Acosta, Ana".
+12. **Ejecutar las pruebas.** `npm test` y `npm run build`.
+13. **Documentar y publicar.** Se actualizaron este README, el registro de
+    cambios y el README general del workspace; después se publicó por Pull
+    Request.
+
+### Código comentado línea por línea
+
+```jsx
+// DNI de la paciente que debe quedar primera en el selector de Turnera.
+const DNI_PACIENTE_PRIORITARIO = '18007721';
+
+// Se copia el array para no modificar el estado original que vino de la API.
+const pacientesOrdenados = [...pacientes].sort((a, b) => {
+  // Se comparan solo los dígitos del DNI: acepta "18007721" o "18.007.721".
+  const aPrioritario = String(a.dni ?? '').replace(/\D/g, '') === DNI_PACIENTE_PRIORITARIO;
+  // Se hace la misma normalización para el segundo paciente de la comparación.
+  const bPrioritario = String(b.dni ?? '').replace(/\D/g, '') === DNI_PACIENTE_PRIORITARIO;
+  // Si los dos son Silvina o ninguno lo es, se conserva el orden de la API.
+  if (aPrioritario === bPrioritario) return 0;
+  // Si solo uno es prioritario, ese va antes que el resto.
+  return aPrioritario ? -1 : 1;
+});
+
+// El selector recorre la copia ordenada para mostrar a Silvina primero.
+{pacientesOrdenados.map((p) => (
+  <option key={p.id} value={p.id}>
+    {p.nombre} (DNI: {p.dni})
+  </option>
+))}
+```
+
+### Archivos tocados
+
+| Archivo | Cambio |
+| --- | --- |
+| `src/components/Turnera/ReservarTurno.jsx` | Constante del DNI, copia ordenada y selector usando esa copia. |
+| `README.md` | Esta explicación paso a paso y el estado de publicación. |
+| `REGISTRO_DE_CAMBIOS.md` | Entrada 32 con el detalle del ajuste. |
+| `../README.md` (workspace) | Resumen y enlace al PR. |
+
+### Verificación
+
+- `npm test`: **32/32** pruebas OK.
+- `npm run build`: **OK, 140 módulos**.
+- Playwright: login de médico, Turnera, profesional, día y horario; se llegó a
+  `/turnera/agenda/17/reservar?fecha=2026-11-17&hora=08%3A00`.
+- Opciones verificadas: "Elegí un paciente", "Silvina (DNI: 18007721)",
+  "Acosta, Ana (DNI: 31528249)".
+- No se modificaron usuarios, DNI, contraseñas, backend, base de datos ni mobile.
+
+### Publicación
+
+- Repositorio web: `fix/silvina-primera-turnera`.
+- Pull Request: [#71](https://github.com/ailenquaglino089-ui/SaludWEB_Web/pull/71).
 - El README general del workspace enlaza este PR y el merge en `main`.
 
 ## Resumen de esta iteración (13-14/11/2026)
